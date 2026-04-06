@@ -1,0 +1,69 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class PlayerStamina : MonoBehaviour
+{
+    [Header("UI References")]
+    public Image staminaBarFill;
+
+    [Header("Stamina Settings")]
+    public float maxStamina = 100f;
+    public float currentStamina;
+    public float staminaRegenRate = 20f;
+    public float staminaRegenDelay = 1.5f;
+
+    private float regenTimer = 0f;
+
+    void Start()
+    {
+        currentStamina = maxStamina;
+    }
+
+    void Update()
+    {
+        if (maxStamina <= 0f)
+        {
+            maxStamina = 100f;
+        }
+
+        if (staminaRegenRate < 0f)
+        {
+            staminaRegenRate = 0f;
+        }
+
+        if (staminaRegenDelay < 0f)
+        {
+            staminaRegenDelay = 0f;
+        }
+
+        if (regenTimer > 0f)
+        {
+            regenTimer -= Time.deltaTime;
+        }
+        else if (currentStamina < maxStamina)
+        {
+            currentStamina += staminaRegenRate * Time.deltaTime;
+            currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
+        }
+
+        if (staminaBarFill != null)
+        {
+            staminaBarFill.fillAmount = Mathf.Clamp01(currentStamina / maxStamina);
+        }
+    }
+
+    public bool HasStamina(float amount = 0.1f)
+    {
+        amount = Mathf.Max(0f, amount);
+        return currentStamina >= amount;
+    }
+
+    public void ConsumeStamina(float amount)
+    {
+        if (amount <= 0f) return;
+
+        currentStamina -= amount;
+        currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
+        regenTimer = staminaRegenDelay;
+    }
+}
