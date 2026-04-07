@@ -408,4 +408,15 @@ void HandleJumping()
         minGlideHeight = Mathf.Max(1f, minGlideHeight);
         safeFallHeight = Mathf.Max(0f, safeFallHeight);
     }
+
+    public void ResetVelocity()
+    {
+        velocity = Vector3.zero;
+        airMomentum = Vector3.zero;
+    }
+
+    public void ResetFallDamage()
+    {
+        highestYPosition = transform.position.y;
+    }
 }

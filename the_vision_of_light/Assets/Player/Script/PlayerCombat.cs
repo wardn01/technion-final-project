@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerCombat : MonoBehaviour
 {
@@ -116,7 +117,8 @@ public void ExitCombatStance(bool isRunning = false)
             weaponModel.SetActive(false);
     }
 private void HandleInput()
-{
+{   
+    if (EventSystem.current.IsPointerOverGameObject()) return;
     bool grounded = movementScript != null && movementScript.isGrounded;
     if (!grounded) return;
 
@@ -272,6 +274,20 @@ private void CheckAttackState()
     {
         if (weaponModel != null) 
             weaponModel.GetComponent<WindSwordSounds>()?.PlayCombatWalkSound();
+    }
+
+   public void CancelAttack()
+    {
+        isAttacking = false;
+        
+        ClearBuffer();
+
+        if (anim != null)
+        {
+            anim.ResetTrigger("Attack1"); 
+            anim.ResetTrigger("Attack2"); 
+            anim.ResetTrigger("Attack");
+        }
     }
 
 }
