@@ -157,7 +157,7 @@ public class PlayerMovementSound : MonoBehaviour
 
         int randomIndex = Random.Range(0, landingSound.Length);
         audioSource.pitch = Random.Range(1.2f, 1.5f);
-        audioSource.PlayOneShot(landingSound[randomIndex], landingVolume); // استخدمنا landingVolume
+        audioSource.PlayOneShot(landingSound[randomIndex], landingVolume);
     }
 
     public void PlayHardLandingSound()
@@ -166,6 +166,6 @@ public class PlayerMovementSound : MonoBehaviour
 
         int randomIndex = Random.Range(0, landingSound.Length);
         audioSource.pitch = Random.Range(0.9f, 1.1f);
-        audioSource.PlayOneShot(landingSound[randomIndex], landingVolume); // استخدمنا landingVolume
+        audioSource.PlayOneShot(landingSound[randomIndex], landingVolume);
     }
 }

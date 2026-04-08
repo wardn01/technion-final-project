@@ -107,6 +107,7 @@ public class PlayerMovement : MonoBehaviour
         CheckAnimationLocks();
         HandleGroundCheck();
         HandleWaterState();
+        HandleJumping();
 
         if (!isLockedByAnimation && (combatScript == null || !combatScript.isAttacking))
         {
@@ -129,12 +130,11 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleMovement()
     {
-if (isRolling)
-        {
-            currentHorizontalMove = Vector3.zero; 
-            return; 
-        }
-        
+    if (isRolling)
+    {
+        currentHorizontalMove = Vector3.zero; 
+        return; 
+    }   
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
         float currentSpeed = walkSpeed;
@@ -144,7 +144,7 @@ if (isRolling)
             currentSpeed = combatWalkSpeed;
         }
         
-if (isSwimming)
+        if (isSwimming)
     {
         if (Mathf.Abs(x) > 0.1f || Mathf.Abs(z) > 0.1f)
         {
@@ -278,50 +278,46 @@ if (isSwimming)
         wasGrounded = isGrounded;
         if (isGrounded && velocity.y < 0 && !isSwimming) { velocity.y = -2f; animator.ResetTrigger("Jump"); }
     }
-
 void HandleJumping()
+{
+    if (Input.GetButtonDown("Jump") && isGrounded && !isSwimming && Time.time >= nextJumpTime)
     {
-        if (Input.GetButtonDown("Jump") && isGrounded && !isSwimming && Time.time >= nextJumpTime)
+        if (combatScript != null && combatScript.inCombatStance)
         {
-            if (combatScript != null && combatScript.inCombatStance)
+            if (combatScript.CanInterrupt() && !isRolling && playerStamina != null && playerStamina.HasStamina(rollStaminaCost))
             {
-                if (!isRolling && playerStamina != null && playerStamina.HasStamina(rollStaminaCost))
-                {
-                    playerStamina.ConsumeStamina(rollStaminaCost);
-                    nextJumpTime = Time.time + rollDuration; 
-                    StartCoroutine(RollRoutine());
-                }
+                playerStamina.ConsumeStamina(rollStaminaCost);
+                nextJumpTime = Time.time + rollDuration; 
+                StartCoroutine(RollRoutine());
             }
-            else if (!isJumping)
+        }
+        else if (!isJumping)
+        {
+            if (playerStamina != null && playerStamina.HasStamina(jumpStaminaCost))
             {
-                if (playerStamina != null && playerStamina.HasStamina(jumpStaminaCost))
-                {
-                    playerStamina.ConsumeStamina(jumpStaminaCost);
-                    nextJumpTime = Time.time + jumpCooldown;
-                    StartCoroutine(JumpRoutine());
-                }
+                playerStamina.ConsumeStamina(jumpStaminaCost);
+                nextJumpTime = Time.time + jumpCooldown;
+                StartCoroutine(JumpRoutine());
             }
         }
     }
+}
 
-    IEnumerator RollRoutine()
+IEnumerator RollRoutine()
+{
+    isRolling = true;
+    
+    if (combatScript != null) 
     {
-        isRolling = true;
-        
-        if (combatScript != null) combatScript.isAttacking = false;
-
-
-
-        if (animator != null) 
-        {
-            animator.ResetTrigger("Roll");
-            animator.SetTrigger("Roll");
-        }
-
-        yield return new WaitForSeconds(rollDuration);
-        
-        isRolling = false;
+        combatScript.isAttacking = false;
+        animator.ResetTrigger("Attack"); 
     }
+
+    animator.SetBool("isRolling", true);
+
+    yield return new WaitForSeconds(rollDuration);
+    isRolling = false;
+}
 
     IEnumerator JumpRoutine()
     {
@@ -395,6 +391,8 @@ void HandleJumping()
         animator.SetBool("IsGrounded", isGrounded);
         animator.SetFloat("GroundDistance", groundDistance);
         animator.SetBool("isSwimming", isSwimming);
+        animator.SetBool("isRolling", isRolling);
+
     }
 
     private void ValidateSettings()

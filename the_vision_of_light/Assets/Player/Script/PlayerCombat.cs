@@ -116,34 +116,100 @@ public void ExitCombatStance(bool isRunning = false)
         if (weaponModel != null)
             weaponModel.SetActive(false);
     }
+public bool CanInterrupt()
+{
+    if (anim == null) return true;
+
+    AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(1);
+    
+    if (anim.IsInTransition(1)) return false; 
+
+    if (state.IsName("Skill_E") || state.IsName("Skill_Q"))
+    {
+        return state.normalizedTime >= 0.95f;
+    }
+    else if (state.IsName("Rolling") || state.IsName("Attack_1") || state.IsName("Attack_2") || state.IsName("Attack_3"))
+    {
+        return state.normalizedTime >= 0.60f;
+    }
+    
+    return true; 
+}
+
 private void HandleInput()
 {   
     if (EventSystem.current.IsPointerOverGameObject()) return;
+
     bool grounded = movementScript != null && movementScript.isGrounded;
     if (!grounded) return;
 
-    AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
-    bool isNormalAttacking = stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3");
+    if (!CanInterrupt()) return;
 
-    if (Input.GetMouseButtonDown(0)) RequestAttack();
-
-    bool canCancelToSkill = !isAttacking || (isNormalAttacking && stateInfo.normalizedTime >= 0.6f);
-
-    if (Input.GetKeyDown(KeyCode.Q) && canCancelToSkill && currentE_Count >= requiredE_For_Q)
+    if (Input.GetMouseButtonDown(0)) 
     {
+        ForceCancelRoll();
+        RequestAttack();
+    }
+
+    if (Input.GetKeyDown(KeyCode.Q) && currentE_Count >= requiredE_For_Q)
+    {
+        ForceCancelRoll();
         anim.SetTrigger("Skill_Q");
         isAttacking = true;
         ShowWeapon();
         currentE_Count = 0;
+        ClearBuffer();
     }
 
-    if (Input.GetKeyDown(KeyCode.E) && canCancelToSkill && skillETimer <= 0f)
+    if (Input.GetKeyDown(KeyCode.E) && skillETimer <= 0f)
     {
+        ForceCancelRoll();
         anim.SetTrigger("Skill_E");
         isAttacking = true;
         ShowWeapon();
         skillETimer = skillECooldown;
         currentE_Count++;
+        ClearBuffer();
+    }
+}
+private void UpdateBuffer()
+{
+    if (!isBufferActive) return;
+
+    bufferTimer -= Time.deltaTime;
+    if (bufferTimer <= 0f) 
+    { 
+        isBufferActive = false; 
+        return; 
+    }
+
+    if (CanInterrupt())
+    {
+        ExecuteAttack();
+    }
+}
+
+private void CheckAttackState()
+{
+    AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
+    
+    if (stateInfo.IsName("Empty") || stateInfo.IsName("Combat_Movement") || stateInfo.IsName("Rolling"))
+    {
+        isAttacking = false;
+    }
+    else
+    {
+        isAttacking = true; 
+    }
+
+    anim.SetBool("isAttacking", isAttacking);
+}
+private void ForceCancelRoll()
+{
+    if (movementScript.isRolling)
+    {
+        movementScript.isRolling = false;
+        anim.SetBool("isRolling", false);
     }
 }
     private void SpawnAirSlash()
@@ -163,24 +229,6 @@ private void HandleInput()
             ExecuteAttack();
     }
 
-    private void UpdateBuffer()
-    {
-        if (!isBufferActive)
-            return;
-
-        bufferTimer -= Time.deltaTime;
-        if (bufferTimer <= 0f)
-        {
-            isBufferActive = false;
-            return;
-        }
-
-        AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
-      if (isAttacking && stateInfo.normalizedTime >= 0.6f && stateInfo.normalizedTime <= 0.9f)
-    {
-        ExecuteAttack();
-    }
-    }
 
     private void ExecuteAttack()
     {
@@ -196,20 +244,6 @@ private void HandleInput()
         bufferTimer = 0f;
     }
 
-private void CheckAttackState()
-{
-    AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
-    bool inTransition = anim.IsInTransition(1);
-
-    if (stateInfo.IsName("Empty") || stateInfo.IsName("Combat_Movement") || stateInfo.IsName("Rolling"))
-    {
-        isAttacking = false;
-    }
-    else
-    {
-        isAttacking = true;
-    }
-}
 
  private void OnAnimatorMove()
     {
