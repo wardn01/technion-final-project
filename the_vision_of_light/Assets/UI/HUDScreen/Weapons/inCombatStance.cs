@@ -3,24 +3,22 @@ using UnityEngine;
 public class WeaponUI : MonoBehaviour
 {
     [Header("References")]
-    public PlayerCombat combatScript; // اسحب اللاعب هون
+    public PlayerCombat combatScript;
 
     [Header("UI Objects")]
-    public GameObject swordIconObj;   // كائن السيف الكامل
-    public GameObject handIconObj;    // كائن الإيد الكامل
+    public GameObject swordIconObj;
+    public GameObject handIconObj;
 
     void Update()
     {
         if (combatScript == null) return;
 
-        // فحص إذا السيف مسحوب
         bool isDrawn = combatScript.inCombatStance;
 
-        // --- تطبيق فكرتك: إظهار وإخفاء الكائنات ---
         if (swordIconObj != null) 
-            swordIconObj.SetActive(isDrawn);   // بيشتغل لما تسحب السيف
+            swordIconObj.SetActive(isDrawn);
 
         if (handIconObj != null) 
-            handIconObj.SetActive(!isDrawn);   // بيشتغل لما تكون الإيد فاضية (! معناها العكس)
+            handIconObj.SetActive(!isDrawn);
     }
 }
