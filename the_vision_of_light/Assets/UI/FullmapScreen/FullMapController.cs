@@ -12,12 +12,20 @@ public class FullMapController : MonoBehaviour
     public float worldSize = 1000f; 
     public float startZoom = 1.5f;
 
+    [Header("Map Sounds")]
+    public AudioClip teleportClickSound;
+    public float teleportClickVolume = 0.3f;
+    private AudioSource uiAudioSource;
+
     void Start()
     {
         if (fullMapCamera != null)
         {
             fullMapCamera.gameObject.SetActive(false);
         }
+        uiAudioSource = gameObject.AddComponent<AudioSource>();
+        uiAudioSource.spatialBlend = 0f;
+        uiAudioSource.playOnAwake = false;
     }
 
     void Update()
@@ -58,5 +66,13 @@ public class FullMapController : MonoBehaviour
 
         Canvas.ForceUpdateCanvases(); 
         mapContent.anchoredPosition = new Vector2(targetX, targetY);
+    }
+
+    public void PlayTeleportSound()
+    {
+        if (teleportClickSound != null && uiAudioSource != null)
+        {
+            uiAudioSource.PlayOneShot(teleportClickSound, teleportClickVolume);
+        }
     }
 }

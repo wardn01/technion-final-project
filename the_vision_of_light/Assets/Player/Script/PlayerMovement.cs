@@ -288,6 +288,18 @@ void HandleJumping()
             {
                 playerStamina.ConsumeStamina(rollStaminaCost);
                 nextJumpTime = Time.time + rollDuration; 
+
+                float x = Input.GetAxisRaw("Horizontal");
+                float z = Input.GetAxisRaw("Vertical");
+                Vector3 dodgeDirection = new Vector3(x, 0f, z).normalized;
+
+                if (dodgeDirection.magnitude >= 0.1f)
+                {
+                    float targetAngle = Mathf.Atan2(dodgeDirection.x, dodgeDirection.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+                    
+                    transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
+                }
+
                 StartCoroutine(RollRoutine());
             }
         }
