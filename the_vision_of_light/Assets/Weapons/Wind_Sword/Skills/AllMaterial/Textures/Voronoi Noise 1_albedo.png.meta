@@ -94,5 +94,6 @@ AssetOrigin:
   productId: 309498
   packageName: Free Slash VFX
   packageVersion: 1.0
-  assetPath: Assets/Free Slash VFX/Textures/Voronoi Noise 1_albedo.png
+  assetPath: Assets/Weapons/Wind_Sword/Skills/AllMaterial/Textures/Voronoi Noise
+    1_albedo.png
   uploadId: 738318

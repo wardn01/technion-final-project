@@ -3,8 +3,6 @@ using UnityEngine.UI;
 
 public class TeleportPoint : MonoBehaviour
 {
-
-
     [Header("Teleport Point Settings")]
     [Header("Unlock Settings")]
     [Tooltip("Is this teleport point unlocked at the start?")]
@@ -13,15 +11,18 @@ public class TeleportPoint : MonoBehaviour
     [Header("Player landing point")]
     public Transform spawnLocation; 
 
-    [Header("Crystal Settings")]
-    public Material lockedMat;         
-    public Material unlockedMat;       
-    public MeshRenderer centerCrystal; 
-    public MeshRenderer baseCrystal;   
+    [Header("--- Main Rock Settings ---")]
+    public MeshRenderer mainRockRenderer;
+    public Material mainLockedMat;
+    public Material mainUnlockedMat;
 
-    [Header("Visual Effects")]
-    public GameObject lockedGlow;        
-    public GameObject unlockedGlow;  
+    [Header("--- Base Rock Settings ---")]
+    public MeshRenderer baseRockRenderer;
+    public Material baseLockedMat;
+    public Material baseUnlockedMat;
+
+    [Header("Visual Effects (Particles)")]
+    public GameObject unlockedGlow;
 
     [Header("Icon Sprites")]
     public Sprite lockedIcon;    
@@ -31,7 +32,6 @@ public class TeleportPoint : MonoBehaviour
     public AudioClip unlockSound; 
     public float unlockVolume = 0.3f;
     private AudioSource audioSource;      
-
 
     [Header("Map Icons")]
     public Image mapIcon;        
@@ -44,38 +44,19 @@ public class TeleportPoint : MonoBehaviour
     
     private bool isPlayerNear = false;
 
- void Start()
+    void Start()
     {
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
         if (interactPrompt != null) interactPrompt.SetActive(false);
 
-        if (isUnlocked == true)
-        {
-            if (centerCrystal != null) centerCrystal.material = unlockedMat;
-            if (baseCrystal != null) baseCrystal.material = unlockedMat; 
-            if (lockedGlow != null) lockedGlow.SetActive(false);
-            if (unlockedGlow != null) unlockedGlow.SetActive(true);
-
-            if (mapIcon != null && unlockedIcon != null) { mapIcon.sprite = unlockedIcon; mapIcon.color = Color.white; }
-            if (minimapIcon != null && unlockedIcon != null) { minimapIcon.sprite = unlockedIcon; minimapIcon.color = Color.white; }
-        }
-        else
-        {
-            if (centerCrystal != null) centerCrystal.material = lockedMat;
-            if (baseCrystal != null) baseCrystal.material = lockedMat; 
-            if (lockedGlow != null) lockedGlow.SetActive(true);
-            if (unlockedGlow != null) unlockedGlow.SetActive(false);
-
-            if (mapIcon != null && lockedIcon != null) { mapIcon.sprite = lockedIcon; mapIcon.color = Color.white; }
-            if (minimapIcon != null && lockedIcon != null) { minimapIcon.sprite = lockedIcon; minimapIcon.color = Color.white; }
-        }
+        UpdateVisualState();
     }
 
     void Update()
     {
-        if (isPlayerNear == true && isUnlocked == false && Input.GetKeyDown(KeyCode.F))
+        if (isPlayerNear && !isUnlocked && Input.GetKeyDown(KeyCode.F))
         {
             UnlockPoint();
         }
@@ -85,13 +66,7 @@ public class TeleportPoint : MonoBehaviour
     {
         isUnlocked = true;
         
-        if (centerCrystal != null) centerCrystal.material = unlockedMat;
-        if (baseCrystal != null) baseCrystal.material = unlockedMat; 
-        if (lockedGlow != null) lockedGlow.SetActive(false);
-        if (unlockedGlow != null) unlockedGlow.SetActive(true);
-
-        if (mapIcon != null && unlockedIcon != null) mapIcon.sprite = unlockedIcon;
-        if (minimapIcon != null && unlockedIcon != null) minimapIcon.sprite = unlockedIcon;
+        UpdateVisualState();
         
         if (unlockSound != null) 
         {   
@@ -104,13 +79,38 @@ public class TeleportPoint : MonoBehaviour
         Debug.Log("Point unlocked and minimap updated.");
     }
 
-   private void OnTriggerEnter(Collider other)
+    void UpdateVisualState()
+    {
+        if (isUnlocked)
+        {
+            if (mainRockRenderer != null) mainRockRenderer.material = mainUnlockedMat;
+            
+            if (baseRockRenderer != null) baseRockRenderer.material = baseUnlockedMat;
+
+            if (unlockedGlow != null) unlockedGlow.SetActive(true);
+
+            if (mapIcon != null && unlockedIcon != null) { mapIcon.sprite = unlockedIcon; mapIcon.color = Color.white; }
+            if (minimapIcon != null && unlockedIcon != null) { minimapIcon.sprite = unlockedIcon; minimapIcon.color = Color.white; }
+        }
+        else
+        {
+            if (mainRockRenderer != null) mainRockRenderer.material = mainLockedMat;
+            
+            if (baseRockRenderer != null) baseRockRenderer.material = baseLockedMat;
+
+            if (unlockedGlow != null) unlockedGlow.SetActive(false);
+
+            if (mapIcon != null && lockedIcon != null) { mapIcon.sprite = lockedIcon; mapIcon.color = Color.white; }
+            if (minimapIcon != null && lockedIcon != null) { minimapIcon.sprite = lockedIcon; minimapIcon.color = Color.white; }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player")) 
         {
             isPlayerNear = true;
-            
-            if (isUnlocked == false && interactPrompt != null) 
+            if (!isUnlocked && interactPrompt != null) 
             {
                 interactPrompt.SetActive(true);
             }
@@ -122,7 +122,6 @@ public class TeleportPoint : MonoBehaviour
         if (other.CompareTag("Player")) 
         {
             isPlayerNear = false;
-            
             if (interactPrompt != null) 
             {
                 interactPrompt.SetActive(false);

@@ -31,7 +31,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Sword And Shield Attack
+      name: Skill_Q
       takeName: mixamo.com
       internalID: -203655887218126122
       firstFrame: 0

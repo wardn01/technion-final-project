@@ -11,5 +11,6 @@ AssetOrigin:
   productId: 309498
   packageName: Free Slash VFX
   packageVersion: 1.0
-  assetPath: Assets/Free Slash VFX/Materials/Variations/Impact Mat.mat
+  assetPath: Assets/Weapons/Wind_Sword/Skills/AllMaterial/Materials/Variations/Impact
+    Mat.mat
   uploadId: 738318
