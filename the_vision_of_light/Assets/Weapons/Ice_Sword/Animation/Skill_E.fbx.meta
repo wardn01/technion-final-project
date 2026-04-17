@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e4f181e278b273c4f9dd894e198bd172
+guid: fa60ae1a9f448964aab9beafb7bdc41e
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -35,10 +35,10 @@ ModelImporter:
       takeName: mixamo.com
       internalID: -203655887218126122
       firstFrame: 0
-      lastFrame: 80
+      lastFrame: 100
       wrapMode: 0
       orientationOffsetY: 0
-      level: -0.45
+      level: -0.5
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
@@ -55,14 +55,14 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.87506914
+      - time: 0.479742
         functionName: OnSkillE
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.9291782
+      - time: 0.49784762
         functionName: PlaySkillESound
         data: 
         objectReferenceParameter: {instanceID: 0}

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Water
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -18,8 +19,8 @@ TagManager:
   - PlayerIcon
   - Rock
   - Village
-  - 
-  - 
+  - PlayerAttack
+  - Player
   - 
   - 
   - 
