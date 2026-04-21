@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1115765124237347542}
   - component: {fileID: 1115765124237347540}
   - component: {fileID: 1115765124237347543}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puddle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4905,7 +4905,7 @@ GameObject:
   - component: {fileID: 1115765125232577599}
   - component: {fileID: 1115765125232577597}
   - component: {fileID: 1115765125232577596}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Falling Droplets
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9742,7 +9742,7 @@ GameObject:
   - component: {fileID: 1115765125235545076}
   - component: {fileID: 1115765125235545074}
   - component: {fileID: 1115765125235545077}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puddle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14587,7 +14587,7 @@ GameObject:
   - component: {fileID: 6111486946871746554}
   - component: {fileID: 6111486946871746556}
   - component: {fileID: 6111486946871746555}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Trails
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19481,7 +19481,7 @@ GameObject:
   - component: {fileID: 6111486947380959506}
   - component: {fileID: 6111486947380959508}
   - component: {fileID: 6111486947380959507}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Flying 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24317,7 +24317,7 @@ GameObject:
   - component: {fileID: 6111486947919078040}
   - component: {fileID: 6111486947919078042}
   - component: {fileID: 6111486947919078041}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Slash Distortion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29154,7 +29154,7 @@ GameObject:
   - component: {fileID: 6111486948328712473}
   - component: {fileID: 6111486948328712472}
   - component: {fileID: 932116069143364051}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Decal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34014,7 +34014,10 @@ GameObject:
   - component: {fileID: 6111486948785554854}
   - component: {fileID: 6111486948785554853}
   - component: {fileID: 7248076018975090928}
-  m_Layer: 0
+  - component: {fileID: -6852334988412077046}
+  - component: {fileID: 4688660333483355976}
+  - component: {fileID: 7922017127869174286}
+  m_Layer: 12
   m_Name: e
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38918,6 +38921,68 @@ MonoBehaviour:
   SpawnWhenFinish: {fileID: 0}
   speed: 20
   distance: 30
+--- !u!114 &-6852334988412077046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6111486948785554852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 684894b5d05bb984ab4a16b41081f24f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDamage
+--- !u!136 &4688660333483355976
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6111486948785554852}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1
+  m_Height: 6.49
+  m_Direction: 0
+  m_Center: {x: 0.000013589859, y: 0.0000014305115, z: 0.7}
+--- !u!54 &7922017127869174286
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6111486948785554852}
+  serializedVersion: 5
+  m_Mass: 10
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &6341220960688249003
 GameObject:
   m_ObjectHideFlags: 0
@@ -38929,7 +38994,7 @@ GameObject:
   - component: {fileID: 1139615973936175251}
   - component: {fileID: 7375131980795586518}
   - component: {fileID: 1512817508343582350}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Trails (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43820,9 +43885,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6111486948328712455}
     m_Modifications:
+    - target: {fileID: 637968014551906757, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 1035977224672214417, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: m_Name
       value: Impact (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1035977224672214417, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 1418760837371908204, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: stopAction
@@ -43941,6 +44014,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3200377639586277203, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 3200377639586277203, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -43987,6 +44064,10 @@ PrefabInstance:
     - target: {fileID: 4054212429024354123, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5837239117075306285, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 5885339532838503758, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: looping

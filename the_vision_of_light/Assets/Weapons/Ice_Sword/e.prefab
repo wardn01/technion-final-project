@@ -4906,6 +4906,9 @@ GameObject:
   - component: {fileID: 3020920808754819071}
   - component: {fileID: 3020920808754819068}
   - component: {fileID: 1849428291017999017}
+  - component: {fileID: -1950030344780021070}
+  - component: {fileID: 2326610304278043082}
+  - component: {fileID: 878960650180863993}
   m_Layer: 12
   m_Name: e
   m_TagString: Untagged
@@ -9805,9 +9808,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f421297964672ed4b8246b0b1ee0ef17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawnWhenFinish: {fileID: 0}
   speed: 20
-  distance: 30
+  maxDistance: 30
+  impactEffect: {fileID: 0}
+--- !u!114 &-1950030344780021070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3020920808754819069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 684894b5d05bb984ab4a16b41081f24f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDamage
+--- !u!136 &2326610304278043082
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3020920808754819069}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.7
+  m_Height: 5
+  m_Direction: 0
+  m_Center: {x: 0.000013589859, y: 0.0000014305115, z: 0.7}
+--- !u!114 &878960650180863993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3020920808754819069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccac13e9f35adf446837e3ca94fc37c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillEDamage
 --- !u!1 &3020920809075050718
 GameObject:
   m_ObjectHideFlags: 0

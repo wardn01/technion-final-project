@@ -55,15 +55,15 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0
-        functionName: ShowWeapon
+      - time: 0.50114715
+        functionName: PlayNormalAttackSound
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.50114715
-        functionName: PlayNormalAttackSound
+      - time: 0.595122
+        functionName: DealNormalDamage
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

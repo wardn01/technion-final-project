@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 6424247364373830703}
   - component: {fileID: 1208275532420764258}
   - component: {fileID: 3258259394500697055}
-  m_Layer: 0
+  - component: {fileID: 69436025009381573}
+  - component: {fileID: 1156583991385220907}
+  m_Layer: 12
   m_Name: q
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4856,6 +4858,44 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!136 &69436025009381573
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116249604692860204}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 4
+  m_Height: 0.000013333333
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1156583991385220907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116249604692860204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c4e7114464348b4c9421bfb8d3161af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TornadoSkill
+  pullForce: -3
+  tickInterval: 0.5
+  lifeTime: 3
 --- !u!1 &1307567851730393654
 GameObject:
   m_ObjectHideFlags: 0
@@ -4867,7 +4907,7 @@ GameObject:
   - component: {fileID: 4478843693372940856}
   - component: {fileID: 7992965519308341905}
   - component: {fileID: 5349603988218628028}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Flying
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9761,7 +9801,7 @@ GameObject:
   - component: {fileID: 8911131620822425674}
   - component: {fileID: 6750138537053361815}
   - component: {fileID: 6877057326494895805}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Slash Cracks
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1506333696248244136}
   - component: {fileID: 592596869086478886}
   - component: {fileID: 6679767943746473748}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Flying (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4906,7 +4906,7 @@ GameObject:
   - component: {fileID: 4086892136668096977}
   - component: {fileID: 3687264849419212943}
   - component: {fileID: 4096958179119307380}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Flying
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9801,7 +9801,7 @@ GameObject:
   - component: {fileID: 54127814202624558}
   - component: {fileID: 1545345410034538397}
   - component: {fileID: 3177537454068058668}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9928,7 +9928,7 @@ GameObject:
   - component: {fileID: 7966937426488110957}
   - component: {fileID: 5120696620205386199}
   - component: {fileID: 7378862892315822802}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Slash Distortion (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14822,7 +14822,7 @@ GameObject:
   - component: {fileID: 4446731621254475530}
   - component: {fileID: 8956421958105168027}
   - component: {fileID: 5709364575346261848}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Slash Distortion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19716,7 +19716,9 @@ GameObject:
   - component: {fileID: 9217658296276985077}
   - component: {fileID: 2024698188559880451}
   - component: {fileID: 6510164155819559394}
-  m_Layer: 0
+  - component: {fileID: 5258230008950073104}
+  - component: {fileID: 3117777312435566300}
+  m_Layer: 12
   m_Name: q
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24605,6 +24607,44 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &5258230008950073104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9177886612219991525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1c76078986961449aaf41971187d62b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IceSkillQDamage
+  tickInterval: 1
+  lifeTime: 2
+  slowPercentage: 0.5
+--- !u!136 &3117777312435566300
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9177886612219991525}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 4
+  m_Height: 4
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &2010108318116168611
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24613,9 +24653,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 9217658296276985077}
     m_Modifications:
+    - target: {fileID: 637968014551906757, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 1035977224672214417, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: m_Name
       value: Impact
+      objectReference: {fileID: 0}
+    - target: {fileID: 1035977224672214417, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 1035977224672214417, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: m_IsActive
@@ -24656,6 +24704,10 @@ PrefabInstance:
     - target: {fileID: 2022601551518229877, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.50980395
+      objectReference: {fileID: 0}
+    - target: {fileID: 3200377639586277203, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 3227029994988644170, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -24713,6 +24765,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 51bee9f682b804d4d896fc57a6bc7045, type: 2}
+    - target: {fileID: 5837239117075306285, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 5885339532838503758, guid: 057aa477789506a44bd206e9c5acad19, type: 3}
       propertyPath: looping
       value: 0

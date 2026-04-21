@@ -130,7 +130,7 @@ public void EquipWeapon(int index)
         anim.ResetTrigger("Attack");
         anim.ResetTrigger("Skill_E");
         anim.ResetTrigger("Skill_Q");
-        
+
         isAttacking = false;
         ClearBuffer();
 
@@ -248,88 +248,120 @@ if (Time.time >= nextSwitchTime)
     private void UpdateBuffer()
     {
         if (!isBufferActive) return;
-        
+
         bufferTimer -= Time.deltaTime;
-        if (bufferTimer <= 0f) 
-        { 
-            isBufferActive = false; 
-            return; 
+        if (bufferTimer <= 0f)
+        {
+            isBufferActive = false;
+            return;
         }
-        
+
         if (CanInterrupt()) ExecuteAttack();
     }
 
     private void CheckAttackState()
     {
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
-        
-        if (stateInfo.IsName("Empty") || stateInfo.IsName("Combat_Movement") || stateInfo.IsName("Rolling")) 
+
+        if (stateInfo.IsName("Empty") || stateInfo.IsName("Combat_Movement") || stateInfo.IsName("Rolling"))
             isAttacking = false;
-        else 
-            isAttacking = true; 
-            
+        else
+            isAttacking = true;
+
         anim.SetBool("isAttacking", isAttacking);
     }
 
     private void ForceCancelRoll()
     {
-        if (movementScript.isRolling) 
-        { 
-            movementScript.isRolling = false; 
-            anim.SetBool("isRolling", false); 
+        if (movementScript.isRolling)
+        {
+            movementScript.isRolling = false;
+            anim.SetBool("isRolling", false);
         }
     }
 
-    private void RequestAttack() 
-    { 
-        isBufferActive = true; 
-        bufferTimer = bufferDuration; 
-        if (!isAttacking) ExecuteAttack(); 
+    private void RequestAttack()
+    {
+        isBufferActive = true;
+        bufferTimer = bufferDuration;
+        if (!isAttacking) ExecuteAttack();
     }
     
-    private void ExecuteAttack() 
-    { 
-        anim.SetTrigger("Attack"); 
-        isAttacking = true; 
-        ShowWeapon(); 
-        ClearBuffer(); 
+    private void ExecuteAttack()
+    {
+        anim.SetTrigger("Attack");
+        isAttacking = true;
+        ShowWeapon();
+        ClearBuffer();
     }
     
-    private void ClearBuffer() 
-    { 
-        isBufferActive = false; 
-        bufferTimer = 0f; 
+    private void ClearBuffer()
+    {
+        isBufferActive = false;
+        bufferTimer = 0f;
     }
 
     private void OnAnimatorMove()
     {
         if (anim == null || controller == null) return;
-        
+
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
-        
+
         bool isAlwaysMovingSkill = stateInfo.IsName("Skill_Q") || stateInfo.IsName("Rolling");
         bool isNormalAttack = stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3");
 
         if (isAlwaysMovingSkill || (isNormalAttack && currentWeaponIndex == 1))
         {
             Vector3 finalMovement = anim.deltaPosition;
-            finalMovement.y = -20f * Time.deltaTime; 
+            finalMovement.y = -20f * Time.deltaTime;
             controller.Move(finalMovement);
         }
     }
 
-    // --- Combat Events (Called via Animation) ---
+public void DealNormalDamage()
+    {
+        if (activeWeapon == null) return;
 
-    public void DealNormalDamage() 
-    { 
-        Debug.Log("Hit! Damage: " + (activeWeapon != null ? activeWeapon.normalAttackDamage : 0)); 
+        Vector3 attackPoint = transform.position + transform.forward * 1f;
+
+        Collider[] hitEnemies = Physics.OverlapSphere(attackPoint, attackRange, enemyLayer);
+
+        foreach (Collider enemy in hitEnemies)
+        {
+            EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
+            
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage(activeWeapon.normalAttackDamage);
+                Debug.Log("Dealt " + activeWeapon.normalAttackDamage + " damage to " + enemy.name + "!");
+            }
+        }
     }
     
-    public void OnSkillE() 
-    { 
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position + transform.forward * 1f, attackRange);
+    }
+    
+public void OnSkillE()
+    {
         if (activeWeapon != null && activeWeapon.airSlashPrefab != null && activeWeapon.eSpawnPoint != null)
         {
-            Instantiate(activeWeapon.airSlashPrefab, activeWeapon.eSpawnPoint.position, activeWeapon.eSpawnPoint.rotation);
+            GameObject skill = Instantiate(activeWeapon.airSlashPrefab, activeWeapon.eSpawnPoint.position, activeWeapon.eSpawnPoint.rotation);
+            
+
+            WindSkillEDamage windScript = skill.GetComponent<WindSkillEDamage>();
+            if (windScript != null)
+            {
+                windScript.SetDamage(activeWeapon.skillEDamage);
+            }
+
+            IceSkillEDamage iceScript = skill.GetComponent<IceSkillEDamage>();
+            if (iceScript != null)
+            {
+                iceScript.SetDamage(activeWeapon.skillEDamage);
+            }
         }
     }
     
@@ -337,38 +369,49 @@ if (Time.time >= nextSwitchTime)
     {
         if (activeWeapon != null && activeWeapon.skillQPrefab != null && activeWeapon.qSpawnPoint != null)
         {
-            Instantiate(activeWeapon.skillQPrefab, activeWeapon.qSpawnPoint.position, activeWeapon.qSpawnPoint.rotation);
+            GameObject skill = Instantiate(activeWeapon.skillQPrefab, activeWeapon.qSpawnPoint.position, activeWeapon.qSpawnPoint.rotation);
+            
+            IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
+            if (iceScript != null)
+            {
+                skill.transform.parent = activeWeapon.qSpawnPoint;
+                iceScript.SetDamage(activeWeapon.skillQDamage);
+            }
+
+            WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
+            if (windScript != null)
+            {
+                windScript.SetDamage(activeWeapon.skillQDamage);
+            }
         }
     }
 
-    // --- Audio Events ---
-  // --- Audio Events ---
-    public void PlayNormalAttackSound() 
-    { 
+    public void PlayNormalAttackSound()
+    {
         if (activeWeapon != null && activeWeapon.weaponModel != null) 
             activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayNormalAttackSound(); 
     }
     
-    public void PlaySkillESound() 
-    { 
+    public void PlaySkillESound()
+    {
         if (activeWeapon != null && activeWeapon.weaponModel != null) 
             activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillESound(); 
     }
     
-    public void PlaySkillQSound() 
-    { 
+    public void PlaySkillQSound()
+    {
         if (activeWeapon != null && activeWeapon.weaponModel != null) 
             activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillQSound(); 
     }
     
-    public void PlayRollSound() 
-    { 
+    public void PlayRollSound()
+    {
         if (activeWeapon != null && activeWeapon.weaponModel != null) 
             activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayRollSound(); 
     }
     
-    public void PlayCombatWalkSound() 
-    { 
+    public void PlayCombatWalkSound()
+    {
         if (activeWeapon != null && activeWeapon.weaponModel != null) 
             activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayCombatWalkSound(); 
     }
@@ -376,11 +419,11 @@ if (Time.time >= nextSwitchTime)
     {
         isAttacking = false;
         ClearBuffer();
-        if (anim != null) 
-        { 
-            anim.ResetTrigger("Attack1"); 
-            anim.ResetTrigger("Attack2"); 
-            anim.ResetTrigger("Attack"); 
+        if (anim != null)
+        {
+            anim.ResetTrigger("Attack1");
+            anim.ResetTrigger("Attack2");
+            anim.ResetTrigger("Attack");
         }
     }
 }

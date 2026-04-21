@@ -1,47 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
+    [Header("E Skill Settings")]
+    public float speed = 20f;
+    public float maxDistance = 30f;
+    
     [SerializeField]
-    private GameObject SpawnWhenFinish;
+    private GameObject impactEffect;
 
-    public float speed = 20;
-    public float distance = 30;
     private ParticleSystem mainParticle;
-
-    private Vector3 initPosition;
+    private Vector3 startPosition;
 
     private void Start()
     {
         mainParticle = GetComponent<ParticleSystem>();
+        startPosition = transform.position;
 
         if (mainParticle != null)
         {
             mainParticle.Play(true);
         }
-
-        initPosition = transform.position;
     }
 
     private void Update()
     {
-        if (mainParticle && mainParticle.isPlaying)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, speed * Time.deltaTime);
+        transform.Translate(Vector3.forward * speed * Time.deltaTime);
 
-            if (Vector3.Distance(initPosition, transform.position) > distance)
-            {
-                mainParticle.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-                
-                if (SpawnWhenFinish != null)
-                {
-                    Instantiate(SpawnWhenFinish, transform.position, Quaternion.identity);
-                }
-                
-                Destroy(gameObject, 1f); 
-            }
+        if (Vector3.Distance(startPosition, transform.position) >= maxDistance)
+        {
+            ExplodeAndDestroy();
         }
+    }
+
+    public void ExplodeAndDestroy()
+    {
+        if (impactEffect != null)
+        {
+            Instantiate(impactEffect, transform.position, Quaternion.identity);
+        }
+
+        if (mainParticle != null)
+        {
+            mainParticle.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+
+        this.enabled = false; 
+        
+        Destroy(gameObject, 1f); 
     }
 }
