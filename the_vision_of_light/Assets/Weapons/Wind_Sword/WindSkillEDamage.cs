@@ -4,19 +4,15 @@ using UnityEngine;
 public class WindSkillEDamage : MonoBehaviour
 {
     private float damageAmount;
-    private readonly List<EnemyHealth> enemiesHit = new List<EnemyHealth>();
+    private readonly List<EnemyBase> enemiesHit = new List<EnemyBase>();
 
-    public void SetDamage(float damage)
-    {
-        damageAmount = damage;
-    }
+    public void SetDamage(float damage) { damageAmount = damage; }
 
     private void OnTriggerEnter(Collider other)
     {
-        EnemyHealth enemy = other.GetComponentInParent<EnemyHealth>();
+        EnemyBase enemy = other.GetComponentInParent<EnemyBase>();
 
-        if (enemy == null || enemy.isDead || enemiesHit.Contains(enemy))
-            return;
+        if (enemy == null || enemy.IsDead || enemiesHit.Contains(enemy)) return;
 
         enemy.TakeDamage(damageAmount);
         enemiesHit.Add(enemy);
@@ -25,7 +21,6 @@ public class WindSkillEDamage : MonoBehaviour
         pushDir.y = 0f;
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();
-        if (status != null)
-            status.ApplyKnockback(pushDir, 3f, 0.2f);
+        if (status != null) status.ApplyKnockback(pushDir, 3f, 0.2f);
     }
 }

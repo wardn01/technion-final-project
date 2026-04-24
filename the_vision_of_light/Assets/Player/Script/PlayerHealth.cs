@@ -8,7 +8,7 @@ public class PlayerHealth : MonoBehaviour
     public Image healthBarFill;
     public TextMeshProUGUI hpText;
     public GameObject deathScreen;
-    public GameObject hudScreen; // 🛑 1. ضفنا هاد المتغير عشان نمسك الـ HUD
+    public GameObject hudScreen;
 
     [Header("Health Settings")]
     public int maxHealth = 100;
@@ -31,7 +31,7 @@ public class PlayerHealth : MonoBehaviour
         UpdateHealthUI();
 
         if (deathScreen != null) deathScreen.SetActive(false);
-        if (hudScreen != null) hudScreen.SetActive(true); // تأكد إن الـ HUD شغال بالبداية
+        if (hudScreen != null) hudScreen.SetActive(true);
 
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
         ragdollColliders = GetComponentsInChildren<Collider>();
@@ -80,7 +80,6 @@ public class PlayerHealth : MonoBehaviour
         if (deathScreen != null)
             deathScreen.SetActive(true);
             
-        // 🛑 2. طفينا الـ HUD وقت الموت
         if (hudScreen != null)
             hudScreen.SetActive(false);
 
@@ -105,7 +104,6 @@ public class PlayerHealth : MonoBehaviour
         if (deathScreen != null)
             deathScreen.SetActive(false);
             
-        // 🛑 3. رجعنا شغلنا الـ HUD لما تصحى
         if (hudScreen != null)
             hudScreen.SetActive(true);
 

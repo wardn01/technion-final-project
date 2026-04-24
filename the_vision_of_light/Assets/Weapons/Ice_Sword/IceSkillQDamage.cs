@@ -9,81 +9,65 @@ public class IceSkillQDamage : MonoBehaviour
 
     private float damagePerTick;
     private float nextDamageTime;
-    private readonly List<EnemyHealth> enemiesInAura = new List<EnemyHealth>();
+    private readonly List<EnemyBase> enemiesInAura = new List<EnemyBase>();
 
-    public void SetDamage(float damage)
-    {
-        damagePerTick = damage;
-    }
+    public void SetDamage(float damage) { damagePerTick = damage; }
 
-    private void Start()
-    {
-        Destroy(gameObject, lifeTime);
-    }
+    private void Start() { Destroy(gameObject, lifeTime); }
 
     private void Update()
     {
         bool dealDamageThisFrame = Time.time >= nextDamageTime;
-
-        if (dealDamageThisFrame)
-            nextDamageTime = Time.time + tickInterval;
+        if (dealDamageThisFrame) nextDamageTime = Time.time + tickInterval;
 
         for (int i = enemiesInAura.Count - 1; i >= 0; i--)
         {
-            EnemyHealth enemy = enemiesInAura[i];
+            EnemyBase enemy = enemiesInAura[i];
 
-            if (enemy == null || enemy.isDead)
+            if (enemy == null || enemy.IsDead)
             {
                 enemiesInAura.RemoveAt(i);
                 continue;
             }
 
-            if (dealDamageThisFrame)
-                enemy.TakeDamage(damagePerTick);
+            if (dealDamageThisFrame) enemy.TakeDamage(damagePerTick);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        EnemyHealth enemy = other.GetComponentInParent<EnemyHealth>();
+        EnemyBase enemy = other.GetComponentInParent<EnemyBase>();
 
-        if (enemy == null || enemy.isDead || enemiesInAura.Contains(enemy))
-            return;
+        if (enemy == null || enemy.IsDead || enemiesInAura.Contains(enemy)) return;
 
         enemiesInAura.Add(enemy);
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();
-        if (status != null)
-            status.ApplySlow(slowPercentage);
+        if (status != null) status.ApplySlow(slowPercentage);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        EnemyHealth enemy = other.GetComponentInParent<EnemyHealth>();
+        EnemyBase enemy = other.GetComponentInParent<EnemyBase>();
 
-        if (enemy == null || !enemiesInAura.Contains(enemy))
-            return;
+        if (enemy == null || !enemiesInAura.Contains(enemy)) return;
 
         enemiesInAura.Remove(enemy);
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();
-        if (status != null)
-            status.RemoveSlow();
+        if (status != null) status.RemoveSlow();
     }
 
     private void OnDestroy()
     {
         for (int i = 0; i < enemiesInAura.Count; i++)
         {
-            EnemyHealth enemy = enemiesInAura[i];
-            if (enemy == null || enemy.isDead)
-                continue;
+            EnemyBase enemy = enemiesInAura[i];
+            if (enemy == null || enemy.IsDead) continue;
 
             EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();
-            if (status != null)
-                status.RemoveSlow();
+            if (status != null) status.RemoveSlow();
         }
-
         enemiesInAura.Clear();
     }
 }

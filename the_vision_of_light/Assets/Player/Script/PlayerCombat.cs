@@ -328,11 +328,11 @@ public void DealNormalDamage()
 
         foreach (Collider enemy in hitEnemies)
         {
-            EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
+            EnemyBase enemyBase = enemy.GetComponent<EnemyBase>(); 
             
-            if (enemyHealth != null)
+            if (enemyBase != null)
             {
-                enemyHealth.TakeDamage(activeWeapon.normalAttackDamage);
+                enemyBase.TakeDamage(activeWeapon.normalAttackDamage);
                 Debug.Log("Dealt " + activeWeapon.normalAttackDamage + " damage to " + enemy.name + "!");
             }
         }

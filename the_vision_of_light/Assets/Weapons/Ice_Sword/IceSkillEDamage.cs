@@ -4,25 +4,20 @@ using UnityEngine;
 public class IceSkillEDamage : MonoBehaviour
 {
     private float damageAmount;
-    private readonly List<EnemyHealth> enemiesHit = new List<EnemyHealth>();
+    private readonly List<EnemyBase> enemiesHit = new List<EnemyBase>();
 
-    public void SetDamage(float damage)
-    {
-        damageAmount = damage;
-    }
+    public void SetDamage(float damage) { damageAmount = damage; }
 
     private void OnTriggerEnter(Collider other)
     {
-        EnemyHealth enemy = other.GetComponentInParent<EnemyHealth>();
+        EnemyBase enemy = other.GetComponentInParent<EnemyBase>();
 
-        if (enemy == null || enemy.isDead || enemiesHit.Contains(enemy))
-            return;
+        if (enemy == null || enemy.IsDead || enemiesHit.Contains(enemy)) return;
 
         enemy.TakeDamage(damageAmount);
         enemiesHit.Add(enemy);
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();
-        if (status != null)
-            status.ApplyFreeze(1f);
+        if (status != null) status.ApplyFreeze(1f);
     }
 }
