@@ -12,11 +12,11 @@ public class Skeleton : NormalEnemy
 
     public void AnimHit()
     {
-        if (target != null) 
+        if (target != null && MeleeStats != null) 
         {
             float distance = Vector3.Distance(transform.position, target.position);
             
-            if (distance <= stats.AttackRange + 0.5f)
+            if (distance <= MeleeStats.NormalAttackRange + 0.5f)
             {
                 Vector3 directionToTarget = (target.position - transform.position).normalized;
                 directionToTarget.y = 0; 
@@ -27,13 +27,13 @@ public class Skeleton : NormalEnemy
                     PlayerHealth pHealth = target.GetComponent<PlayerHealth>();
                     if (pHealth != null)
                     {
-                        pHealth.TakeDamage(stats.Damage);
-                        Debug.Log($"[{stats.EnemyName}] slashed you with {stats.Damage} damage!");
+                        pHealth.TakeDamage(MeleeStats.NormalDamage);
+                        Debug.Log($"[{stats.EnemyName}] slashed the player with {MeleeStats.NormalDamage} damage!");
                     }
                 }
                 else
                 {
-                    Debug.Log("You dodged the attack! You were behind the enemy!");
+                    Debug.Log("Player dodged the attack! The player was behind the enemy.");
                 }
             }
         }
@@ -42,6 +42,6 @@ public class Skeleton : NormalEnemy
     protected override void Die()
     {
         base.Die();
-        Debug.Log("The skeleton shattered into 100 bones!");
+        Debug.Log("The skeleton shattered into pieces!");
     }
 }

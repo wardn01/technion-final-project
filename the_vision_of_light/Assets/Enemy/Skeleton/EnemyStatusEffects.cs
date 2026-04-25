@@ -6,18 +6,14 @@ public class EnemyStatusEffects : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Animator anim;
-    
     private EnemyBase enemyBase; 
 
-    private float originalSpeed;
-    private float slowMultiplier = 1f;
+    public float SlowMultiplier { get; private set; } = 1f;
 
     private int aiPauseCount;
     private int movementLockCount;
-
     private bool isFrozen;
     private float freezeEndTime;
-
     private Coroutine knockbackRoutine;
 
     private void Awake()
@@ -27,16 +23,9 @@ public class EnemyStatusEffects : MonoBehaviour
         enemyBase = GetComponent<EnemyBase>();
     }
 
-    private void Start()
-    {
-        if (agent != null)
-            originalSpeed = agent.speed;
-    }
-
     private void Update()
     {
-        if (enemyBase != null && enemyBase.IsDead)
-            return;
+        if (enemyBase != null && enemyBase.IsDead) return;
 
         if (isFrozen && Time.time >= freezeEndTime)
         {
@@ -49,7 +38,7 @@ public class EnemyStatusEffects : MonoBehaviour
         RefreshState();
     }
 
-public void PauseAI()
+    public void PauseAI()
     {
         aiPauseCount++;
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -81,23 +70,20 @@ public void PauseAI()
 
     public void ApplySlow(float slowPercent)
     {
-        if (enemyBase != null && enemyBase.IsDead)
-            return;
-
-        slowMultiplier = Mathf.Clamp01(1f - slowPercent);
+        if (enemyBase != null && enemyBase.IsDead) return;
+        SlowMultiplier = Mathf.Clamp01(1f - slowPercent);
         RefreshState();
     }
 
     public void RemoveSlow()
     {
-        slowMultiplier = 1f;
+        SlowMultiplier = 1f;
         RefreshState();
     }
 
     public void ApplyFreeze(float duration)
     {
-        if (enemyBase != null && enemyBase.IsDead)
-            return;
+        if (enemyBase != null && enemyBase.IsDead) return;
 
         freezeEndTime = Mathf.Max(freezeEndTime, Time.time + duration);
 
@@ -114,19 +100,15 @@ public void PauseAI()
                 agent.velocity = Vector3.zero;
             }
 
-            if (anim != null)
-                anim.speed = 0f;
+            if (anim != null) anim.speed = 0f;
         }
     }
 
     public void ApplyKnockback(Vector3 direction, float distance, float duration)
     {
-        if (enemyBase != null && enemyBase.IsDead)
-            return;
+        if (enemyBase != null && enemyBase.IsDead) return;
 
-        if (knockbackRoutine != null)
-            StopCoroutine(knockbackRoutine);
-
+        if (knockbackRoutine != null) StopCoroutine(knockbackRoutine);
         knockbackRoutine = StartCoroutine(KnockbackRoutine(direction, distance, duration));
     }
 
@@ -143,17 +125,14 @@ public void PauseAI()
 
         Vector3 dir = direction;
         dir.y = 0f;
-
-        if (dir.sqrMagnitude > 0.0001f)
-            dir.Normalize();
+        if (dir.sqrMagnitude > 0.0001f) dir.Normalize();
 
         float moved = 0f;
         float speed = distance / Mathf.Max(0.01f, duration);
 
         while (moved < distance)
         {
-            if (enemyBase != null && enemyBase.IsDead)
-                yield break;
+            if (enemyBase != null && enemyBase.IsDead) yield break;
 
             float step = speed * Time.deltaTime;
             moved += step;
@@ -170,8 +149,7 @@ public void PauseAI()
 
     private void RefreshState()
     {
-        if (enemyBase != null && enemyBase.IsDead)
-            return;
+        if (enemyBase != null && enemyBase.IsDead) return;
 
         if (enemyBase != null)
             enemyBase.enabled = (aiPauseCount == 0 && !isFrozen);
@@ -186,17 +164,12 @@ public void PauseAI()
             else
             {
                 agent.isStopped = false;
-                
-                agent.speed = originalSpeed * slowMultiplier; 
             }
         }
 
         if (anim != null)
         {
-            if (isFrozen)
-                anim.speed = 0f;
-            else
-                anim.speed = slowMultiplier;
+            anim.speed = isFrozen ? 0f : SlowMultiplier;
         }
     }
 
@@ -210,21 +183,17 @@ public void PauseAI()
 
         aiPauseCount = 0;
         movementLockCount = 0;
-        slowMultiplier = 1f;
+        SlowMultiplier = 1f;
         isFrozen = false;
         freezeEndTime = 0f;
 
-        if (agent != null)
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = false;
             agent.velocity = Vector3.zero;
-            agent.speed = originalSpeed;
         }
 
-        if (anim != null)
-            anim.speed = 1f;
-
-        if (enemyBase != null && !enemyBase.IsDead)
-            enemyBase.enabled = true;
+        if (anim != null) anim.speed = 1f;
+        if (enemyBase != null && !enemyBase.IsDead) enemyBase.enabled = true;
     }
 }

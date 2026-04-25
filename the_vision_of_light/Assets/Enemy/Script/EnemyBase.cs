@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public abstract class EnemyBase : MonoBehaviour
 {
     [Header("Base Data")]
-    [SerializeField] protected EnemyStats stats; 
+    [SerializeField] protected EnemyBaseStats stats; 
 
     [Header("Base Components")]
     protected float currentHealth;
@@ -40,7 +40,7 @@ public abstract class EnemyBase : MonoBehaviour
             currentHealth = stats.MaxHealth;
             if (agent != null) agent.speed = stats.WalkSpeed; 
             if (enemyUI != null) enemyUI.SetupHealthBar(stats.MaxHealth);
-            Debug.Log($"{stats.EnemyName} is ready!");
+            Debug.Log($"{stats.EnemyName} initialized successfully.");
         }
     }
 

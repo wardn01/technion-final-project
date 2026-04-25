@@ -8,16 +8,47 @@ public class NormalEnemy : EnemyBase
     protected float lastAttackTime;
     private Vector3 startingPosition;
     private float waitTimer;
+    private float pathUpdateTimer; 
+    
+    protected PlayerHealth playerHealth; 
+    protected EnemyStatusEffects statusEffects;
+
+    protected NormalEnemyStats MeleeStats => stats as NormalEnemyStats;
 
     protected override void Start()
     {
         base.Start(); 
+
+        statusEffects = GetComponent<EnemyStatusEffects>();
+        if (target != null)
+        {
+            playerHealth = target.GetComponent<PlayerHealth>();
+        }
+
+        if (playerHealth == null)
+        {
+            playerHealth = FindAnyObjectByType<PlayerHealth>();
+            
+            if (playerHealth != null)
+            {
+                target = playerHealth.transform; 
+            }
+        }
+
         startingPosition = transform.position; 
     }
 
     protected virtual void Update()
     {
-        if (isDead || target == null || agent == null) return;
+        if (isDead || target == null || playerHealth == null) return;
+
+        if (playerHealth.isDead)
+        {
+            StopAgent();
+            isAttackingBase = false;
+            if (anim != null) anim.SetFloat("Speed", 0f);
+            return; 
+        }
 
         UpdateBlendTree(); 
 
@@ -29,21 +60,9 @@ public class NormalEnemy : EnemyBase
 
         distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        if (distanceToTarget <= stats.AttackRange)
+        if (MeleeStats != null && distanceToTarget <= MeleeStats.NormalAttackRange)
         {
-            Vector3 directionToTarget = (target.position - transform.position).normalized;
-            directionToTarget.y = 0; 
-            float angle = Vector3.Angle(transform.forward, directionToTarget);
-
-            if (angle <= 30f) 
-            {
-                AttackBehavior(); 
-            }
-            else 
-            {
-                StopAgent(); 
-                FaceTarget(); 
-            }
+            AttackBehavior(); 
         }
         else if (distanceToTarget <= stats.ChaseRange)
         {
@@ -66,7 +85,9 @@ public class NormalEnemy : EnemyBase
     protected virtual void AttackBehavior()
     {
         StopAgent();
-        if (Time.time >= lastAttackTime + stats.AttackCooldown)
+        FaceTarget();
+
+        if (MeleeStats != null && Time.time >= lastAttackTime + MeleeStats.NormalAttackCooldown)
         {
             isAttackingBase = true; 
             PerformAttack();
@@ -79,39 +100,53 @@ public class NormalEnemy : EnemyBase
         if (anim != null) anim.SetTrigger("Attack");
     }
 
-    private void UpdateBlendTree()
+    protected virtual void UpdateBlendTree()
     {
-        if (anim != null)
+        if (anim != null && agent != null)
         {
-            float normalizedSpeed = agent.velocity.magnitude / stats.RunSpeed;
-            anim.SetFloat("Speed", normalizedSpeed);
+            anim.SetFloat("Speed", agent.velocity.magnitude);
         }
     }
 
     protected virtual void ChaseBehavior()
     {
-        agent.isStopped = false;
-        agent.speed = stats.RunSpeed; 
-        agent.SetDestination(target.position);
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            
+            float slowMulti = statusEffects != null ? statusEffects.SlowMultiplier : 1f;
+            agent.speed = stats.RunSpeed * slowMulti; 
+
+            if (Time.time >= pathUpdateTimer)
+            {
+                agent.SetDestination(target.position);
+                pathUpdateTimer = Time.time + 0.2f; 
+            }
+        }
     }
 
     protected virtual void PatrolBehavior()
     {
-        agent.isStopped = false;
-        agent.speed = stats.WalkSpeed; 
-
-        if (agent.remainingDistance <= agent.stoppingDistance)
+        if (agent != null && agent.isOnNavMesh)
         {
-            waitTimer -= Time.deltaTime;
-            if (waitTimer <= 0)
+            agent.isStopped = false;
+
+            float slowMulti = statusEffects != null ? statusEffects.SlowMultiplier : 1f;
+            agent.speed = stats.WalkSpeed * slowMulti; 
+
+            if (agent.remainingDistance <= agent.stoppingDistance)
             {
-                Vector3 randomDir = Random.insideUnitSphere * 5f + startingPosition;
-                NavMeshHit hit;
-                if (NavMesh.SamplePosition(randomDir, out hit, 5f, 1))
+                waitTimer -= Time.deltaTime;
+                if (waitTimer <= 0)
                 {
-                    agent.SetDestination(hit.position);
+                    Vector3 randomDir = Random.insideUnitSphere * 5f + startingPosition;
+                    NavMeshHit hit;
+                    if (NavMesh.SamplePosition(randomDir, out hit, 5f, 1))
+                    {
+                        agent.SetDestination(hit.position);
+                    }
+                    waitTimer = 3f; 
                 }
-                waitTimer = 3f; 
             }
         }
     }

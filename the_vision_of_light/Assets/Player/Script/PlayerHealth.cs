@@ -19,7 +19,7 @@ public class PlayerHealth : MonoBehaviour
     public MonoBehaviour playerMovementScript;
     public CharacterController characterController;
 
-    private bool isDead = false;
+    public bool isDead = false;
     private Rigidbody[] ragdollRigidbodies;
     private Collider[] ragdollColliders;
     private Collider mainCharacterCollider;
