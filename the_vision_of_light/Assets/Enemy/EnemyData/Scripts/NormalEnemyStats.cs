@@ -7,7 +7,11 @@ public abstract class NormalEnemyStats : EnemyBaseStats
     [SerializeField] private float normalAttackRange = 1.5f;
     [SerializeField] private float normalAttackCooldown = 2f;
 
+    [Header("Camp Reset Settings (Genshin Style)")]
+    [SerializeField] private float maxLeashDistance = 25f; 
+
     public float NormalDamage => normalDamage;
     public float NormalAttackRange => normalAttackRange;
     public float NormalAttackCooldown => normalAttackCooldown;
+    public float MaxLeashDistance => maxLeashDistance; 
 }

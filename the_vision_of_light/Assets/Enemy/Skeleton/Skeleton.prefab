@@ -1970,6 +1970,7 @@ MonoBehaviour:
   isAttackingBase: 0
   damageTextPrefab: {fileID: 6555890384464250565, guid: 29839a0f38d5992438b5d5df4dc2a5ec, type: 3}
   textSpawnPoint: {fileID: 5911241932653179411}
+  isReturningToCamp: 0
 --- !u!195 &8292870468319736867
 NavMeshAgent:
   m_ObjectHideFlags: 0

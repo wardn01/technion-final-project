@@ -120,6 +120,7 @@ MonoBehaviour:
   isAttackingBase: 0
   damageTextPrefab: {fileID: 6555890384464250565, guid: 29839a0f38d5992438b5d5df4dc2a5ec, type: 3}
   textSpawnPoint: {fileID: 2931923686111339632}
+  isReturningToCamp: 0
   swordModel: {fileID: 2162687013687509855}
   bonePrefab: {fileID: 7543447028326741090, guid: 119affdd1c99f7d4e9abb2ec11c76c1f, type: 3}
   throwPoint: {fileID: 5791045795710433457}

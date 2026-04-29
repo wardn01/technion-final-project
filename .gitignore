@@ -29,3 +29,6 @@ desktop.ini
 *.unitypackage
 *.app
 sysinfo.txt
+
+# Ignore specific oversized asset files
+*PortalRound_Normal*
