@@ -4,7 +4,9 @@ using UnityEngine;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
-    public Dictionary<ItemData, int> GetInventory() => inventory;
+
+    [Header("Testing")]
+    public ItemData testWeaponToGive; 
 
     private Dictionary<ItemData, int> inventory = new Dictionary<ItemData, int>();
 
@@ -21,28 +23,32 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if (testWeaponToGive != null)
+        {
+            AddItem(testWeaponToGive, 1);
+            Debug.Log($"🎁 تم إضافة {testWeaponToGive.itemName} للشنطة للتجربة!");
+        }
+    }
+
     public void AddItem(ItemData item, int amount = 1)
     {
         if (item == null) return;
 
         if (inventory.ContainsKey(item))
-        {
             inventory[item] += amount;
-        }
         else
-        {
             inventory.Add(item, amount);
-        }
 
         Debug.Log($"🎒 [Inventory] Picked up {amount}x {item.itemName}. Total: {inventory[item]}");
     }
 
     public int GetItemAmount(ItemData item)
     {
-        if (inventory.ContainsKey(item))
-        {
-            return inventory[item];
-        }
+        if (inventory.ContainsKey(item)) return inventory[item];
         return 0;
     }
+
+    public Dictionary<ItemData, int> GetInventory() => inventory;
 }

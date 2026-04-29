@@ -5,48 +5,45 @@ using TMPro;
 
 public class InventoryUIManager : MonoBehaviour
 {
+    [Header("References")]
+    public PlayerCombat playerCombat;
+
     [Header("UI Panels")]
-    public GameObject inventoryWindow;
-    public GameObject hudScreen;
-    public Transform slotsParent;
-    public GameObject slotPrefab;
+    public GameObject inventoryWindow; 
+    public GameObject hudScreen;       
+    public Transform slotsParent;      
+    public GameObject slotPrefab;      
 
     [Header("Tab Title Settings")]
-    public TextMeshProUGUI tabTitleText;
+    public TextMeshProUGUI tabTitleText; 
 
     [Header("Item Details UI")]
-    public GameObject detailsPanel;
-    public TextMeshProUGUI detailNameText;
-    public Image detailIconImage;
-    public TextMeshProUGUI detailDescriptionText;
+    public GameObject detailsPanel;           
+    public TextMeshProUGUI detailNameText;    
+    public Image detailIconImage;             
+    public TextMeshProUGUI detailDescriptionText; 
+    
+    public GameObject equipButtonObject;
+    public TextMeshProUGUI equipButtonText;
 
     public enum TabFilter { All, Material, Consumable, Weapon }
     private TabFilter currentFilter = TabFilter.All;
 
+    private ItemData currentlySelectedItem; 
+
     void Start()
     {
         inventoryWindow.SetActive(false);
-
-        if (detailsPanel != null)
+        if (detailsPanel != null) 
         {
-            detailsPanel.SetActive(true);
+            detailsPanel.SetActive(true); 
             ShowDefaultDetails();
         }
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            ToggleInventory();
-        }
-    }
-
-    private void ShowDefaultDetails()
-    {
-        if (detailNameText != null) detailNameText.text = "Select an Item";
-        if (detailDescriptionText != null) detailDescriptionText.text = "Click on any item to view its description and properties.";
-        if (detailIconImage != null) detailIconImage.color = new Color(1, 1, 1, 0);
+        if (Input.GetKeyDown(KeyCode.I)) ToggleInventory();
     }
 
     private void ToggleInventory()
@@ -89,10 +86,8 @@ public class InventoryUIManager : MonoBehaviour
 
     public void RefreshUI()
     {
-        foreach (Transform child in slotsParent)
-        {
+        foreach (Transform child in slotsParent) 
             Destroy(child.gameObject);
-        }
 
         Dictionary<ItemData, int> currentInv = InventoryManager.Instance.GetInventory();
 
@@ -113,9 +108,22 @@ public class InventoryUIManager : MonoBehaviour
         }
     }
 
+    private void ShowDefaultDetails()
+    {
+        if (detailNameText != null) detailNameText.text = "Select an Item";
+        if (detailDescriptionText != null) detailDescriptionText.text = "Click on any item to view its properties.";
+        if (detailIconImage != null) detailIconImage.color = new Color(1, 1, 1, 0);
+
+        currentlySelectedItem = null;
+
+        if (equipButtonObject != null) equipButtonObject.SetActive(false);
+    }
+
     public void DisplayItemDetails(ItemData item)
     {
         if (item == null) return;
+
+        currentlySelectedItem = item;
 
         if (detailNameText != null) detailNameText.text = item.itemName;
 
@@ -126,5 +134,42 @@ public class InventoryUIManager : MonoBehaviour
         }
 
         if (detailDescriptionText != null) detailDescriptionText.text = item.description;
+
+        if (equipButtonObject != null)
+        {
+            if (item.type == ItemType.Weapon)
+            {
+                equipButtonObject.SetActive(true);
+                if (equipButtonText != null) equipButtonText.text = "Equip";
+            }
+            else if (item.type == ItemType.Consumable)
+            {
+                equipButtonObject.SetActive(true);
+                if (equipButtonText != null) equipButtonText.text = "Use";
+            }
+            else
+            {
+                equipButtonObject.SetActive(false);
+            }
+        }
+    }
+
+    public void OnEquipButtonClicked()
+    {
+        if (currentlySelectedItem == null) return;
+
+        if (currentlySelectedItem is WeaponItemData weaponData)
+        {
+            if (playerCombat != null)
+            {
+                playerCombat.EquipWeapon(weaponData);
+                Debug.Log($"Weapon {weaponData.itemName} sent to combat system.");
+                ToggleInventory();
+            }
+        }
+        else if (currentlySelectedItem.type == ItemType.Consumable)
+        {
+            Debug.Log("Consumable item - use logic not implemented yet.");
+        }
     }
 }

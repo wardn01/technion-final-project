@@ -8,47 +8,15 @@ public class PlayerCombat : MonoBehaviour
     private PlayerMovement movementScript;
     private RuntimeAnimatorController baseAnimatorController;
 
-    [System.Serializable]
-    public class WeaponProfile
-    {
-        public string weaponName;
-        public GameObject weaponModel;
-        public AnimatorOverrideController overrideAnimator;
-        
-        [Header("Damage Stats")]
-        public float normalAttackDamage;
-        public float skillEDamage;
-        public float skillQDamage;
+    [Header("Active Weapon Data")]
+    public WeaponItemData activeWeaponData;
+    private GameObject currentWeaponModel;
 
-        [Header("VFX Prefabs")]
-        public GameObject airSlashPrefab; 
-        public GameObject skillQPrefab;
+    [Header("Player Hand & Spawn Points")]
+    public Transform weaponHandPosition;
+    public Transform eSpawnPoint;
+    public Transform qSpawnPoint;
 
-        [Header("Spawn Points")]
-        public Transform eSpawnPoint;
-        public Transform qSpawnPoint;
-
-        [Header("Skill Settings (Per Weapon)")]
-        public float skillECooldown = 8f;
-        public int requiredE_For_Q = 2;
-
-        [Header("Live State (Don't Edit)")]
-        public float skillETimer = 0f;
-        public int currentE_Count = 0;
-
-        [Header("UI Settings")]
-        public GameObject weaponUIRoot;
-    }
-
-    [Header("Weapons Inventory")]
-    public WeaponProfile[] availableWeapons;
-    public int currentWeaponIndex = 0;
-    private WeaponProfile activeWeapon;
-
-    [Header("Switch Settings")]
-    public float switchCooldown = 2f;
-    private float nextSwitchTime = 0f;
-    
     [Header("Input Buffer Settings")]
     public float bufferDuration = 0.1f;
     private bool isBufferActive;
@@ -65,6 +33,10 @@ public class PlayerCombat : MonoBehaviour
     public float attackAngle = 100f;
     public LayerMask enemyLayer;
 
+    [Header("Live Skill State")]
+    public float skillETimer = 0f;
+    public int currentE_Count = 0;
+
     private void Start()
     {
         anim = GetComponent<Animator>();
@@ -77,7 +49,6 @@ public class PlayerCombat : MonoBehaviour
             baseAnimatorController = anim.runtimeAnimatorController;
         }
 
-        EquipWeapon(currentWeaponIndex);
         HideWeapon();
     }
 
@@ -98,55 +69,36 @@ public class PlayerCombat : MonoBehaviour
         }
     }
     
-    public void EquipWeapon(int index)
+    public void EquipWeapon(WeaponItemData newWeaponData)
     {
-        if (index < 0 || index >= availableWeapons.Length) return;
+        if (newWeaponData == null) return;
 
-        if (activeWeapon != null && activeWeapon.weaponModel != null)
-        {
-            activeWeapon.weaponModel.SetActive(false);
-        }
+        if (currentWeaponModel != null) Destroy(currentWeaponModel);
 
-        currentWeaponIndex = index;
-        activeWeapon = availableWeapons[currentWeaponIndex];
+        activeWeaponData = newWeaponData;
 
-        if (activeWeapon.overrideAnimator != null)
-        {
-            anim.runtimeAnimatorController = activeWeapon.overrideAnimator;
-        }
+        skillETimer = 0f;
+        currentE_Count = 0;
+
+        if (activeWeaponData.animatorOverride != null)
+            anim.runtimeAnimatorController = activeWeaponData.animatorOverride;
         else
-        {
             anim.runtimeAnimatorController = baseAnimatorController;
-        }
 
-        if (inCombatStance)
+        if (activeWeaponData.weaponModelPrefab != null && weaponHandPosition != null)
         {
-            anim.Play("Combat_Movement", 1, 0f);
-            ShowWeapon();
+            currentWeaponModel = Instantiate(activeWeaponData.weaponModelPrefab, weaponHandPosition);
+            currentWeaponModel.SetActive(inCombatStance);
         }
-        else
-        {
-            anim.Play("Empty", 1, 0f);
-            HideWeapon();
-        }
-        anim.ResetTrigger("Attack");
-        anim.ResetTrigger("Skill_E");
-        anim.ResetTrigger("Skill_Q");
-
-        isAttacking = false;
-        ClearBuffer();
-
-        Debug.Log("Equipped Weapon: " + activeWeapon.weaponName);
-    } 
+        
+        Debug.Log("Equipped weapon: " + activeWeaponData.itemName);
+    }
     
     private void HandleCooldowns()
     {
-        for (int i = 0; i < availableWeapons.Length; i++)
+        if (skillETimer > 0f)
         {
-            if (availableWeapons[i].skillETimer > 0f)
-            {
-                availableWeapons[i].skillETimer -= Time.deltaTime;
-            }
+            skillETimer -= Time.deltaTime;
         }
     }
 
@@ -169,8 +121,8 @@ public class PlayerCombat : MonoBehaviour
 
     public void ShowWeapon()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null)
-            activeWeapon.weaponModel.SetActive(true);
+        if (currentWeaponModel != null)
+            currentWeaponModel.SetActive(true);
 
         inCombatStance = true;
         combatTimer = combatStanceDuration;
@@ -178,8 +130,8 @@ public class PlayerCombat : MonoBehaviour
 
     public void HideWeapon()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null)
-            activeWeapon.weaponModel.SetActive(false);
+        if (currentWeaponModel != null)
+            currentWeaponModel.SetActive(false);
     }
 
     public bool CanInterrupt()
@@ -203,22 +155,8 @@ public class PlayerCombat : MonoBehaviour
         bool grounded = movementScript != null && movementScript.isGrounded;
         if (!grounded) return;
 
-        if (Time.time >= nextSwitchTime)
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha1) && currentWeaponIndex != 0) 
-            {
-                EquipWeapon(0);
-                nextSwitchTime = Time.time + switchCooldown;
-            }
-            
-            if (Input.GetKeyDown(KeyCode.Alpha2) && currentWeaponIndex != 1) 
-            {
-                EquipWeapon(1);
-                nextSwitchTime = Time.time + switchCooldown;
-            }
-        }
         
-        if (!CanInterrupt() || activeWeapon == null) return;
+        if (!CanInterrupt() || activeWeaponData == null) return;
 
         if (Input.GetMouseButtonDown(0)) 
         { 
@@ -226,24 +164,24 @@ public class PlayerCombat : MonoBehaviour
             RequestAttack(); 
         }
 
-        if (Input.GetKeyDown(KeyCode.Q) && activeWeapon.currentE_Count >= activeWeapon.requiredE_For_Q)
+        if (Input.GetKeyDown(KeyCode.Q) && currentE_Count >= activeWeaponData.requiredE_For_Q)
         {
             ForceCancelRoll();
             anim.SetTrigger("Skill_Q");
             isAttacking = true;
             ShowWeapon();
-            activeWeapon.currentE_Count = 0;
+            currentE_Count = 0;
             ClearBuffer();
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && activeWeapon.skillETimer <= 0f)
+        if (Input.GetKeyDown(KeyCode.E) && skillETimer <= 0f)
         {
             ForceCancelRoll();
             anim.SetTrigger("Skill_E");
             isAttacking = true;
             ShowWeapon();
-            activeWeapon.skillETimer = activeWeapon.skillECooldown;
-            activeWeapon.currentE_Count++;
+            skillETimer = activeWeaponData.skillECooldown;
+            currentE_Count++;
             ClearBuffer();
         }
     }
@@ -313,7 +251,7 @@ public class PlayerCombat : MonoBehaviour
         bool isAlwaysMovingSkill = stateInfo.IsName("Skill_Q") || stateInfo.IsName("Rolling");
         bool isNormalAttack = stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3");
 
-        if (isAlwaysMovingSkill || (isNormalAttack && currentWeaponIndex == 1))
+        if (isAlwaysMovingSkill || isNormalAttack)
         {
             Vector3 finalMovement = anim.deltaPosition;
             finalMovement.y = -20f * Time.deltaTime;
@@ -323,14 +261,12 @@ public class PlayerCombat : MonoBehaviour
 
     public void DealNormalDamage()
     {
-        if (activeWeapon == null) return;
+        if (activeWeaponData == null) return;
 
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
-
         foreach (Collider enemy in hitEnemies)
         {
-            EnemyBase enemyBase = enemy.GetComponent<EnemyBase>(); 
-            
+            EnemyBase enemyBase = enemy.GetComponent<EnemyBase>();
             if (enemyBase != null && !enemyBase.IsDead)
             {
                 Vector3 directionToEnemy = (enemy.transform.position - transform.position).normalized;
@@ -340,8 +276,8 @@ public class PlayerCombat : MonoBehaviour
 
                 if (angle <= attackAngle)
                 {
-                    enemyBase.TakeDamage(activeWeapon.normalAttackDamage);
-                    Debug.Log($"[Player] Slashed {enemy.name} for {activeWeapon.normalAttackDamage} damage!");
+                    enemyBase.TakeDamage(activeWeaponData.normalAttackDamage);
+                    Debug.Log($"[Player] Slashed {enemy.name} for {activeWeaponData.normalAttackDamage} damage!");
                 }
                 else
                 {
@@ -366,73 +302,64 @@ public class PlayerCombat : MonoBehaviour
     
     public void OnSkillE()
     {
-        if (activeWeapon != null && activeWeapon.airSlashPrefab != null && activeWeapon.eSpawnPoint != null)
+        if (activeWeaponData != null && activeWeaponData.skillEPrefab != null && eSpawnPoint != null)
         {
-            GameObject skill = Instantiate(activeWeapon.airSlashPrefab, activeWeapon.eSpawnPoint.position, activeWeapon.eSpawnPoint.rotation);
+            GameObject skill = Instantiate(activeWeaponData.skillEPrefab, eSpawnPoint.position, eSpawnPoint.rotation);
             
             WindSkillEDamage windScript = skill.GetComponent<WindSkillEDamage>();
-            if (windScript != null)
-            {
-                windScript.SetDamage(activeWeapon.skillEDamage);
-            }
+            if (windScript != null) windScript.SetDamage(activeWeaponData.skillEDamage);
 
             IceSkillEDamage iceScript = skill.GetComponent<IceSkillEDamage>();
-            if (iceScript != null)
-            {
-                iceScript.SetDamage(activeWeapon.skillEDamage);
-            }
+            if (iceScript != null) iceScript.SetDamage(activeWeaponData.skillEDamage);
         }
     }
     
     public void OnSkillQ()
     {
-        if (activeWeapon != null && activeWeapon.skillQPrefab != null && activeWeapon.qSpawnPoint != null)
+        if (activeWeaponData != null && activeWeaponData.skillQPrefab != null && qSpawnPoint != null)
         {
-            GameObject skill = Instantiate(activeWeapon.skillQPrefab, activeWeapon.qSpawnPoint.position, activeWeapon.qSpawnPoint.rotation);
+            GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
             
             IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
             if (iceScript != null)
             {
-                skill.transform.parent = activeWeapon.qSpawnPoint;
-                iceScript.SetDamage(activeWeapon.skillQDamage);
+                skill.transform.parent = qSpawnPoint;
+                iceScript.SetDamage(activeWeaponData.skillQDamage);
             }
 
             WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
-            if (windScript != null)
-            {
-                windScript.SetDamage(activeWeapon.skillQDamage);
-            }
+            if (windScript != null) windScript.SetDamage(activeWeaponData.skillQDamage);
         }
     }
 
     public void PlayNormalAttackSound()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null) 
-            activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayNormalAttackSound(); 
+        if (currentWeaponModel != null) 
+            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlayNormalAttackSound(); 
     }
     
     public void PlaySkillESound()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null) 
-            activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillESound(); 
+        if (currentWeaponModel != null) 
+            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillESound(); 
     }
     
     public void PlaySkillQSound()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null) 
-            activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillQSound(); 
+        if (currentWeaponModel != null) 
+            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillQSound(); 
     }
     
     public void PlayRollSound()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null) 
-            activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayRollSound(); 
+        if (currentWeaponModel != null) 
+            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlayRollSound(); 
     }
     
     public void PlayCombatWalkSound()
     {
-        if (activeWeapon != null && activeWeapon.weaponModel != null) 
-            activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayCombatWalkSound(); 
+        if (currentWeaponModel != null) 
+            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlayCombatWalkSound(); 
     }
     
     public void CancelAttack()

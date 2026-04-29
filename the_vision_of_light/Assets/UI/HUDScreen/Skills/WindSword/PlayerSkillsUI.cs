@@ -27,7 +27,7 @@ public class PlayerSkillsUI : MonoBehaviour
         public GameObject qFrameLed;
     }
 
-    [Header("UI Layouts (0=Wind, 1=Ice)")]
+    [Header("UI Layouts")]
     public WeaponUIProfile[] weaponUIs; 
 
     [Header("Audio Settings")]
@@ -41,7 +41,7 @@ public class PlayerSkillsUI : MonoBehaviour
     private bool wasEReady = true;
     private bool wasQReady = true;
     
-    private int lastWeaponIndex = -1; 
+    private string lastWeaponName = "";
     private Coroutine currentPulseCoroutine;
 
     void Start()
@@ -59,18 +59,32 @@ public class PlayerSkillsUI : MonoBehaviour
 
     void Update()
     {
-        if (combatScript == null || weaponUIs.Length == 0) return;
+        if (combatScript == null || combatScript.activeWeaponData == null || weaponUIs.Length == 0) return;
 
         UpdateWeaponUI(); 
         HandleSkillE();
         HandleSkillQ();
     }
 
+    private int GetCurrentUIIndex()
+    {
+        if (combatScript.activeWeaponData == null) return -1;
+        
+        for (int i = 0; i < weaponUIs.Length; i++)
+        {
+            if (weaponUIs[i].weaponName == combatScript.activeWeaponData.itemName)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     void UpdateWeaponUI()
     {
-        int currentIndex = combatScript.currentWeaponIndex;
+        string currentName = combatScript.activeWeaponData.itemName;
         
-        if (currentIndex != lastWeaponIndex && currentIndex < weaponUIs.Length)
+        if (currentName != lastWeaponName)
         {
             foreach (var ui in weaponUIs)
             {
@@ -78,22 +92,26 @@ public class PlayerSkillsUI : MonoBehaviour
                 if (ui.qSkillRoot != null) ui.qSkillRoot.SetActive(false);
             }
 
-            if (weaponUIs[currentIndex].eSkillRoot != null) weaponUIs[currentIndex].eSkillRoot.SetActive(true);
-            if (weaponUIs[currentIndex].qSkillRoot != null) weaponUIs[currentIndex].qSkillRoot.SetActive(true);
+            int currentIndex = GetCurrentUIIndex();
+            if (currentIndex != -1)
+            {
+                if (weaponUIs[currentIndex].eSkillRoot != null) weaponUIs[currentIndex].eSkillRoot.SetActive(true);
+                if (weaponUIs[currentIndex].qSkillRoot != null) weaponUIs[currentIndex].qSkillRoot.SetActive(true);
+            }
 
-            lastWeaponIndex = currentIndex;
+            lastWeaponName = currentName;
         }
     }
 
     void HandleSkillE()
     {
-        int index = combatScript.currentWeaponIndex;
-        if (index >= weaponUIs.Length || index >= combatScript.availableWeapons.Length) return;
+        int index = GetCurrentUIIndex();
+        if (index == -1) return;
 
         var ui = weaponUIs[index]; 
-        var weaponLogic = combatScript.availableWeapons[index]; 
+        var activeWeapon = combatScript.activeWeaponData; 
 
-        bool isEReady = weaponLogic.skillETimer <= 0;
+        bool isEReady = combatScript.skillETimer <= 0;
 
         if (isEReady && !wasEReady)
         {
@@ -102,15 +120,15 @@ public class PlayerSkillsUI : MonoBehaviour
         }
         wasEReady = isEReady;
 
-        if (weaponLogic.skillETimer > 0)
+        if (combatScript.skillETimer > 0)
         {
             if (ui.eCooldownFill != null)
-                ui.eCooldownFill.fillAmount = weaponLogic.skillETimer / weaponLogic.skillECooldown;
+                ui.eCooldownFill.fillAmount = combatScript.skillETimer / activeWeapon.skillECooldown;
 
             if (ui.eTimerText != null)
             {
                 ui.eTimerText.gameObject.SetActive(true);
-                int currentTimer = Mathf.CeilToInt(weaponLogic.skillETimer);
+                int currentTimer = Mathf.CeilToInt(combatScript.skillETimer);
 
                 if (currentTimer != lastETimerValue)
                 {
@@ -138,13 +156,13 @@ public class PlayerSkillsUI : MonoBehaviour
 
     void HandleSkillQ()
     {
-        int index = combatScript.currentWeaponIndex;
-        if (index >= weaponUIs.Length || index >= combatScript.availableWeapons.Length) return;
+        int index = GetCurrentUIIndex();
+        if (index == -1) return;
 
         var ui = weaponUIs[index];
-        var weaponLogic = combatScript.availableWeapons[index];
+        var activeWeapon = combatScript.activeWeaponData;
 
-        bool isQReady = weaponLogic.currentE_Count >= weaponLogic.requiredE_For_Q;
+        bool isQReady = combatScript.currentE_Count >= activeWeapon.requiredE_For_Q;
 
         if (isQReady && !wasQReady)
         {
@@ -155,7 +173,7 @@ public class PlayerSkillsUI : MonoBehaviour
 
         if (ui.qCooldownFill != null)
         {
-            float fillRatio = (float)weaponLogic.currentE_Count / weaponLogic.requiredE_For_Q;
+            float fillRatio = (float)combatScript.currentE_Count / activeWeapon.requiredE_For_Q;
             ui.qCooldownFill.fillAmount = 1f - fillRatio; 
         }
 
