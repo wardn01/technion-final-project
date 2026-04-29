@@ -18,6 +18,7 @@ MonoBehaviour:
   runSpeed: 5
   chaseRange: 10
   rotationSpeed: 10
+  lootTable: []
   animalDamage: 10
   attackRange: 2.5
   attackCooldown: 2

@@ -109,7 +109,26 @@ public abstract class EnemyBase : MonoBehaviour
         if (agent != null) agent.enabled = false;
         GetComponent<Collider>().enabled = false;
         if (enemyUI != null) enemyUI.gameObject.SetActive(false);
+        
+        DropLoot();
+
         Destroy(gameObject, 5f);
+    }
+
+    private void DropLoot()
+    {
+        if (InventoryManager.Instance == null || stats == null || stats.LootTable == null) return;
+
+        foreach (var loot in stats.LootTable)
+        {
+            float roll = Random.Range(0f, 100f);
+            
+            if (roll <= loot.dropChance)
+            {
+                int amount = Random.Range(loot.minAmount, loot.maxAmount + 1);
+                InventoryManager.Instance.AddItem(loot.item, amount);
+            }
+        }
     }
 
     protected void ExecuteMeleeAttack(float damageAmount, float attackRange, float maxAngle = 60f)

@@ -18,6 +18,12 @@ MonoBehaviour:
   runSpeed: 4
   chaseRange: 20
   rotationSpeed: 10
+  lootTable:
+  - item: {fileID: 11400000, guid: dc2f22b405cc4c949bddc5c44877a2aa, type: 2}
+    minAmount: 1
+    maxAmount: 3
+    dropChance: 100
   normalDamage: 7
   normalAttackRange: 1.5
   normalAttackCooldown: 2
+  maxLeashDistance: 25

@@ -1,5 +1,15 @@
 using UnityEngine;
 
+[System.Serializable]
+public class LootDrop
+{
+    public ItemData item;
+    public int minAmount = 1;
+    public int maxAmount = 1;
+    [Range(0f, 100f)] 
+    public float dropChance = 100f; 
+}
+
 public abstract class EnemyBaseStats : ScriptableObject
 {
     [Header("Basic Info")]
@@ -14,10 +24,15 @@ public abstract class EnemyBaseStats : ScriptableObject
     [SerializeField] private float chaseRange = 10f; 
     [SerializeField] private float rotationSpeed = 10f;
 
+    [Header("Loot System")]
+    [SerializeField] private LootDrop[] lootTable;
+
     public string EnemyName => enemyName;
     public float MaxHealth => maxHealth;
     public float WalkSpeed => walkSpeed; 
     public float RunSpeed => runSpeed;
     public float ChaseRange => chaseRange;
     public float RotationSpeed => rotationSpeed;
+    
+    public LootDrop[] LootTable => lootTable; 
 }
