@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b73c6b92f4274846a19e695a9dd4b67, type: 3}
   m_Name: BearData
   m_EditorClassIdentifier: Assembly-CSharp::BearStats
-  enemyName: New Enemy
+  enemyName: Bear
   maxHealth: 300
   walkSpeed: 3
   runSpeed: 5

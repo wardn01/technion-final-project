@@ -108,7 +108,13 @@ public class EnemyStatusEffects : MonoBehaviour
     {
         if (enemyBase != null && enemyBase.IsDead) return;
 
-        if (knockbackRoutine != null) StopCoroutine(knockbackRoutine);
+        if (knockbackRoutine != null) 
+        {
+            StopCoroutine(knockbackRoutine);
+            
+            ResumeAI(); 
+        }
+        
         knockbackRoutine = StartCoroutine(KnockbackRoutine(direction, distance, duration));
     }
 

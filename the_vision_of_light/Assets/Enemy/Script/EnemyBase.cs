@@ -111,4 +111,32 @@ public abstract class EnemyBase : MonoBehaviour
         if (enemyUI != null) enemyUI.gameObject.SetActive(false);
         Destroy(gameObject, 5f);
     }
+
+    protected void ExecuteMeleeAttack(float damageAmount, float attackRange, float maxAngle = 60f)
+    {
+        if (target == null) return;
+
+        float distance = Vector3.Distance(transform.position, target.position);
+        
+        if (distance <= attackRange + 0.8f)
+        {
+            Vector3 directionToTarget = (target.position - transform.position).normalized;
+            directionToTarget.y = 0; 
+            float angle = Vector3.Angle(transform.forward, directionToTarget);
+
+            if (angle <= maxAngle) 
+            {
+                PlayerHealth pHealth = target.GetComponent<PlayerHealth>();
+                if (pHealth != null)
+                {
+                    pHealth.TakeDamage(damageAmount);
+                    Debug.Log($"[{gameObject.name}] Hit the player for {damageAmount} damage!");
+                }
+            }
+            else
+            {
+                Debug.Log($"[{gameObject.name}] Missed! Player dodged out of angle.");
+            }
+        }
+    }
 }

@@ -125,35 +125,25 @@ public class Bear : AnimalEnemy
 
     public void AnimHit()
     {
-        if (target != null && AnimalStats != null) 
+        if (AnimalStats != null) 
         {
-            float distance = Vector3.Distance(transform.position, target.position);
-            
-            if (distance <= AnimalStats.AttackRange + 0.8f)
+            int currentAttack = anim.GetInteger("AttackIndex");
+            float finalDamage = AnimalStats.AnimalDamage;
+
+            switch (currentAttack)
             {
-                PlayerHealth pHealth = target.GetComponent<PlayerHealth>();
-                if (pHealth != null)
-                {
-                    int currentAttack = anim.GetInteger("AttackIndex");
-                    float finalDamage = AnimalStats.AnimalDamage;
-
-                    switch (currentAttack)
-                    {
-                        case 1:
-                            finalDamage = AnimalStats.AnimalDamage; 
-                            break;
-                        case 2:
-                            finalDamage = AnimalStats.AnimalDamage * 1.5f; 
-                            break;
-                        case 3:
-                            finalDamage = AnimalStats.AnimalDamage * 2f; 
-                            break;
-                    }
-
-                    pHealth.TakeDamage(finalDamage);
-                    Debug.Log($"Bear used attack {currentAttack} and dealt {finalDamage} damage");
-                }
+                case 1:
+                    finalDamage = AnimalStats.AnimalDamage; 
+                    break;
+                case 2:
+                    finalDamage = AnimalStats.AnimalDamage * 1.5f; 
+                    break;
+                case 3:
+                    finalDamage = AnimalStats.AnimalDamage * 2f; 
+                    break;
             }
+
+            ExecuteMeleeAttack(finalDamage, AnimalStats.AttackRange);
         }
     }
 

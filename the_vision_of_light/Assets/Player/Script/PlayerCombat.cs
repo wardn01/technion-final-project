@@ -45,10 +45,10 @@ public class PlayerCombat : MonoBehaviour
     public int currentWeaponIndex = 0;
     private WeaponProfile activeWeapon;
 
-    
-[Header("Switch Settings")]
-public float switchCooldown = 2f;
+    [Header("Switch Settings")]
+    public float switchCooldown = 2f;
     private float nextSwitchTime = 0f;
+    
     [Header("Input Buffer Settings")]
     public float bufferDuration = 0.1f;
     private bool isBufferActive;
@@ -61,10 +61,11 @@ public float switchCooldown = 2f;
     [Header("Combat Settings")]
     public float combatStanceDuration = 5f;
     private float combatTimer;
-    public float attackRange = 2f; 
+    public float attackRange = 2.5f; 
+    public float attackAngle = 100f;
     public LayerMask enemyLayer;
 
-private void Start()
+    private void Start()
     {
         anim = GetComponent<Animator>();
         controller = GetComponentInParent<CharacterController>();
@@ -96,7 +97,8 @@ private void Start()
             }
         }
     }
-public void EquipWeapon(int index)
+    
+    public void EquipWeapon(int index)
     {
         if (index < 0 || index >= availableWeapons.Length) return;
 
@@ -135,9 +137,10 @@ public void EquipWeapon(int index)
         ClearBuffer();
 
         Debug.Log("Equipped Weapon: " + activeWeapon.weaponName);
-    }   private void HandleCooldowns()
+    } 
+    
+    private void HandleCooldowns()
     {
-
         for (int i = 0; i < availableWeapons.Length; i++)
         {
             if (availableWeapons[i].skillETimer > 0f)
@@ -200,23 +203,23 @@ public void EquipWeapon(int index)
         bool grounded = movementScript != null && movementScript.isGrounded;
         if (!grounded) return;
 
-if (Time.time >= nextSwitchTime)
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1) && currentWeaponIndex != 0) 
+        if (Time.time >= nextSwitchTime)
         {
-            EquipWeapon(0);
-            nextSwitchTime = Time.time + switchCooldown;
+            if (Input.GetKeyDown(KeyCode.Alpha1) && currentWeaponIndex != 0) 
+            {
+                EquipWeapon(0);
+                nextSwitchTime = Time.time + switchCooldown;
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha2) && currentWeaponIndex != 1) 
+            {
+                EquipWeapon(1);
+                nextSwitchTime = Time.time + switchCooldown;
+            }
         }
         
-        if (Input.GetKeyDown(KeyCode.Alpha2) && currentWeaponIndex != 1) 
-        {
-            EquipWeapon(1);
-            nextSwitchTime = Time.time + switchCooldown;
-        }
-    }
         if (!CanInterrupt() || activeWeapon == null) return;
 
-        // Basic Attack
         if (Input.GetMouseButtonDown(0)) 
         { 
             ForceCancelRoll(); 
@@ -318,22 +321,32 @@ if (Time.time >= nextSwitchTime)
         }
     }
 
-public void DealNormalDamage()
+    public void DealNormalDamage()
     {
         if (activeWeapon == null) return;
 
-        Vector3 attackPoint = transform.position + transform.forward * 1f;
-
-        Collider[] hitEnemies = Physics.OverlapSphere(attackPoint, attackRange, enemyLayer);
+        Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
 
         foreach (Collider enemy in hitEnemies)
         {
             EnemyBase enemyBase = enemy.GetComponent<EnemyBase>(); 
             
-            if (enemyBase != null)
+            if (enemyBase != null && !enemyBase.IsDead)
             {
-                enemyBase.TakeDamage(activeWeapon.normalAttackDamage);
-                Debug.Log("Dealt " + activeWeapon.normalAttackDamage + " damage to " + enemy.name + "!");
+                Vector3 directionToEnemy = (enemy.transform.position - transform.position).normalized;
+                directionToEnemy.y = 0;
+
+                float angle = Vector3.Angle(transform.forward, directionToEnemy);
+
+                if (angle <= attackAngle)
+                {
+                    enemyBase.TakeDamage(activeWeapon.normalAttackDamage);
+                    Debug.Log($"[Player] Slashed {enemy.name} for {activeWeapon.normalAttackDamage} damage!");
+                }
+                else
+                {
+                    Debug.Log($"[Player] Missed! {enemy.name} was behind the player.");
+                }
             }
         }
     }
@@ -341,16 +354,22 @@ public void DealNormalDamage()
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + transform.forward * 1f, attackRange);
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+        
+        Vector3 rightDir = Quaternion.Euler(0, attackAngle, 0) * transform.forward;
+        Vector3 leftDir = Quaternion.Euler(0, -attackAngle, 0) * transform.forward;
+        
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawRay(transform.position, rightDir * attackRange);
+        Gizmos.DrawRay(transform.position, leftDir * attackRange);
     }
     
-public void OnSkillE()
+    public void OnSkillE()
     {
         if (activeWeapon != null && activeWeapon.airSlashPrefab != null && activeWeapon.eSpawnPoint != null)
         {
             GameObject skill = Instantiate(activeWeapon.airSlashPrefab, activeWeapon.eSpawnPoint.position, activeWeapon.eSpawnPoint.rotation);
             
-
             WindSkillEDamage windScript = skill.GetComponent<WindSkillEDamage>();
             if (windScript != null)
             {
@@ -415,6 +434,7 @@ public void OnSkillE()
         if (activeWeapon != null && activeWeapon.weaponModel != null) 
             activeWeapon.weaponModel.GetComponent<WeaponCombatSounds>()?.PlayCombatWalkSound(); 
     }
+    
     public void CancelAttack()
     {
         isAttacking = false;

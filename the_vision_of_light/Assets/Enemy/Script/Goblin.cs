@@ -118,32 +118,9 @@ public class Goblin : NormalEnemy
 
     public void AnimHit()
     {
-        if (target != null && MeleeStats != null)
+        if (MeleeStats != null)
         {
-            if (distanceToTarget <= MeleeStats.NormalAttackRange + 0.5f) 
-            {
-                Vector3 directionToTarget = (target.position - transform.position).normalized;
-                directionToTarget.y = 0; 
-                float angle = Vector3.Angle(transform.forward, directionToTarget);
-
-                if (angle <= 60f) 
-                {
-                    PlayerHealth pHealth = target.GetComponent<PlayerHealth>();
-                    if (pHealth != null)
-                    {
-                        pHealth.TakeDamage(MeleeStats.NormalDamage);
-                        Debug.Log($"[{stats.EnemyName}] slashed the player with {MeleeStats.NormalDamage} damage!");
-                    }
-                    else
-                    {
-                        Debug.Log($"[{stats.EnemyName}] slashed the player! Damage: {MeleeStats.NormalDamage}");
-                    }
-                }
-                else
-                {
-                    Debug.Log("Player dodged the Goblin's attack!");
-                }
-            }
+            ExecuteMeleeAttack(MeleeStats.NormalDamage, MeleeStats.NormalAttackRange);
         }
     }
 
