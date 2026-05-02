@@ -61,6 +61,18 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    public void HealPlayer(float healAmount)
+    {
+        if (isDead) return;
+
+        int finalHeal = Mathf.RoundToInt(healAmount);
+        
+        currentHealth += finalHeal;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        UpdateHealthUI();
+    }
+
     private void UpdateHealthUI()
     {
         if (healthBarFill != null)

@@ -28,7 +28,6 @@ public class InventoryManager : MonoBehaviour
         if (testWeaponToGive != null)
         {
             AddItem(testWeaponToGive, 1);
-            Debug.Log($"🎁 تم إضافة {testWeaponToGive.itemName} للشنطة للتجربة!");
         }
     }
 
@@ -41,7 +40,10 @@ public class InventoryManager : MonoBehaviour
         else
             inventory.Add(item, amount);
 
-        Debug.Log($"🎒 [Inventory] Picked up {amount}x {item.itemName}. Total: {inventory[item]}");
+        if (inventory[item] <= 0)
+        {
+            inventory.Remove(item);
+        }
     }
 
     public int GetItemAmount(ItemData item)

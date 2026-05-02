@@ -29,7 +29,7 @@ public class InventoryUIManager : MonoBehaviour
     public enum TabFilter { All, Material, Consumable, Weapon }
     private TabFilter currentFilter = TabFilter.All;
 
-    private ItemData currentlySelectedItem; 
+    public ItemData currentlySelectedItem; 
 
     void Start()
     {
@@ -46,23 +46,25 @@ public class InventoryUIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.I)) ToggleInventory();
     }
 
-    private void ToggleInventory()
+private void ToggleInventory()
     {
         bool isOpening = !inventoryWindow.activeSelf;
         inventoryWindow.SetActive(isOpening);
-
+        
         if (hudScreen != null) hudScreen.SetActive(!isOpening);
 
         if (isOpening)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            Time.timeScale = 0f;
             RefreshUI();
         }
         else
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            Time.timeScale = 1f;
         }
     }
 
@@ -86,8 +88,7 @@ public class InventoryUIManager : MonoBehaviour
 
     public void RefreshUI()
     {
-        foreach (Transform child in slotsParent) 
-            Destroy(child.gameObject);
+        foreach (Transform child in slotsParent) Destroy(child.gameObject);
 
         Dictionary<ItemData, int> currentInv = InventoryManager.Instance.GetInventory();
 
@@ -105,6 +106,14 @@ public class InventoryUIManager : MonoBehaviour
 
             GameObject newSlot = Instantiate(slotPrefab, slotsParent);
             newSlot.GetComponent<InventorySlotUI>().Setup(item, amount);
+        }
+
+        if (currentlySelectedItem != null)
+        {
+            if (InventoryManager.Instance.GetItemAmount(currentlySelectedItem) <= 0)
+            {
+                ShowDefaultDetails();
+            }
         }
     }
 
@@ -154,22 +163,21 @@ public class InventoryUIManager : MonoBehaviour
         }
     }
 
-    public void OnEquipButtonClicked()
+public void OnEquipButtonClicked()
     {
         if (currentlySelectedItem == null) return;
 
         if (currentlySelectedItem is WeaponItemData weaponData)
         {
-            if (playerCombat != null)
-            {
-                playerCombat.EquipWeapon(weaponData);
-                Debug.Log($"Weapon {weaponData.itemName} sent to combat system.");
-                ToggleInventory();
-            }
+            QuickSlotManager.Instance.AssignWeapon(weaponData, 1);
+            
+            ToggleInventory();
         }
         else if (currentlySelectedItem.type == ItemType.Consumable)
         {
-            Debug.Log("Consumable item - use logic not implemented yet.");
+            QuickSlotManager.Instance.AssignConsumable(currentlySelectedItem, 1);
+            
+            ToggleInventory();
         }
     }
 }
