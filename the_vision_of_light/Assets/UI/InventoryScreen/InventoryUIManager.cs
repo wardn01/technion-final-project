@@ -8,11 +8,20 @@ public class InventoryUIManager : MonoBehaviour
     [Header("References")]
     public PlayerCombat playerCombat;
 
+    [Header("Currency Settings")]
+    public ItemData goldCoinItem;
+    public TextMeshProUGUI goldAmountText;
+
     [Header("UI Panels")]
     public GameObject inventoryWindow; 
     public GameObject hudScreen;       
     public Transform slotsParent;      
     public GameObject slotPrefab;      
+
+    [Header("Quick Slots UI Movement")]
+    public RectTransform quickSlotsBar; 
+    public Vector2 inventoryOpenPosition; 
+    private Vector2 normalPosition; 
 
     [Header("Tab Title Settings")]
     public TextMeshProUGUI tabTitleText; 
@@ -39,6 +48,11 @@ public class InventoryUIManager : MonoBehaviour
             detailsPanel.SetActive(true); 
             ShowDefaultDetails();
         }
+
+        if (quickSlotsBar != null)
+        {
+            normalPosition = quickSlotsBar.anchoredPosition;
+        }
     }
 
     void Update()
@@ -46,12 +60,17 @@ public class InventoryUIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.I)) ToggleInventory();
     }
 
-private void ToggleInventory()
+    private void ToggleInventory()
     {
         bool isOpening = !inventoryWindow.activeSelf;
         inventoryWindow.SetActive(isOpening);
         
         if (hudScreen != null) hudScreen.SetActive(!isOpening);
+
+        if (quickSlotsBar != null)
+        {
+            quickSlotsBar.anchoredPosition = isOpening ? inventoryOpenPosition : normalPosition;
+        }
 
         if (isOpening)
         {
@@ -90,12 +109,20 @@ private void ToggleInventory()
     {
         foreach (Transform child in slotsParent) Destroy(child.gameObject);
 
+        if (goldCoinItem != null && goldAmountText != null)
+        {
+            int goldCount = InventoryManager.Instance.GetItemAmount(goldCoinItem);
+            goldAmountText.text = goldCount.ToString();
+        }
+
         Dictionary<ItemData, int> currentInv = InventoryManager.Instance.GetInventory();
 
         foreach (var kvp in currentInv)
         {
             ItemData item = kvp.Key;
             int amount = kvp.Value;
+
+            if (item == goldCoinItem) continue;
 
             if (currentFilter != TabFilter.All)
             {
@@ -110,7 +137,7 @@ private void ToggleInventory()
 
         if (currentlySelectedItem != null)
         {
-            if (InventoryManager.Instance.GetItemAmount(currentlySelectedItem) <= 0)
+            if (InventoryManager.Instance.GetItemAmount(currentlySelectedItem) <= 0 || currentlySelectedItem == goldCoinItem)
             {
                 ShowDefaultDetails();
             }
@@ -163,20 +190,18 @@ private void ToggleInventory()
         }
     }
 
-public void OnEquipButtonClicked()
+    public void OnEquipButtonClicked()
     {
         if (currentlySelectedItem == null) return;
 
         if (currentlySelectedItem is WeaponItemData weaponData)
         {
-            QuickSlotManager.Instance.AssignWeapon(weaponData, 1);
-            
+            QuickSlotManager.Instance.AssignItem(weaponData, 1);
             ToggleInventory();
         }
         else if (currentlySelectedItem.type == ItemType.Consumable)
         {
-            QuickSlotManager.Instance.AssignConsumable(currentlySelectedItem, 1);
-            
+            QuickSlotManager.Instance.AssignItem(currentlySelectedItem, 1);
             ToggleInventory();
         }
     }

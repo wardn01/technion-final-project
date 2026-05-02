@@ -9,21 +9,23 @@ public class QuickSlotManager : MonoBehaviour
     [Header("References")]
     public PlayerCombat playerCombat;
 
-    [Header("Equipped Data")]
-    public WeaponItemData weapon1;
-    public WeaponItemData weapon2;
-    public ItemData consumable1;
-    public ItemData consumable2;
+    [Header("Slots Data")]
+    public ItemData slot1;
+    public ItemData slot2;
+    public ItemData slot3;
+    public ItemData slot4;
 
     [Header("UI Icons")]
-    public Image weapon1Icon;
-    public Image weapon2Icon;
-    public Image consumable1Icon;
-    public Image consumable2Icon;
+    public Image slot1Icon;
+    public Image slot2Icon;
+    public Image slot3Icon;
+    public Image slot4Icon;
 
-    [Header("Consumable Amounts")]
-    public TextMeshProUGUI consumable1AmountText;
-    public TextMeshProUGUI consumable2AmountText;
+    [Header("UI Amount Texts")]
+    public TextMeshProUGUI slot1Text;
+    public TextMeshProUGUI slot2Text;
+    public TextMeshProUGUI slot3Text;
+    public TextMeshProUGUI slot4Text;
 
     private void Awake()
     {
@@ -31,92 +33,94 @@ public class QuickSlotManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    private void Start()
-    {
-        UpdateUI();
-    }
+    private void Start() => UpdateUI();
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) EquipWeaponSlot(1);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) EquipWeaponSlot(2);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) UseConsumableSlot(1);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) UseConsumableSlot(2);
+        if (Input.GetKeyDown(KeyCode.Alpha1)) ExecuteSlotAction(1);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) ExecuteSlotAction(2);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) ExecuteSlotAction(3);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) ExecuteSlotAction(4);
     }
 
-    public void AssignWeapon(WeaponItemData weapon, int slot)
+    public void AssignItem(ItemData item, int slotID)
     {
-        if (slot == 1) weapon1 = weapon;
-        else if (slot == 2) weapon2 = weapon;
-        
-        UpdateUI();
-        
-        if (slot == 1) EquipWeaponSlot(1); 
-    }
-
-    public void AssignConsumable(ItemData item, int slot)
-    {
-        if (slot == 1) consumable1 = item;
-        else if (slot == 2) consumable2 = item;
-        
-        UpdateUI();
-    }
-
-    private void EquipWeaponSlot(int slotIndex)
-    {
-        WeaponItemData weaponToEquip = (slotIndex == 1) ? weapon1 : weapon2;
-        if (weaponToEquip != null && playerCombat != null)
+        if (item is WeaponItemData)
         {
-            playerCombat.EquipWeapon(weaponToEquip);
+            ItemData currentTargetItem = GetItemAtSlot(slotID);
+            ClearItemFromAllSlots(item);
+            
+            if (CountWeapons() >= 2 && !(currentTargetItem is WeaponItemData))
+            {
+                return;
+            }
         }
+        else
+        {
+            ClearItemFromAllSlots(item);
+        }
+
+        if (slotID == 1) slot1 = item;
+        else if (slotID == 2) slot2 = item;
+        else if (slotID == 3) slot3 = item;
+        else if (slotID == 4) slot4 = item;
+
+        UpdateUI();
     }
 
-    private void UseConsumableSlot(int slotIndex)
+    private void ExecuteSlotAction(int slotIndex)
     {
-        ItemData consumableToUse = (slotIndex == 1) ? consumable1 : consumable2;
-        if (consumableToUse != null)
+        ItemData targetItem = GetItemAtSlot(slotIndex);
+        if (targetItem == null) return;
+
+        if (targetItem is WeaponItemData weapon)
         {
-            int currentAmount = InventoryManager.Instance.GetItemAmount(consumableToUse);
+            if (playerCombat != null) playerCombat.EquipWeapon(weapon);
+        }
+        else if (targetItem is ConsumableItemData consData)
+        {
+            int currentAmount = InventoryManager.Instance.GetItemAmount(targetItem);
             if (currentAmount > 0)
             {
-                if (consumableToUse is ConsumableItemData consData)
+                PlayerHealth playerHp = FindFirstObjectByType<PlayerHealth>();
+                if (playerHp != null)
                 {
-                    PlayerHealth playerHp = FindFirstObjectByType<PlayerHealth>();
-                    if (playerHp != null)
-                    {
-                        if (playerHp.currentHealth >= playerHp.maxHealth) return; 
-                        
-                        playerHp.HealPlayer(consData.healAmount);
-                    }
+                    if (playerHp.currentHealth >= playerHp.maxHealth) return;
+                    playerHp.HealPlayer(consData.healAmount);
                 }
 
-                InventoryManager.Instance.AddItem(consumableToUse, -1); 
+                InventoryManager.Instance.AddItem(targetItem, -1);
                 
-                int newAmount = InventoryManager.Instance.GetItemAmount(consumableToUse);
-                if (newAmount <= 0)
+                if (InventoryManager.Instance.GetItemAmount(targetItem) <= 0)
                 {
-                    if (slotIndex == 1) consumable1 = null;
-                    else consumable2 = null;
+                    ClearItemFromAllSlots(targetItem);
                 }
 
                 UpdateUI();
-                FindFirstObjectByType<InventoryUIManager>()?.RefreshUI(); 
+                FindFirstObjectByType<InventoryUIManager>()?.RefreshUI();
             }
             else
             {
-                if (slotIndex == 1) consumable1 = null;
-                else consumable2 = null;
+                ClearItemFromAllSlots(targetItem);
                 UpdateUI();
             }
         }
+    }
+
+    public void OnQuickSlotClicked(int slotID)
+    {
+        InventoryUIManager invUI = FindFirstObjectByType<InventoryUIManager>();
+        if (invUI == null || !invUI.inventoryWindow.activeSelf || invUI.currentlySelectedItem == null) return;
+
+        AssignItem(invUI.currentlySelectedItem, slotID);
     }
 
     public void UpdateUI()
     {
-        SetupSlot(weapon1, weapon1Icon, null);
-        SetupSlot(weapon2, weapon2Icon, null);
-        SetupSlot(consumable1, consumable1Icon, consumable1AmountText);
-        SetupSlot(consumable2, consumable2Icon, consumable2AmountText);
+        SetupSlot(slot1, slot1Icon, slot1Text);
+        SetupSlot(slot2, slot2Icon, slot2Text);
+        SetupSlot(slot3, slot3Icon, slot3Text);
+        SetupSlot(slot4, slot4Icon, slot4Text);
     }
 
     private void SetupSlot(ItemData item, Image icon, TextMeshProUGUI amountText)
@@ -124,38 +128,45 @@ public class QuickSlotManager : MonoBehaviour
         if (item != null)
         {
             icon.sprite = item.itemIcon;
-            icon.color = Color.white; 
+            icon.color = Color.white;
             
             if (amountText != null)
             {
                 int amt = InventoryManager.Instance.GetItemAmount(item);
-                amountText.text = amt > 0 ? amt.ToString() : "0";
+                if (item is WeaponItemData) amountText.text = "";
+                else amountText.text = amt > 0 ? "x" + amt.ToString() : "";
             }
         }
         else
         {
-            icon.color = new Color(1, 1, 1, 0); 
+            icon.color = new Color(1, 1, 1, 0);
             if (amountText != null) amountText.text = "";
         }
     }
 
-    public void OnQuickSlotClicked(int slotID)
+    private ItemData GetItemAtSlot(int slot)
     {
-        InventoryUIManager invUI = FindFirstObjectByType<InventoryUIManager>();
-        
-        if (invUI == null || !invUI.inventoryWindow.activeSelf || invUI.currentlySelectedItem == null) return;
+        if (slot == 1) return slot1;
+        if (slot == 2) return slot2;
+        if (slot == 3) return slot3;
+        return slot4;
+    }
 
-        ItemData selectedItem = invUI.currentlySelectedItem;
+    private void ClearItemFromAllSlots(ItemData item)
+    {
+        if (slot1 == item) slot1 = null;
+        if (slot2 == item) slot2 = null;
+        if (slot3 == item) slot3 = null;
+        if (slot4 == item) slot4 = null;
+    }
 
-        if (selectedItem is WeaponItemData weapon)
-        {
-            if (slotID == 1) AssignWeapon(weapon, 1);
-            else if (slotID == 2) AssignWeapon(weapon, 2);
-        }
-        else if (selectedItem is ConsumableItemData consumable)
-        {
-            if (slotID == 3) AssignConsumable(consumable, 1); 
-            else if (slotID == 4) AssignConsumable(consumable, 2); 
-        }
+    private int CountWeapons()
+    {
+        int count = 0;
+        if (slot1 is WeaponItemData) count++;
+        if (slot2 is WeaponItemData) count++;
+        if (slot3 is WeaponItemData) count++;
+        if (slot4 is WeaponItemData) count++;
+        return count;
     }
 }
