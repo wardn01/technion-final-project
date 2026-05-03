@@ -5,6 +5,10 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
+    [Header("Pickup Notifications")]
+    public GameObject notificationPrefab;
+    public Transform notificationParent;
+
     [Header("Testing")]
     public ItemData testWeaponToGive; 
 
@@ -43,6 +47,18 @@ public class InventoryManager : MonoBehaviour
         if (inventory[item] <= 0)
         {
             inventory.Remove(item);
+        }
+        if (notificationPrefab != null && notificationParent != null)
+        {
+            GameObject notif = Instantiate(notificationPrefab, notificationParent);
+
+            notif.transform.SetAsLastSibling(); 
+            
+            PickupNotification notifScript = notif.GetComponent<PickupNotification>();
+            if (notifScript != null)
+            {
+                notifScript.Setup(item, amount);
+            }
         }
     }
 
