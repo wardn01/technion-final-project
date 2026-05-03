@@ -19,7 +19,7 @@ MonoBehaviour:
   chaseRange: 20
   rotationSpeed: 10
   lootTable:
-  - item: {fileID: 11400000, guid: dc2f22b405cc4c949bddc5c44877a2aa, type: 2}
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
     minAmount: 1
     maxAmount: 3
     dropChance: 100

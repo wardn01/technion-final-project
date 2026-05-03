@@ -9,8 +9,8 @@ public class InventoryUIManager : MonoBehaviour
     public PlayerCombat playerCombat;
 
     [Header("Currency Settings")]
-    public ItemData goldCoinItem;
-    public TextMeshProUGUI goldAmountText;
+    public ItemData goldCoinItem;       
+    public TextMeshProUGUI goldAmountText; 
 
     [Header("UI Panels")]
     public GameObject inventoryWindow; 
@@ -25,6 +25,11 @@ public class InventoryUIManager : MonoBehaviour
 
     [Header("Tab Title Settings")]
     public TextMeshProUGUI tabTitleText; 
+    
+    [Header("Tab Visuals")]
+    public Image[] tabIcons; 
+    public Color selectedTabColor = Color.white; 
+    public Color unselectedTabColor = new Color(0.5f, 0.5f, 0.5f, 1f); 
 
     [Header("Item Details UI")]
     public GameObject detailsPanel;           
@@ -46,7 +51,7 @@ public class InventoryUIManager : MonoBehaviour
         if (detailsPanel != null) 
         {
             detailsPanel.SetActive(true); 
-            ShowDefaultDetails();
+            ShowEmptyCategoryDetails();
         }
 
         if (quickSlotsBar != null)
@@ -77,7 +82,8 @@ public class InventoryUIManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Time.timeScale = 0f;
-            RefreshUI();
+            
+            OnTabClicked((int)currentFilter); 
         }
         else
         {
@@ -102,6 +108,18 @@ public class InventoryUIManager : MonoBehaviour
             }
         }
 
+        if (tabIcons != null && tabIcons.Length > 0)
+        {
+            for (int i = 0; i < tabIcons.Length; i++)
+            {
+                if (tabIcons[i] != null)
+                {
+                    tabIcons[i].color = (i == tabIndex) ? selectedTabColor : unselectedTabColor;
+                }
+            }
+        }
+
+        currentlySelectedItem = null; 
         RefreshUI();
     }
 
@@ -116,6 +134,9 @@ public class InventoryUIManager : MonoBehaviour
         }
 
         Dictionary<ItemData, int> currentInv = InventoryManager.Instance.GetInventory();
+        
+        ItemData firstItemFound = null; 
+        bool isCurrentlySelectedItemStillValid = false;
 
         foreach (var kvp in currentInv)
         {
@@ -131,23 +152,32 @@ public class InventoryUIManager : MonoBehaviour
                 if (currentFilter == TabFilter.Weapon && item.type != ItemType.Weapon) continue;
             }
 
+            if (firstItemFound == null) firstItemFound = item;
+            
+            if (currentlySelectedItem == item && amount > 0) isCurrentlySelectedItemStillValid = true;
+
             GameObject newSlot = Instantiate(slotPrefab, slotsParent);
             newSlot.GetComponent<InventorySlotUI>().Setup(item, amount);
         }
 
-        if (currentlySelectedItem != null)
+        if (isCurrentlySelectedItemStillValid)
         {
-            if (InventoryManager.Instance.GetItemAmount(currentlySelectedItem) <= 0 || currentlySelectedItem == goldCoinItem)
-            {
-                ShowDefaultDetails();
-            }
+            DisplayItemDetails(currentlySelectedItem);
+        }
+        else if (firstItemFound != null)
+        {
+            DisplayItemDetails(firstItemFound);
+        }
+        else
+        {
+            ShowEmptyCategoryDetails();
         }
     }
 
-    private void ShowDefaultDetails()
+    private void ShowEmptyCategoryDetails()
     {
-        if (detailNameText != null) detailNameText.text = "Select an Item";
-        if (detailDescriptionText != null) detailDescriptionText.text = "Click on any item to view its properties.";
+        if (detailNameText != null) detailNameText.text = "Empty";
+        if (detailDescriptionText != null) detailDescriptionText.text = "There are no items in this category.";
         if (detailIconImage != null) detailIconImage.color = new Color(1, 1, 1, 0);
 
         currentlySelectedItem = null;
@@ -173,15 +203,19 @@ public class InventoryUIManager : MonoBehaviour
 
         if (equipButtonObject != null)
         {
-            if (item.type == ItemType.Weapon)
+            if (item.type == ItemType.Weapon || item.type == ItemType.Consumable)
             {
                 equipButtonObject.SetActive(true);
-                if (equipButtonText != null) equipButtonText.text = "Equip";
-            }
-            else if (item.type == ItemType.Consumable)
-            {
-                equipButtonObject.SetActive(true);
-                if (equipButtonText != null) equipButtonText.text = "Use";
+
+                if (QuickSlotManager.Instance.IsItemEquipped(item))
+                {
+                    if (equipButtonText != null) equipButtonText.text = "Remove";
+                }
+                else
+                {
+                    if (equipButtonText != null) 
+                        equipButtonText.text = (item.type == ItemType.Weapon) ? "Equip" : "Use";
+                }
             }
             else
             {
@@ -194,15 +228,15 @@ public class InventoryUIManager : MonoBehaviour
     {
         if (currentlySelectedItem == null) return;
 
-        if (currentlySelectedItem is WeaponItemData weaponData)
+        if (QuickSlotManager.Instance.IsItemEquipped(currentlySelectedItem))
         {
-            QuickSlotManager.Instance.AssignItem(weaponData, 1);
-            ToggleInventory();
+            QuickSlotManager.Instance.ClearItemFromAllSlots(currentlySelectedItem);
+            DisplayItemDetails(currentlySelectedItem); 
         }
-        else if (currentlySelectedItem.type == ItemType.Consumable)
+        else
         {
             QuickSlotManager.Instance.AssignItem(currentlySelectedItem, 1);
-            ToggleInventory();
+            DisplayItemDetails(currentlySelectedItem); 
         }
     }
 }

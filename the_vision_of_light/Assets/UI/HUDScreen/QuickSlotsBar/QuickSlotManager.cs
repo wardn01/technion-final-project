@@ -113,6 +113,8 @@ public class QuickSlotManager : MonoBehaviour
         if (invUI == null || !invUI.inventoryWindow.activeSelf || invUI.currentlySelectedItem == null) return;
 
         AssignItem(invUI.currentlySelectedItem, slotID);
+
+        invUI.DisplayItemDetails(invUI.currentlySelectedItem);
     }
 
     public void UpdateUI()
@@ -152,12 +154,18 @@ public class QuickSlotManager : MonoBehaviour
         return slot4;
     }
 
-    private void ClearItemFromAllSlots(ItemData item)
+    public void ClearItemFromAllSlots(ItemData item)
     {
         if (slot1 == item) slot1 = null;
         if (slot2 == item) slot2 = null;
         if (slot3 == item) slot3 = null;
         if (slot4 == item) slot4 = null;
+        UpdateUI();
+    }
+
+    public bool IsItemEquipped(ItemData item)
+    {
+        return slot1 == item || slot2 == item || slot3 == item || slot4 == item;
     }
 
     private int CountWeapons()
