@@ -19,6 +19,10 @@ public class PlayerHealth : MonoBehaviour
     public MonoBehaviour playerMovementScript;
     public CharacterController characterController;
 
+    [Header("Floating Text UI")]
+    public GameObject uiFloatingTextPrefab;
+    public Transform uiTextSpawnPoint;
+
     public bool isDead = false;
     private Rigidbody[] ragdollRigidbodies;
     private Collider[] ragdollColliders;
@@ -53,6 +57,8 @@ public class PlayerHealth : MonoBehaviour
         finalDamage = Mathf.Max(0, finalDamage);
         currentHealth -= finalDamage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        ShowFloatingText("-" + damageAmount.ToString(), Color.red);
         UpdateHealthUI();
 
         if (currentHealth <= 0)
@@ -70,6 +76,7 @@ public class PlayerHealth : MonoBehaviour
         currentHealth += finalHeal;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         
+        ShowFloatingText("+" + healAmount.ToString(), Color.green);
         UpdateHealthUI();
     }
 
@@ -134,6 +141,20 @@ public class PlayerHealth : MonoBehaviour
         {
             animator.enabled = true;
             animator.SetFloat("Speed", 0f);
+        }
+    }
+
+    private void ShowFloatingText(string text, Color color)
+    {
+        if (uiFloatingTextPrefab != null && uiTextSpawnPoint != null)
+        {
+            GameObject obj = Instantiate(uiFloatingTextPrefab, uiTextSpawnPoint.position, Quaternion.identity, uiTextSpawnPoint.parent);
+            
+            UIFloatingText floatingText = obj.GetComponent<UIFloatingText>();
+            if (floatingText != null)
+            {
+                floatingText.Setup(text, color);
+            }
         }
     }
 
