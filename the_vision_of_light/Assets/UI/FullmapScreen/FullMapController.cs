@@ -32,6 +32,8 @@ public class FullMapController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.M))
         {
+            if (Time.timeScale == 0f && !fullMapScreen.activeSelf) return;
+
             bool isOpen = fullMapScreen.activeSelf;
             fullMapScreen.SetActive(!isOpen);
 

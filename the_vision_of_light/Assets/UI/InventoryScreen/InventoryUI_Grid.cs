@@ -54,15 +54,15 @@ public class InventoryUI_Grid : MonoBehaviour
                 pool.Add(slot);
             }
 
-            slot.GetComponent<InventorySlotUI>().Setup(item, amount);
+            slot.GetComponent<InventorySlotUI>().Setup(item, amount, ui);            
             index++;
         }
 
         for (int i = index; i < pool.Count; i++)
             pool[i].SetActive(false);
 
-        if (valid) ui.DisplayItemDetails(selected);
-        else if (first != null) ui.DisplayItemDetails(first);
+        if (valid) ui.DisplayItemDetails(selected, ui.isItemClickedFromGrid);
+        else if (first != null) ui.DisplayItemDetails(first, false);
         else ui.ShowEmptyCategoryDetails();
     }
 }

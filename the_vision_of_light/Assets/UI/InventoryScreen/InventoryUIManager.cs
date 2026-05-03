@@ -42,9 +42,10 @@ public class InventoryUIManager : MonoBehaviour
     [Header("Equip Button")]
     public GameObject equipButtonObject;
     public TextMeshProUGUI equipButtonText;
-
+    
     private InventoryUI_Grid grid;
     private InventoryUI_EquipHandler equipHandler;
+    public bool isItemClickedFromGrid = false;
 
     public enum TabFilter { All, Material, Consumable, Weapon }
     private TabFilter currentFilter = TabFilter.All;
@@ -76,7 +77,11 @@ public class InventoryUIManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.I))
+        {
+            if (Time.timeScale == 0f && !inventoryWindow.activeSelf) return;
+
             ToggleInventory();
+        }
     }
 
     private void ToggleInventory()
@@ -96,6 +101,9 @@ public class InventoryUIManager : MonoBehaviour
 
         if (isOpening)
             OnTabClicked((int)currentFilter);
+        if (!isOpening)
+            QuickSlotManager.Instance.ResetSelection();
+
     }
 
     public void OnTabClicked(int tabIndex)
@@ -128,11 +136,12 @@ public class InventoryUIManager : MonoBehaviour
         grid.Refresh(currentFilter, goldCoinItem, goldAmountText, slotsParent, slotPrefab, ref currentlySelectedItem, this);
     }
 
-    public void DisplayItemDetails(ItemData item)
+    public void DisplayItemDetails(ItemData item, bool fromUserClick = false)
     {
         if (item == null) return;
 
         currentlySelectedItem = item;
+        isItemClickedFromGrid = fromUserClick;
 
         detailNameText.text = item.itemName;
         detailIconImage.sprite = item.itemIcon;
@@ -159,6 +168,9 @@ public class InventoryUIManager : MonoBehaviour
         detailDescriptionText.text = "No items here.";
         detailIconImage.color = new Color(1,1,1,0);
         equipButtonObject.SetActive(false);
+        
+        currentlySelectedItem = null;
+        isItemClickedFromGrid = false;
     }
 
     public void UpdateSkillHUD(WeaponItemData weapon)

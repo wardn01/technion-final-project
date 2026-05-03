@@ -28,6 +28,8 @@ public class MerchantInteract : MonoBehaviour
 
             if (!isShopOpen && Input.GetKeyDown(KeyCode.F))
             {
+                if (Time.timeScale == 0f) return; 
+
                 ShopManager.Instance.OpenShop();
             }
         }

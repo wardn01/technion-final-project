@@ -18,10 +18,10 @@ public class QuickSlotManager : MonoBehaviour
     [Header("UI Amount Texts")]
     public TextMeshProUGUI[] slotTexts = new TextMeshProUGUI[4];
 
+    private int selectedSlotIndex = -1;
     private PlayerHealth playerHp;
     private InventoryUIManager inventoryUI;
 
-    private int selectedSlotIndex = -1;
 
     private void Awake()
     {
@@ -38,42 +38,82 @@ public class QuickSlotManager : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f) return;
+        
         if (Input.GetKeyDown(KeyCode.Alpha1)) ExecuteSlotAction(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) ExecuteSlotAction(1);
         if (Input.GetKeyDown(KeyCode.Alpha3)) ExecuteSlotAction(2);
         if (Input.GetKeyDown(KeyCode.Alpha4)) ExecuteSlotAction(3);
     }
 
-    public void OnQuickSlotClicked(int index)
+   public void OnQuickSlotClicked(int index)
     {
-        if (selectedSlotIndex == -1)
+        if (selectedSlotIndex != -1)
         {
-            if (slots[index] == null) return;
+            if (selectedSlotIndex == index)
+            {
+                selectedSlotIndex = -1;
+                UpdateUI();
+                return;
+            }
 
-            selectedSlotIndex = index;
-            UpdateUI();
-            return;
-        }
+            ItemData temp = slots[index];
+            slots[index] = slots[selectedSlotIndex];
+            slots[selectedSlotIndex] = temp;
 
-        if (selectedSlotIndex == index)
-        {
-            slots[index] = null;
             selectedSlotIndex = -1;
             UpdateUI();
+            if (inventoryUI != null) inventoryUI.RefreshUI();
             return;
         }
 
-        ItemData temp = slots[index];
-        slots[index] = slots[selectedSlotIndex];
-        slots[selectedSlotIndex] = temp;
+        if (inventoryUI != null && inventoryUI.inventoryWindow.activeSelf &&
+            inventoryUI.currentlySelectedItem != null && inventoryUI.isItemClickedFromGrid)
+        {
+            ItemData invItem = inventoryUI.currentlySelectedItem;
 
-        selectedSlotIndex = -1;
-        UpdateUI();
+            if (invItem.type != ItemType.Weapon && invItem.type != ItemType.Consumable)
+            {
+                inventoryUI.isItemClickedFromGrid = false;
+                return;
+            }
+
+            AssignItem(invItem, index);
+
+            if (invItem is WeaponItemData weaponData)
+            {
+                inventoryUI.UpdateSkillHUD(weaponData);
+            }
+
+            inventoryUI.isItemClickedFromGrid = false; 
+
+            UpdateUI();
+            inventoryUI.RefreshUI();
+            return;
+        }
+
+        if (slots[index] != null)
+        {
+            selectedSlotIndex = index;
+            UpdateUI();
+        }
     }
 
     public void AssignItem(ItemData item, int slotIndex)
     {
         if (item == null) return;
+
+        if (item is WeaponItemData)
+        {
+            int currentWeaponCount = CountWeapons();
+            ItemData targetSlotItem = slots[slotIndex];
+            bool isAlreadyInSlots = IsItemEquipped(item);
+
+            if (!isAlreadyInSlots && currentWeaponCount >= 2 && !(targetSlotItem is WeaponItemData))
+            {
+                return;
+            }
+        }
 
         int oldIndex = System.Array.IndexOf(slots, item);
         ItemData existingItem = slots[slotIndex];
@@ -94,7 +134,15 @@ public class QuickSlotManager : MonoBehaviour
 
         if (item is WeaponItemData weapon)
         {
-            playerCombat?.EquipWeapon(weapon);
+            if (playerCombat != null && playerCombat.IsSafeToEquip()) 
+            {
+                playerCombat.EquipWeapon(weapon);
+                
+                if (inventoryUI != null)
+                {
+                    inventoryUI.UpdateSkillHUD(weapon);
+                }
+            }
         }
         else if (item is ConsumableItemData cons)
         {
@@ -137,8 +185,6 @@ public class QuickSlotManager : MonoBehaviour
         if (item != null)
         {
             icon.sprite = item.itemIcon;
-
-            // 🔥 Highlight
             icon.color = (index == selectedSlotIndex) ? Color.gray : Color.white;
 
             if (text != null)
@@ -149,7 +195,7 @@ public class QuickSlotManager : MonoBehaviour
         }
         else
         {
-            icon.color = new Color(1, 1, 1, 0);
+            icon.color = (index == selectedSlotIndex) ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(1, 1, 1, 0);
             if (text != null) text.text = "";
         }
     }
@@ -188,5 +234,22 @@ public class QuickSlotManager : MonoBehaviour
             if (s == item) return true;
         }
         return false;
+    }
+
+    public void ResetSelection()
+    {
+        selectedSlotIndex = -1;
+        UpdateUI();
+    }
+
+    private int CountWeapons()
+    {
+        int count = 0;
+        foreach (var item in slots)
+        {
+            if (item is WeaponItemData) 
+                count++;
+        }
+        return count;
     }
 }

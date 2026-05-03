@@ -10,9 +10,12 @@ public class InventorySlotUI : MonoBehaviour
     
     private ItemData itemData;
 
-    public void Setup(ItemData item, int amount)
+    private InventoryUIManager uiManager;
+
+    public void Setup(ItemData item, int amount, InventoryUIManager manager)
     {
         itemData = item;
+        uiManager = manager;
         if (icon != null) icon.sprite = item.itemIcon;
         
         if (amountText != null)
@@ -34,10 +37,7 @@ public class InventorySlotUI : MonoBehaviour
 
     private void OnSlotClicked()
     {
-        InventoryUIManager uiManager = FindObjectOfType<InventoryUIManager>();
         if (uiManager != null)
-        {
-            uiManager.DisplayItemDetails(itemData);
-        }
+            uiManager.DisplayItemDetails(itemData, true);
     }
 }

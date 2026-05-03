@@ -12,7 +12,7 @@ public class InventoryUI_EquipHandler : MonoBehaviour
         else
             Equip(ui, item);
 
-        ui.DisplayItemDetails(item);
+        ui.DisplayItemDetails(item, true); 
         ui.RefreshUI();
     }
 
@@ -38,6 +38,5 @@ public class InventoryUI_EquipHandler : MonoBehaviour
         QuickSlotManager.Instance.AssignToFirstEmptySlot(item);
 
         if (item is WeaponItemData weapon)
-            ui.UpdateSkillHUD(weapon);
-    }
+            ui.DisplayItemDetails(item, ui.isItemClickedFromGrid);    }
 }
