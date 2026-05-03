@@ -10,22 +10,18 @@ public class QuickSlotManager : MonoBehaviour
     public PlayerCombat playerCombat;
 
     [Header("Slots Data")]
-    public ItemData slot1;
-    public ItemData slot2;
-    public ItemData slot3;
-    public ItemData slot4;
+    public ItemData[] slots = new ItemData[4];
 
     [Header("UI Icons")]
-    public Image slot1Icon;
-    public Image slot2Icon;
-    public Image slot3Icon;
-    public Image slot4Icon;
+    public Image[] slotIcons = new Image[4];
 
     [Header("UI Amount Texts")]
-    public TextMeshProUGUI slot1Text;
-    public TextMeshProUGUI slot2Text;
-    public TextMeshProUGUI slot3Text;
-    public TextMeshProUGUI slot4Text;
+    public TextMeshProUGUI[] slotTexts = new TextMeshProUGUI[4];
+
+    private PlayerHealth playerHp;
+    private InventoryUIManager inventoryUI;
+
+    private int selectedSlotIndex = -1;
 
     private void Awake()
     {
@@ -33,148 +29,164 @@ public class QuickSlotManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    private void Start() => UpdateUI();
-
-    private void Update()
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) ExecuteSlotAction(1);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) ExecuteSlotAction(2);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) ExecuteSlotAction(3);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) ExecuteSlotAction(4);
-    }
-
-    public void AssignItem(ItemData item, int slotID)
-    {
-        if (item is WeaponItemData)
-        {
-            ItemData currentTargetItem = GetItemAtSlot(slotID);
-            ClearItemFromAllSlots(item);
-            
-            if (CountWeapons() >= 2 && !(currentTargetItem is WeaponItemData))
-            {
-                return;
-            }
-        }
-        else
-        {
-            ClearItemFromAllSlots(item);
-        }
-
-        if (slotID == 1) slot1 = item;
-        else if (slotID == 2) slot2 = item;
-        else if (slotID == 3) slot3 = item;
-        else if (slotID == 4) slot4 = item;
-
+        playerHp = FindFirstObjectByType<PlayerHealth>();
+        inventoryUI = FindFirstObjectByType<InventoryUIManager>();
         UpdateUI();
     }
 
-    private void ExecuteSlotAction(int slotIndex)
+    private void Update()
     {
-        ItemData targetItem = GetItemAtSlot(slotIndex);
-        if (targetItem == null) return;
+        if (Input.GetKeyDown(KeyCode.Alpha1)) ExecuteSlotAction(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) ExecuteSlotAction(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) ExecuteSlotAction(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) ExecuteSlotAction(3);
+    }
 
-        if (targetItem is WeaponItemData weapon)
+    public void OnQuickSlotClicked(int index)
+    {
+        if (selectedSlotIndex == -1)
         {
-            if (playerCombat != null) playerCombat.EquipWeapon(weapon);
+            if (slots[index] == null) return;
+
+            selectedSlotIndex = index;
+            UpdateUI();
+            return;
         }
-        else if (targetItem is ConsumableItemData consData)
+
+        if (selectedSlotIndex == index)
         {
-            int currentAmount = InventoryManager.Instance.GetItemAmount(targetItem);
-            if (currentAmount > 0)
+            slots[index] = null;
+            selectedSlotIndex = -1;
+            UpdateUI();
+            return;
+        }
+
+        ItemData temp = slots[index];
+        slots[index] = slots[selectedSlotIndex];
+        slots[selectedSlotIndex] = temp;
+
+        selectedSlotIndex = -1;
+        UpdateUI();
+    }
+
+    public void AssignItem(ItemData item, int slotIndex)
+    {
+        if (item == null) return;
+
+        int oldIndex = System.Array.IndexOf(slots, item);
+        ItemData existingItem = slots[slotIndex];
+
+        if (oldIndex != -1 && oldIndex != slotIndex)
+        {
+            slots[oldIndex] = existingItem;
+        }
+
+        slots[slotIndex] = item;
+        UpdateUI();
+    }
+
+    private void ExecuteSlotAction(int index)
+    {
+        ItemData item = slots[index];
+        if (item == null) return;
+
+        if (item is WeaponItemData weapon)
+        {
+            playerCombat?.EquipWeapon(weapon);
+        }
+        else if (item is ConsumableItemData cons)
+        {
+            int amount = InventoryManager.Instance.GetItemAmount(item);
+
+            if (amount > 0)
             {
-                PlayerHealth playerHp = FindFirstObjectByType<PlayerHealth>();
-                if (playerHp != null)
+                if (playerHp != null && playerHp.currentHealth < playerHp.maxHealth)
                 {
-                    if (playerHp.currentHealth >= playerHp.maxHealth) return;
-                    playerHp.HealPlayer(consData.healAmount);
-                }
+                    playerHp.HealPlayer(cons.healAmount);
+                    InventoryManager.Instance.AddItem(item, -1);
 
-                InventoryManager.Instance.AddItem(targetItem, -1);
-                
-                if (InventoryManager.Instance.GetItemAmount(targetItem) <= 0)
-                {
-                    ClearItemFromAllSlots(targetItem);
-                }
+                    if (InventoryManager.Instance.GetItemAmount(item) <= 0)
+                    {
+                        ClearItemFromAllSlots(item);
+                    }
 
-                UpdateUI();
-                FindFirstObjectByType<InventoryUIManager>()?.RefreshUI();
+                    UpdateUI();
+                    inventoryUI?.RefreshUI();
+                }
             }
             else
             {
-                ClearItemFromAllSlots(targetItem);
+                ClearItemFromAllSlots(item);
                 UpdateUI();
             }
         }
-    }
-
-    public void OnQuickSlotClicked(int slotID)
-    {
-        InventoryUIManager invUI = FindFirstObjectByType<InventoryUIManager>();
-        if (invUI == null || !invUI.inventoryWindow.activeSelf || invUI.currentlySelectedItem == null) return;
-
-        AssignItem(invUI.currentlySelectedItem, slotID);
-
-        invUI.DisplayItemDetails(invUI.currentlySelectedItem);
     }
 
     public void UpdateUI()
     {
-        SetupSlot(slot1, slot1Icon, slot1Text);
-        SetupSlot(slot2, slot2Icon, slot2Text);
-        SetupSlot(slot3, slot3Icon, slot3Text);
-        SetupSlot(slot4, slot4Icon, slot4Text);
+        for (int i = 0; i < slots.Length; i++)
+        {
+            SetupSlot(slots[i], slotIcons[i], slotTexts[i], i);
+        }
     }
 
-    private void SetupSlot(ItemData item, Image icon, TextMeshProUGUI amountText)
+    private void SetupSlot(ItemData item, Image icon, TextMeshProUGUI text, int index)
     {
         if (item != null)
         {
             icon.sprite = item.itemIcon;
-            icon.color = Color.white;
-            
-            if (amountText != null)
+
+            // 🔥 Highlight
+            icon.color = (index == selectedSlotIndex) ? Color.gray : Color.white;
+
+            if (text != null)
             {
                 int amt = InventoryManager.Instance.GetItemAmount(item);
-                if (item is WeaponItemData) amountText.text = "";
-                else amountText.text = amt > 0 ? "x" + amt.ToString() : "";
+                text.text = (item is WeaponItemData) ? "" : (amt > 0 ? "x" + amt : "");
             }
         }
         else
         {
             icon.color = new Color(1, 1, 1, 0);
-            if (amountText != null) amountText.text = "";
+            if (text != null) text.text = "";
         }
     }
 
-    private ItemData GetItemAtSlot(int slot)
+    public void AssignToFirstEmptySlot(ItemData item)
     {
-        if (slot == 1) return slot1;
-        if (slot == 2) return slot2;
-        if (slot == 3) return slot3;
-        return slot4;
+        if (IsItemEquipped(item)) return;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == null)
+            {
+                AssignItem(item, i);
+                return;
+            }
+        }
+
+        AssignItem(item, 0);
     }
 
     public void ClearItemFromAllSlots(ItemData item)
     {
-        if (slot1 == item) slot1 = null;
-        if (slot2 == item) slot2 = null;
-        if (slot3 == item) slot3 = null;
-        if (slot4 == item) slot4 = null;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == item)
+                slots[i] = null;
+        }
+
         UpdateUI();
     }
 
     public bool IsItemEquipped(ItemData item)
     {
-        return slot1 == item || slot2 == item || slot3 == item || slot4 == item;
-    }
-
-    private int CountWeapons()
-    {
-        int count = 0;
-        if (slot1 is WeaponItemData) count++;
-        if (slot2 is WeaponItemData) count++;
-        if (slot3 is WeaponItemData) count++;
-        if (slot4 is WeaponItemData) count++;
-        return count;
+        foreach (var s in slots)
+        {
+            if (s == item) return true;
+        }
+        return false;
     }
 }

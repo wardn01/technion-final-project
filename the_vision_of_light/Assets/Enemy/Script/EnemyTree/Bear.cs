@@ -52,8 +52,8 @@ public class Bear : AnimalEnemy
         }
         else
         {
-            if (anim != null) anim.SetBool("InCombat", false); 
-            UpdateBlendTree(); 
+            //if (anim != null) anim.SetBool("InCombat", false); 
+            //UpdateBlendTree(); 
 
             if (isHitBase || isAttackingBase || isRoaring)
             {

@@ -68,5 +68,18 @@ public class InventoryManager : MonoBehaviour
         return 0;
     }
 
+    public void RemoveItem(ItemData item, int amount = 1)
+    {
+        if (inventory.ContainsKey(item))
+        {
+            inventory[item] -= amount;
+            
+            if (inventory[item] <= 0)
+            {
+                inventory.Remove(item);
+            }
+        }
+    }
+
     public Dictionary<ItemData, int> GetInventory() => inventory;
 }

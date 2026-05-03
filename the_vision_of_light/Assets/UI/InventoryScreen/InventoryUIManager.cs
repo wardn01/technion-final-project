@@ -8,239 +8,169 @@ public class InventoryUIManager : MonoBehaviour
     [Header("References")]
     public PlayerCombat playerCombat;
 
-    [Header("Currency Settings")]
-    public ItemData goldCoinItem;       
-    public TextMeshProUGUI goldAmountText; 
+    [Header("Currency")]
+    public ItemData goldCoinItem;
+    public TextMeshProUGUI goldAmountText;
 
-    [Header("UI Panels")]
-    public GameObject inventoryWindow; 
-    public GameObject hudScreen;       
-    public Transform slotsParent;      
-    public GameObject slotPrefab;      
+    [Header("UI")]
+    public GameObject inventoryWindow;
+    public GameObject hudScreen;
+    public Transform slotsParent;
+    public GameObject slotPrefab;
 
-    [Header("Quick Slots UI Movement")]
-    public RectTransform quickSlotsBar; 
-    public Vector2 inventoryOpenPosition; 
-    private Vector2 normalPosition; 
+    [Header("Quick Slots Movement")]
+    public RectTransform quickSlotsBar;
+    public Vector2 inventoryOpenPosition;
+    private Vector2 normalPosition;
 
-    [Header("Tab Title Settings")]
-    public TextMeshProUGUI tabTitleText; 
-    
-    [Header("Tab Visuals")]
-    public Image[] tabIcons; 
-    public Color selectedTabColor = Color.white; 
-    public Color unselectedTabColor = new Color(0.5f, 0.5f, 0.5f, 1f); 
+    [Header("Tabs")]
+    public TextMeshProUGUI tabTitleText;
+    public Image[] tabIcons;
+    public Color selectedTabColor = Color.white;
+    public Color unselectedTabColor = Color.gray;
 
-    [Header("Item Details UI")]
-    public GameObject detailsPanel;           
-    public TextMeshProUGUI detailNameText;    
-    public Image detailIconImage;             
-    public TextMeshProUGUI detailDescriptionText; 
+    [Header("Details")]
+    public GameObject detailsPanel;
+    public TextMeshProUGUI detailNameText;
+    public Image detailIconImage;
+    public TextMeshProUGUI detailDescriptionText;
 
-    [Header("Skill Group Containers")]
+    [Header("Skills")]
     public GameObject windSwordSkillsGroup;
-    public GameObject iceSwordSkillsGroup;    
+    public GameObject iceSwordSkillsGroup;
+
+    [Header("Equip Button")]
     public GameObject equipButtonObject;
     public TextMeshProUGUI equipButtonText;
+
+    private InventoryUI_Grid grid;
+    private InventoryUI_EquipHandler equipHandler;
 
     public enum TabFilter { All, Material, Consumable, Weapon }
     private TabFilter currentFilter = TabFilter.All;
 
-    public ItemData currentlySelectedItem; 
+    public ItemData currentlySelectedItem;
+
+    void Awake()
+    {
+        grid = GetComponent<InventoryUI_Grid>();
+        equipHandler = GetComponent<InventoryUI_EquipHandler>();
+    }
 
     void Start()
     {
         inventoryWindow.SetActive(false);
-        if (detailsPanel != null) 
+
+        if (detailsPanel != null)
         {
-            detailsPanel.SetActive(true); 
+            detailsPanel.SetActive(true);
             ShowEmptyCategoryDetails();
         }
 
         if (quickSlotsBar != null)
-        {
             normalPosition = quickSlotsBar.anchoredPosition;
-        }
 
         UpdateSkillHUD(null);
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I)) ToggleInventory();
+        if (Input.GetKeyDown(KeyCode.I))
+            ToggleInventory();
     }
 
     private void ToggleInventory()
     {
         bool isOpening = !inventoryWindow.activeSelf;
         inventoryWindow.SetActive(isOpening);
-        
-        if (hudScreen != null) hudScreen.SetActive(!isOpening);
+
+        if (hudScreen != null)
+            hudScreen.SetActive(!isOpening);
 
         if (quickSlotsBar != null)
-        {
             quickSlotsBar.anchoredPosition = isOpening ? inventoryOpenPosition : normalPosition;
-        }
+
+        Cursor.lockState = isOpening ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = isOpening;
+        Time.timeScale = isOpening ? 0f : 1f;
 
         if (isOpening)
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-            Time.timeScale = 0f;
-            OnTabClicked((int)currentFilter); 
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            Time.timeScale = 1f;
-        }
+            OnTabClicked((int)currentFilter);
     }
 
     public void OnTabClicked(int tabIndex)
     {
         currentFilter = (TabFilter)tabIndex;
+
         if (tabTitleText != null)
         {
-            switch (currentFilter)
+            tabTitleText.text = currentFilter switch
             {
-                case TabFilter.All: tabTitleText.text = "All Items"; break;
-                case TabFilter.Material: tabTitleText.text = "Materials"; break;
-                case TabFilter.Consumable: tabTitleText.text = "Food & Potions"; break;
-                case TabFilter.Weapon: tabTitleText.text = "Weapons"; break;
-            }
+                TabFilter.All => "All Items",
+                TabFilter.Material => "Materials",
+                TabFilter.Consumable => "Food & Potions",
+                TabFilter.Weapon => "Weapons",
+                _ => ""
+            };
         }
 
-        if (tabIcons != null && tabIcons.Length > 0)
+        for (int i = 0; i < tabIcons.Length; i++)
         {
-            for (int i = 0; i < tabIcons.Length; i++)
-            {
-                if (tabIcons[i] != null)
-                    tabIcons[i].color = (i == tabIndex) ? selectedTabColor : unselectedTabColor;
-            }
+            tabIcons[i].color = (i == tabIndex) ? selectedTabColor : unselectedTabColor;
         }
-        currentlySelectedItem = null; 
+
+        currentlySelectedItem = null;
         RefreshUI();
     }
 
     public void RefreshUI()
     {
-        foreach (Transform child in slotsParent) Destroy(child.gameObject);
-        if (goldCoinItem != null && goldAmountText != null)
-        {
-            int goldCount = InventoryManager.Instance.GetItemAmount(goldCoinItem);
-            goldAmountText.text = goldCount.ToString();
-        }
-
-        Dictionary<ItemData, int> currentInv = InventoryManager.Instance.GetInventory();
-        ItemData firstItemFound = null; 
-        bool isCurrentlySelectedItemStillValid = false;
-
-        foreach (var kvp in currentInv)
-        {
-            ItemData item = kvp.Key;
-            int amount = kvp.Value;
-            if (item == goldCoinItem) continue;
-
-            if (currentFilter != TabFilter.All)
-            {
-                if (currentFilter == TabFilter.Material && item.type != ItemType.Material) continue;
-                if (currentFilter == TabFilter.Consumable && item.type != ItemType.Consumable) continue;
-                if (currentFilter == TabFilter.Weapon && item.type != ItemType.Weapon) continue;
-            }
-
-            if (firstItemFound == null) firstItemFound = item;
-            if (currentlySelectedItem == item && amount > 0) isCurrentlySelectedItemStillValid = true;
-
-            GameObject newSlot = Instantiate(slotPrefab, slotsParent);
-            newSlot.GetComponent<InventorySlotUI>().Setup(item, amount);
-        }
-
-        if (isCurrentlySelectedItemStillValid) DisplayItemDetails(currentlySelectedItem);
-        else if (firstItemFound != null) DisplayItemDetails(firstItemFound);
-        else ShowEmptyCategoryDetails();
-    }
-
-    private void ShowEmptyCategoryDetails()
-    {
-        if (detailNameText != null) detailNameText.text = "Empty";
-        if (detailDescriptionText != null) detailDescriptionText.text = "There are no items in this category.";
-        if (detailIconImage != null) detailIconImage.color = new Color(1, 1, 1, 0);
-        currentlySelectedItem = null;
-        if (equipButtonObject != null) equipButtonObject.SetActive(false);
+        grid.Refresh(currentFilter, goldCoinItem, goldAmountText, slotsParent, slotPrefab, ref currentlySelectedItem, this);
     }
 
     public void DisplayItemDetails(ItemData item)
     {
         if (item == null) return;
-        currentlySelectedItem = item;
-        if (detailNameText != null) detailNameText.text = item.itemName;
-        if (detailIconImage != null)
-        {
-            detailIconImage.sprite = item.itemIcon;
-            detailIconImage.color = Color.white;
-        }
-        if (detailDescriptionText != null) detailDescriptionText.text = item.description;
 
-        if (equipButtonObject != null)
+        currentlySelectedItem = item;
+
+        detailNameText.text = item.itemName;
+        detailIconImage.sprite = item.itemIcon;
+        detailIconImage.color = Color.white;
+        detailDescriptionText.text = item.description;
+
+        if (item.type == ItemType.Weapon || item.type == ItemType.Consumable)
         {
-            if (item.type == ItemType.Weapon || item.type == ItemType.Consumable)
-            {
-                equipButtonObject.SetActive(true);
-                equipButtonText.text = QuickSlotManager.Instance.IsItemEquipped(item) ? "Remove" : ((item.type == ItemType.Weapon) ? "Equip" : "Use");
-            }
-            else equipButtonObject.SetActive(false);
+            equipButtonObject.SetActive(true);
+            equipButtonText.text = QuickSlotManager.Instance.IsItemEquipped(item) ? "Remove" :
+                (item.type == ItemType.Weapon ? "Equip" : "Use");
         }
+        else equipButtonObject.SetActive(false);
     }
 
     public void OnEquipButtonClicked()
     {
-    if (currentlySelectedItem == null) return;
-
-    bool isEquipped = QuickSlotManager.Instance.IsItemEquipped(currentlySelectedItem);
-
-    if (isEquipped)
-    {
-        QuickSlotManager.Instance.ClearItemFromAllSlots(currentlySelectedItem);
-        
-        if (currentlySelectedItem.type == ItemType.Weapon)
-        {
-            playerCombat.UnequipCurrentWeapon();
-            UpdateSkillHUD(null); 
-        }
+        equipHandler.Handle(this);
     }
-    else
-    {
-        if (!playerCombat.IsSafeToEquip())
-        {
-            Debug.Log("Finish your attack before equipping a new weapon!");
-            return; 
-        }
 
-        QuickSlotManager.Instance.AssignItem(currentlySelectedItem, 1);
-        if (currentlySelectedItem is WeaponItemData weapon)
-        {
-            UpdateSkillHUD(weapon); 
-        }
-    }
-    
-    DisplayItemDetails(currentlySelectedItem);
+    public void ShowEmptyCategoryDetails()
+    {
+        detailNameText.text = "Empty";
+        detailDescriptionText.text = "No items here.";
+        detailIconImage.color = new Color(1,1,1,0);
+        equipButtonObject.SetActive(false);
     }
 
     public void UpdateSkillHUD(WeaponItemData weapon)
     {
-        if (windSwordSkillsGroup) windSwordSkillsGroup.SetActive(false);
-        if (iceSwordSkillsGroup) iceSwordSkillsGroup.SetActive(false);
+        windSwordSkillsGroup.SetActive(false);
+        iceSwordSkillsGroup.SetActive(false);
 
         if (weapon == null) return;
 
         if (weapon.weaponElement == WeaponItemData.WeaponElement.Wind)
-        {
-            if (windSwordSkillsGroup) windSwordSkillsGroup.SetActive(true);
-        }
+            windSwordSkillsGroup.SetActive(true);
         else if (weapon.weaponElement == WeaponItemData.WeaponElement.Ice)
-        {
-            if (iceSwordSkillsGroup) iceSwordSkillsGroup.SetActive(true);
-        }
+            iceSwordSkillsGroup.SetActive(true);
     }
 }
