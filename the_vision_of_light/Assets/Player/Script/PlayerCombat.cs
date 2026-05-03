@@ -93,6 +93,53 @@ public class PlayerCombat : MonoBehaviour
         
         Debug.Log("Equipped weapon: " + activeWeaponData.itemName);
     }
+
+    public void UnequipCurrentWeapon()
+    {
+    if (currentWeaponModel != null)
+    {
+        Destroy(currentWeaponModel);
+        currentWeaponModel = null;
+    }
+
+    activeWeaponData = null;
+
+    if (anim != null)
+    {
+        AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
+
+        if (!combatState.IsName("Empty"))
+        {
+            anim.Play("Movement", 0); 
+            anim.Play("Empty", 1);
+            Debug.Log("Forced reset to Movement because player was in CombatLayer.");
+        }
+        else 
+        {
+            Debug.Log("Player already in BaseLayer, no animation snap needed.");
+        }
+
+        anim.runtimeAnimatorController = baseAnimatorController;
+        anim.SetBool("isAttacking", false);
+        anim.SetBool("isRolling", false);
+        anim.ResetTrigger("Attack");
+        anim.ResetTrigger("Skill_E");
+        anim.ResetTrigger("Skill_Q");
+    }
+
+    inCombatStance = false;
+    isAttacking = false;
+    }
+
+    public bool IsSafeToEquip()
+    {
+    AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
+
+    bool isAttackingState = anim.GetBool("isAttacking");
+    bool isInCombatAnimation = !combatState.IsName("Empty");
+
+    return !isAttackingState && !isInCombatAnimation;
+    }
     
     private void HandleCooldowns()
     {

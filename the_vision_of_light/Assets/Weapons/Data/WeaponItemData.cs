@@ -3,6 +3,11 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Weapon", menuName = "Game Data/Inventory/Weapon")]
 public class WeaponItemData : ItemData
 {
+    public enum WeaponElement { None, Wind, Ice }
+
+    [Header("Weapon Element")]
+    public WeaponElement weaponElement;
+
     [Header("Weapon Visuals")]
     public GameObject weaponModelPrefab;
     public AnimatorOverrideController animatorOverride;

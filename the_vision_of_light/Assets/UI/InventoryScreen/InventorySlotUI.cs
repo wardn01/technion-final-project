@@ -14,7 +14,18 @@ public class InventorySlotUI : MonoBehaviour
     {
         itemData = item;
         if (icon != null) icon.sprite = item.itemIcon;
-        if (amountText != null) amountText.text = amount.ToString();
+        
+        if (amountText != null)
+        {
+            if (item.type == ItemType.Weapon)
+            {
+                amountText.text = "-";
+            }
+            else
+            {
+                amountText.text = amount.ToString();
+            }
+        }
         
         Button btn = GetComponent<Button>();
         btn.onClick.RemoveAllListeners();

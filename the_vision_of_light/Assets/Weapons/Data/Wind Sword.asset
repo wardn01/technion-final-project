@@ -13,10 +13,18 @@ MonoBehaviour:
   m_Name: Wind Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemData
   itemName: Wind sword
-  description: Wind.
-  itemIcon: {fileID: 1346847458, guid: db883da67579e254d83739e85c81c55d, type: 3}
+  description: 'A blade forged in the heart of the storm. This lightweight sword
+    grants its wielder absolute control over the winds.
+
+    [E] Wind Slash: Unleashes
+    a sharp gale that damages and knocks enemies back.
+
+    [Q] Cyclone''s Wrath:
+    Summons a raging tornado that sweeps enemies away with continuous damage.'
+  itemIcon: {fileID: 21300000, guid: ee387c99489c72a44813d44397ca885a, type: 3}
   value: 1000
   type: 2
+  weaponElement: 1
   weaponModelPrefab: {fileID: 5964385237128242903, guid: 9b1a5a4d3f3af904aa8a452036808be1, type: 3}
   animatorOverride: {fileID: 0}
   normalAttackDamage: 20
