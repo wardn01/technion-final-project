@@ -10,13 +10,27 @@ public class ShopManager : MonoBehaviour
     public GameObject shopPanel;
     public TextMeshProUGUI goldText;
     public Slider amountSlider;
+    public TextMeshProUGUI amountText;
     public TextMeshProUGUI totalPriceText;
+    public Transform itemsListContainer;
+
+    [Header("Slot Highlight")]
+    public Color normalColor = Color.white;
+    public Color selectedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+    private Image currentSelectedSlotImage;
 
     [Header("Economy References")]
     public ItemData goldItemData; 
-
+    
     private ItemData selectedItem;
     private int currentAmount = 1;
+
+    [Header("Player Reference")]
+    public MonoBehaviour playerMovementScript;
+    public Animator playerAnimator; 
+    public GameObject playerCameraObject;
+
+    [HideInInspector] public Animator currentShopkeeperAnim;
 
     private void Awake()
     {
@@ -27,10 +41,36 @@ public class ShopManager : MonoBehaviour
     {
         shopPanel.SetActive(true);
         UpdateGoldUI();
-        amountSlider.value = 1; 
-        UpdateTotalPrice();
+        
+        if (amountSlider != null) amountSlider.value = 1;
 
-        Time.timeScale = 0f; 
+        if (currentSelectedSlotImage != null) currentSelectedSlotImage.color = normalColor;
+
+        if (itemsListContainer != null && itemsListContainer.childCount > 0)
+        {
+            Button firstItemBtn = itemsListContainer.GetChild(0).GetComponentInChildren<Button>();
+            if (firstItemBtn != null)
+            {
+                firstItemBtn.onClick.Invoke(); 
+            }
+        }
+        else
+        {
+            UpdateTotalPrice();
+        }
+
+        if (playerAnimator != null)
+        {
+            playerAnimator.Play("Movement"); 
+            playerAnimator.SetFloat("Speed", 0f); 
+        }
+        if (playerMovementScript != null) playerMovementScript.enabled = false;
+
+        if (playerCameraObject != null)
+        {
+            MonoBehaviour camInput = playerCameraObject.GetComponent("CinemachineInputAxisController") as MonoBehaviour;
+            if (camInput != null) camInput.enabled = false;
+        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -40,7 +80,15 @@ public class ShopManager : MonoBehaviour
     {
         shopPanel.SetActive(false);
 
-        Time.timeScale = 1f; 
+        if (playerMovementScript != null) playerMovementScript.enabled = true;
+
+        if (playerCameraObject != null)
+        {
+            MonoBehaviour camInput = playerCameraObject.GetComponent("CinemachineInputAxisController") as MonoBehaviour;
+            if (camInput != null) camInput.enabled = true;
+        }
+
+        currentShopkeeperAnim = null;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -49,46 +97,59 @@ public class ShopManager : MonoBehaviour
     public void SelectItem(ItemData item)
     {
         selectedItem = item;
-        amountSlider.value = 1; 
+        
+        if (amountSlider != null) amountSlider.value = 1;
         UpdateTotalPrice();
     }
 
-    public void OnSliderValueChanged()
+    public void HighlightSlot(Image clickedImage)
     {
-        currentAmount = (int)amountSlider.value; 
-        UpdateTotalPrice();
-    }
-
-    private void UpdateTotalPrice()
-    {
-        if (selectedItem != null)
+        if (currentSelectedSlotImage != null)
         {
-            int total = selectedItem.value * currentAmount; 
-            totalPriceText.text = "Total: " + total + " Gold";
+            currentSelectedSlotImage.color = normalColor;
         }
-        else
+        currentSelectedSlotImage = clickedImage;
+        if (currentSelectedSlotImage != null)
         {
-            totalPriceText.text = "Select an item";
+            currentSelectedSlotImage.color = selectedColor;
         }
     }
 
+    public void UpdateTotalPrice()
+    {
+        if (selectedItem == null || amountSlider == null) return;
+        currentAmount = (int)amountSlider.value;
+        if (amountText != null) amountText.text = currentAmount.ToString();
+        int totalPrice = selectedItem.value * currentAmount;
+        totalPriceText.text = totalPrice.ToString();
+    }
+    
     public void BuySelectedItem()
     {
         if (selectedItem == null || goldItemData == null) return;
 
         int totalCost = selectedItem.value * currentAmount;
-
         int currentGold = InventoryManager.Instance.GetItemAmount(goldItemData);
 
         if (currentGold >= totalCost)
         {
             InventoryManager.Instance.RemoveItem(goldItemData, totalCost);
-            
             InventoryManager.Instance.AddItem(selectedItem, currentAmount);
-
             UpdateGoldUI();
-        }
+            if (amountSlider != null) amountSlider.value = 1;
 
+            if (currentShopkeeperAnim != null)
+            {
+                currentShopkeeperAnim.SetTrigger("ThankYou");
+            }
+        }
+        else
+        {
+            if (NotificationManager.Instance != null)
+            {
+                NotificationManager.Instance.ShowWarning("Not enough gold!");
+            }
+        }
     }
 
     public void UpdateGoldUI()
@@ -96,7 +157,7 @@ public class ShopManager : MonoBehaviour
         if (goldText != null && goldItemData != null)
         {
             int currentGold = InventoryManager.Instance.GetItemAmount(goldItemData);
-            goldText.text = "Gold: " + currentGold;
+            goldText.text = currentGold.ToString();
         }
     }
 }

@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: SkeltonData
   m_EditorClassIdentifier: Assembly-CSharp::SkeletonStats
   enemyName: Skeleton
-  maxHealth: 100
+  maxHealth: 1
   walkSpeed: 1.5
   runSpeed: 4
   chaseRange: 20
   rotationSpeed: 10
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    minAmount: 1
-    maxAmount: 3
+    minAmount: 5
+    maxAmount: 10
     dropChance: 100
   - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
     minAmount: 1

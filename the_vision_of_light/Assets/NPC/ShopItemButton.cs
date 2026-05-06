@@ -17,7 +17,7 @@ public class ShopItemButton : MonoBehaviour
         {
             if (itemIcon != null) itemIcon.sprite = item.itemIcon;
             if (nameText != null) nameText.text = item.itemName;
-            if (priceText != null) priceText.text = item.value.ToString() + " Gold";
+            if (priceText != null) priceText.text = item.value.ToString();
         }
     }
 
