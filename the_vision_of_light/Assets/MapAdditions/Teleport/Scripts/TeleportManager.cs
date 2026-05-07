@@ -18,6 +18,8 @@ public class TeleportManager : MonoBehaviour
     [Header("Confirmation UI")]
     public GameObject teleportConfirmPanel;
     public GameObject mapSelectionGlow;
+
+    public Vector2 selectionOffset = new Vector2(0f, -30f);
     private TeleportPoint selectedDestination;
 
     [Header("Audio")]
@@ -51,10 +53,14 @@ public class TeleportManager : MonoBehaviour
                 if (clickedButton != null)
                 {
                     mapSelectionGlow.transform.SetParent(clickedButton.transform.parent, false);
-
                     mapSelectionGlow.transform.position = clickedButton.transform.position;
-
                     mapSelectionGlow.transform.SetAsFirstSibling(); 
+
+                    RectTransform glowRect = mapSelectionGlow.GetComponent<RectTransform>();
+                    if (glowRect != null)
+                    {
+                        glowRect.anchoredPosition += selectionOffset;
+                    }
                 }
             }
         }

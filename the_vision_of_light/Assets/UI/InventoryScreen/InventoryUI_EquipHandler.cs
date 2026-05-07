@@ -38,5 +38,6 @@ public class InventoryUI_EquipHandler : MonoBehaviour
         QuickSlotManager.Instance.AssignToFirstEmptySlot(item);
 
         if (item is WeaponItemData weapon)
-            ui.DisplayItemDetails(item, ui.isItemClickedFromGrid);    }
+            ui.DisplayItemDetails(item, ui.isItemClickedFromGrid);    
+            }
 }

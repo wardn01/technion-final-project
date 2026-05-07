@@ -78,6 +78,9 @@ public class InventoryUIManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
+            if (UIManager.Instance != null && UIManager.Instance.IsAnyOtherPanelOpen(inventoryWindow)) 
+                return;
+
             if (Time.timeScale == 0f && !inventoryWindow.activeSelf) return;
 
             ToggleInventory();

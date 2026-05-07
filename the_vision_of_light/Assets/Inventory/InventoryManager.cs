@@ -48,16 +48,20 @@ public class InventoryManager : MonoBehaviour
         {
             inventory.Remove(item);
         }
-        if (notificationPrefab != null && notificationParent != null)
-        {
-            GameObject notif = Instantiate(notificationPrefab, notificationParent);
 
-            notif.transform.SetAsLastSibling(); 
-            
-            PickupNotification notifScript = notif.GetComponent<PickupNotification>();
-            if (notifScript != null)
+        if (amount > 0)
+        {
+            if (notificationPrefab != null && notificationParent != null)
             {
-                notifScript.Setup(item, amount);
+                GameObject notif = Instantiate(notificationPrefab, notificationParent);
+
+                notif.transform.SetAsLastSibling(); 
+                
+                PickupNotification notifScript = notif.GetComponent<PickupNotification>();
+                if (notifScript != null)
+                {
+                    notifScript.Setup(item, amount);
+                }
             }
         }
     }

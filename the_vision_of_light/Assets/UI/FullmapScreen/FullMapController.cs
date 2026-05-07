@@ -6,6 +6,9 @@ public class FullMapController : MonoBehaviour
     public GameObject fullMapScreen; 
     public RectTransform mapContent;
 
+    [Header("UI Elements to Hide")] 
+    public GameObject[] uiElementsToHide;
+
     [Header("Player Settings")]
     public Transform player;
     public Transform fullMapCamera; 
@@ -16,6 +19,8 @@ public class FullMapController : MonoBehaviour
     public AudioClip teleportClickSound;
     public float teleportClickVolume = 0.3f;
     private AudioSource uiAudioSource;
+
+    private bool wasMapOpen = false; 
 
     void Start()
     {
@@ -30,8 +35,19 @@ public class FullMapController : MonoBehaviour
 
     void Update()
     {
+        bool isMapOpen = fullMapScreen.activeSelf;
+
+        if (wasMapOpen && !isMapOpen)
+        {
+            ToggleUIElements(true);
+        }
+        wasMapOpen = isMapOpen;
+
         if (Input.GetKeyDown(KeyCode.M))
         {
+            if (UIManager.Instance != null && UIManager.Instance.IsAnyOtherPanelOpen(fullMapScreen)) 
+                return;
+
             if (Time.timeScale == 0f && !fullMapScreen.activeSelf) return;
 
             bool isOpen = fullMapScreen.activeSelf;
@@ -44,6 +60,9 @@ public class FullMapController : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
                 
                 fullMapCamera.gameObject.SetActive(true); 
+
+                ToggleUIElements(false);
+
                 CenterMapOnPlayer(); 
             }
             else 
@@ -53,6 +72,19 @@ public class FullMapController : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Locked;
 
                 fullMapCamera.gameObject.SetActive(false); 
+                
+                ToggleUIElements(true);
+            }
+        }
+    }
+
+    private void ToggleUIElements(bool show)
+    {
+        foreach (GameObject element in uiElementsToHide)
+        {
+            if (element != null)
+            {
+                element.SetActive(show);
             }
         }
     }
