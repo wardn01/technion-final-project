@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class EnemyUI : MonoBehaviour
 {
     [Header("UI Elements")]
     public Image healthFillImage;
+    public TextMeshProUGUI nameAndLevelText;
     
     private float maxHP;
 
@@ -22,6 +24,14 @@ public class EnemyUI : MonoBehaviour
         if (healthFillImage != null && maxHP > 0)
         {
             healthFillImage.fillAmount = currentHealth / maxHP;
+        }
+    }
+
+    public void SetupEnemyInfo(string enemyName, int enemyLevel)
+    {
+        if (nameAndLevelText != null)
+        {
+            nameAndLevelText.text = $"Lv.{enemyLevel}";
         }
     }
 }

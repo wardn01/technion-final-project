@@ -15,8 +15,15 @@ public abstract class EnemyBaseStats : ScriptableObject
     [Header("Basic Info")]
     [SerializeField] private string enemyName = "New Enemy";
     
-    [Header("Health Stats")]
-    [SerializeField] private float maxHealth = 100f;
+    [Header("Base Combat Stats")]
+    [SerializeField] private float baseMaxHealth = 100f;
+    [SerializeField] private float baseAttack = 10f;
+    [SerializeField] private float baseDefense = 5f;
+
+    [Header("Scaling Factors (Per Player Level)")]
+    [SerializeField] private float hpScale = 20f;
+    [SerializeField] private float atkScale = 5f;
+    [SerializeField] private float defScale = 2f;
 
     [Header("Movement & AI")]
     [SerializeField] private float walkSpeed = 1.5f; 
@@ -31,7 +38,13 @@ public abstract class EnemyBaseStats : ScriptableObject
     [SerializeField] private int xpReward = 20;
 
     public string EnemyName => enemyName;
-    public float MaxHealth => maxHealth;
+    public float BaseMaxHealth => baseMaxHealth;
+    public float BaseAttack => baseAttack;
+    public float BaseDefense => baseDefense;
+    public float HpScale => hpScale;
+    public float AtkScale => atkScale;
+    public float DefScale => defScale;
+    
     public float WalkSpeed => walkSpeed; 
     public float RunSpeed => runSpeed;
     public float ChaseRange => chaseRange;

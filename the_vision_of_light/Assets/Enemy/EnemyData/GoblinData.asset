@@ -13,26 +13,32 @@ MonoBehaviour:
   m_Name: GoblinData
   m_EditorClassIdentifier: Assembly-CSharp::GoblinStats
   enemyName: Goblin
-  maxHealth: 100
+  baseMaxHealth: 80
+  baseAttack: 12
+  baseDefense: 5
+  hpScale: 15
+  atkScale: 4
+  defScale: 2
   walkSpeed: 2
   runSpeed: 4.5
   chaseRange: 20
   rotationSpeed: 10
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    minAmount: 2
-    maxAmount: 5
+    minAmount: 10
+    maxAmount: 30
     dropChance: 100
   - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
     minAmount: 1
     maxAmount: 3
-    dropChance: 60
-  normalDamage: 10
+    dropChance: 50
+  xpReward: 20
+  normalDamage: 120
   normalAttackRange: 1.2
   normalAttackCooldown: 2.2
   maxLeashDistance: 25
   rangedAttackRange: 12
   meleeChargeRange: 7
   projectileSpeed: 15
-  rangedDamage: 5
+  rangedDamage: 80
   rangedAttackCooldown: 2.5

@@ -97,8 +97,11 @@ public class Goblin : NormalEnemy
             BoneProjectile boneScript = boneObj.GetComponent<BoneProjectile>();
             if (boneScript != null) 
             {
-                float boneDmg = RangedStats != null ? RangedStats.RangedDamage : MeleeStats.NormalDamage;
-                boneScript.SetDamage(boneDmg);
+                float bonePercentage = RangedStats != null ? RangedStats.RangedDamage : MeleeStats.NormalDamage;
+                float damageMultiplier = bonePercentage / 100f;
+                float finalBoneDamage = currentAttack * damageMultiplier;
+                
+                boneScript.SetDamage(finalBoneDamage);
             }
 
             Rigidbody rb = boneObj.GetComponent<Rigidbody>();
@@ -120,7 +123,8 @@ public class Goblin : NormalEnemy
     {
         if (MeleeStats != null)
         {
-            ExecuteMeleeAttack(MeleeStats.NormalDamage, MeleeStats.NormalAttackRange);
+            float damageMultiplier = MeleeStats.NormalDamage / 100f;
+            ExecuteMeleeAttack(damageMultiplier, MeleeStats.NormalAttackRange);
         }
     }
 

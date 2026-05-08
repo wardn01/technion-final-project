@@ -13,15 +13,15 @@ public class NormalEnemy : EnemyBase
     protected PlayerHealth playerHealth; 
     protected EnemyStatusEffects statusEffects;
 
-   [Header("Camp Reset System (Genshin Style)")]
+    [Header("Camp Reset System (Genshin Style)")]
     public bool isReturningToCamp = false;
 
     protected NormalEnemyStats MeleeStats => stats as NormalEnemyStats;
 
     protected override void Start()
     {
-        base.Start(); 
-
+        base.Start();
+        
         statusEffects = GetComponent<EnemyStatusEffects>();
         if (target != null)
         {
@@ -92,7 +92,6 @@ public class NormalEnemy : EnemyBase
 
     private void TriggerCampReset()
     {
-        Debug.Log($"[{gameObject.name}] Target lost! Returning to camp and healing...");
         isReturningToCamp = true;
         isHitBase = false;
         isAttackingBase = false;
@@ -103,7 +102,7 @@ public class NormalEnemy : EnemyBase
             anim.ResetTrigger("Hit");
         }
 
-        currentHealth = stats.MaxHealth;
+        currentHealth = currentMaxHealth;
         UpdateHealthUI();
     }
 
@@ -118,18 +117,13 @@ public class NormalEnemy : EnemyBase
             if (Vector3.Distance(transform.position, startingPosition) <= agent.stoppingDistance + 0.5f)
             {
                 isReturningToCamp = false;
-                Debug.Log($"[{gameObject.name}] Arrived at camp. Ready to fight again.");
             }
         }
     }
 
     public override void TakeDamage(float amount)
     {
-        if (isReturningToCamp)
-        {
-            Debug.Log($"[{gameObject.name}] IMMUNE! Enemy is resetting.");
-            return;
-        }
+        if (isReturningToCamp) return;
 
         base.TakeDamage(amount);
     }

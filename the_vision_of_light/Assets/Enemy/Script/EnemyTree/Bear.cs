@@ -40,7 +40,6 @@ public class Bear : AnimalEnemy
             {
                 SetSleepState(false);
                 anim.SetTrigger("Buff"); 
-                Debug.Log("Bear woke up and roared");
                 cycleTimer = 0f; 
                 isRoaring = true;
                 StopAgent();
@@ -52,9 +51,6 @@ public class Bear : AnimalEnemy
         }
         else
         {
-            //if (anim != null) anim.SetBool("InCombat", false); 
-            //UpdateBlendTree(); 
-
             if (isHitBase || isAttackingBase || isRoaring)
             {
                 StopAgent();
@@ -119,7 +115,6 @@ public class Bear : AnimalEnemy
             int randomAttack = Random.Range(1, 4);
             anim.SetInteger("AttackIndex", randomAttack);
             anim.SetTrigger("Attack");
-            Debug.Log($"Bear performing attack {randomAttack}");
         }
     }
 
@@ -128,29 +123,29 @@ public class Bear : AnimalEnemy
         if (AnimalStats != null) 
         {
             int currentAttack = anim.GetInteger("AttackIndex");
-            float finalDamage = AnimalStats.AnimalDamage;
+            float damagePercentage = AnimalStats.AnimalDamage;
 
             switch (currentAttack)
             {
                 case 1:
-                    finalDamage = AnimalStats.AnimalDamage; 
+                    damagePercentage = AnimalStats.AnimalDamage; 
                     break;
                 case 2:
-                    finalDamage = AnimalStats.AnimalDamage * 1.5f; 
+                    damagePercentage = AnimalStats.AnimalDamage * 1.5f; 
                     break;
                 case 3:
-                    finalDamage = AnimalStats.AnimalDamage * 2f; 
+                    damagePercentage = AnimalStats.AnimalDamage * 2f; 
                     break;
             }
 
-            ExecuteMeleeAttack(finalDamage, AnimalStats.AttackRange);
+            float damageMultiplier = damagePercentage / 100f;
+            ExecuteMeleeAttack(damageMultiplier, AnimalStats.AttackRange);
         }
     }
 
     protected override void Die()
     {
         base.Die();
-        Debug.Log("Bear defeated");
     }
 
     public void EndAttack()

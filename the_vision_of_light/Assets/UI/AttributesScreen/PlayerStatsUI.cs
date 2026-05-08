@@ -31,8 +31,14 @@ public class PlayerStatsUI : MonoBehaviour
 
     [Header("Text References")]
     public TextMeshProUGUI levelInfoText;
+    
+    [Header("XP Bar UI")]
+    public Image xpBarFill;
+    public TextMeshProUGUI xpText;
+
+    [Header("Stats References")]
     public TextMeshProUGUI availablePointsText;
-    public TextMeshProUGUI hpText, attackText, staminaText;
+    public TextMeshProUGUI hpText, attackText, defenseText, staminaText;
 
     [Header("Ascension Stars")]
     public Image[] ascensionStars; 
@@ -40,8 +46,8 @@ public class PlayerStatsUI : MonoBehaviour
     public Color unlitStarColor = new Color(0.5f, 0.5f, 0.5f, 0.3f); 
 
     [Header("Buttons (Plus & Minus)")]
-    public Button hpPlusBtn, atkPlusBtn, stmPlusBtn;
-    public Button hpMinusBtn, atkMinusBtn, stmMinusBtn;
+    public Button hpPlusBtn, atkPlusBtn, defPlusBtn, stmPlusBtn;
+    public Button hpMinusBtn, atkMinusBtn, defMinusBtn, stmMinusBtn;
     public Button resetBtn;
 
     [Header("Ascension UI")]
@@ -58,10 +64,14 @@ public class PlayerStatsUI : MonoBehaviour
 
         if(hpPlusBtn) hpPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.HP); RefreshUI(); });
         if(atkPlusBtn) atkPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
+        if(defPlusBtn) defPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
         if(stmPlusBtn) stmPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Stamina); RefreshUI(); });
+        
         if(hpMinusBtn) hpMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.HP); RefreshUI(); });
         if(atkMinusBtn) atkMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
+        if(defMinusBtn) defMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
         if(stmMinusBtn) stmMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Stamina); RefreshUI(); });
+        
         if(resetBtn) resetBtn.onClick.AddListener(() => { PlayerData.Instance.ResetStatPoints(); RefreshUI(); });
         if(ascendBtn) ascendBtn.onClick.AddListener(() => { PlayerData.Instance.TryAscend(); RefreshUI(); });
     }
@@ -121,9 +131,22 @@ public class PlayerStatsUI : MonoBehaviour
 
         levelInfoText.text = $"Level {PlayerData.Instance.currentLevel} / {PlayerData.Instance.maxLevelCap}";
         availablePointsText.text = $"Stat Points: {PlayerData.Instance.availableStatPoints}";
-        hpText.text = $"Max HP: {PlayerData.Instance.GetTotalMaxHealth()}";
-        attackText.text = $"Attack: {PlayerData.Instance.GetTotalAttack()}";
-        staminaText.text = $"Stamina: {PlayerData.Instance.GetTotalMaxStamina()}";
+
+        int baseHP = PlayerData.Instance.baseMaxHealth;
+        int bonusHP = PlayerData.Instance.investedHPPoints * PlayerData.Instance.healthPerPoint;
+        hpText.text = $"Max HP: {baseHP} <color=#00FF00>(+{bonusHP})</color>";
+
+        int baseAtk = PlayerData.Instance.baseAttack;
+        int bonusAtk = PlayerData.Instance.investedAtkPoints * PlayerData.Instance.attackPerPoint;
+        attackText.text = $"Attack: {baseAtk} <color=#00FF00>(+{bonusAtk})</color>";
+
+        int baseDef = PlayerData.Instance.baseDefense;
+        int bonusDef = PlayerData.Instance.investedDefPoints * PlayerData.Instance.defensePerPoint;
+        defenseText.text = $"Defense: {baseDef} <color=#00FF00>(+{bonusDef})</color>";
+
+        float baseStm = PlayerData.Instance.baseMaxStamina;
+        float bonusStm = PlayerData.Instance.investedStaminaPoints * PlayerData.Instance.staminaPerPoint;
+        staminaText.text = $"Stamina: {baseStm} <color=#00FF00>(+{bonusStm})</color>";
 
         if (goldText != null && goldItemData != null)
         {
@@ -133,12 +156,23 @@ public class PlayerStatsUI : MonoBehaviour
 
         UpdateStarsUI();
         UpdateAscensionUI();
+        UpdateXPBar();
+    }
 
-        PlayerHealth healthScript = FindFirstObjectByType<PlayerHealth>();
-        if (healthScript) healthScript.UpdateMaxHealthFromData();
+    private void UpdateXPBar()
+    {
+        if (PlayerData.Instance == null) return;
 
-        PlayerStamina staminaScript = FindFirstObjectByType<PlayerStamina>();
-        if (staminaScript) staminaScript.UpdateMaxStaminaFromData();
+        if (xpBarFill != null)
+        {
+            xpBarFill.fillAmount = (float)PlayerData.Instance.currentXP / PlayerData.Instance.xpToNextLevel;
+        }
+
+        if (xpText != null)
+        {
+            bool isMaxed = PlayerData.Instance.currentLevel >= PlayerData.Instance.maxLevelCap;
+            xpText.text = isMaxed ? "MAX" : $"{PlayerData.Instance.currentXP} / {PlayerData.Instance.xpToNextLevel}";
+        }
     }
 
     private void UpdateStarsUI()

@@ -62,17 +62,20 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    public void TakeDamage(float damageAmount)
+    public void TakeDamage(float incomingDamage)
     {
         if (isDead) return;
 
-        int finalDamage = Mathf.RoundToInt(damageAmount);
+        int playerDefense = PlayerData.Instance != null ? PlayerData.Instance.GetTotalDefense() : 0;
+        float damageMultiplier = 100f / (100f + playerDefense);
         
+        int finalDamage = Mathf.RoundToInt(incomingDamage * damageMultiplier);
         finalDamage = Mathf.Max(0, finalDamage);
+        
         currentHealth -= finalDamage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        ShowFloatingText("-" + damageAmount.ToString(), Color.red);
+        ShowFloatingText("-" + finalDamage.ToString(), Color.red);
         UpdateHealthUI();
 
         if (currentHealth <= 0)

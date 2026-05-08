@@ -14,7 +14,8 @@ public class Skeleton : NormalEnemy
     {
         if (MeleeStats != null) 
         {
-            ExecuteMeleeAttack(MeleeStats.NormalDamage, MeleeStats.NormalAttackRange);
+            float damageMultiplier = MeleeStats.NormalDamage / 100f;
+            ExecuteMeleeAttack(damageMultiplier, MeleeStats.NormalAttackRange);
         }
     }
 

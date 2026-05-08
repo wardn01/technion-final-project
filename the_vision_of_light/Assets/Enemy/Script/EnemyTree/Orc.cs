@@ -46,8 +46,6 @@ public class Orc : NormalEnemy
         {
             vfxController.PlayRageVFX();
         }
-        
-        Debug.Log("Orc is ENRAGED! Invincibility ON, and all CC cleared!");
     }
 
     public override void TakeDamage(float damage)
@@ -55,22 +53,26 @@ public class Orc : NormalEnemy
         if (isInvincible) return; 
         if (SpecificOrcStats == null) return;
 
-        float enrageThreshold = stats.MaxHealth * SpecificOrcStats.EnrageHealthPercentage;
+        float enrageThreshold = currentMaxHealth * SpecificOrcStats.EnrageHealthPercentage;
 
-        if (!phase2Triggered && (currentHealth - damage) <= enrageThreshold)
+        float damageMultiplier = 100f / (100f + currentDefense);
+        float predictedFinalDamage = damage * damageMultiplier;
+
+        if (!phase2Triggered && (currentHealth - predictedFinalDamage) <= enrageThreshold)
         {
-            float allowedDamage = currentHealth - enrageThreshold;
+            float actualDamageAllowed = currentHealth - enrageThreshold;
+            float rawDamageAllowed = actualDamageAllowed / damageMultiplier;
             
-            if (allowedDamage > 0)
+            if (rawDamageAllowed > 0)
             {
-                base.TakeDamage(allowedDamage);
+                base.TakeDamage(rawDamageAllowed);
             }
 
             TriggerEnragePhase();
             return; 
         }
 
-        base.TakeDamage(damage);
+        base.TakeDamage(damage); 
     }
 
     protected override void PerformAttack()
@@ -88,8 +90,6 @@ public class Orc : NormalEnemy
 
         anim.SetInteger("AttackIndex", attackIndex);
         anim.SetTrigger("Attack");
-        
-        Debug.Log($"[Orc] Attacking with move number: {attackIndex}");
     }
 
     protected override void PlayHitEffect()
@@ -104,8 +104,10 @@ public class Orc : NormalEnemy
     {
         if (SpecificOrcStats != null) 
         {
-            float damageToApply = isEnraged ? SpecificOrcStats.Phase2NormalDamage : SpecificOrcStats.NormalDamage;
-            ExecuteMeleeAttack(damageToApply, SpecificOrcStats.NormalAttackRange);
+            float damagePercentage = isEnraged ? SpecificOrcStats.Phase2NormalDamage : SpecificOrcStats.NormalDamage;
+            float damageMultiplier = damagePercentage / 100f; 
+            
+            ExecuteMeleeAttack(damageMultiplier, SpecificOrcStats.NormalAttackRange);
         }
     }
 
@@ -122,10 +124,10 @@ public class Orc : NormalEnemy
             PlayerHealth pHealth = target.GetComponent<PlayerHealth>();
             if (pHealth != null)
             {
-                float heavyDamage = SpecificOrcStats.HeavyAttackDamage; 
-                pHealth.TakeDamage(heavyDamage);
+                float heavyDamageMultiplier = SpecificOrcStats.HeavyAttackDamage / 100f;
+                float finalHeavyDamage = currentAttack * heavyDamageMultiplier; 
                 
-                Debug.Log($"[Orc] HEAVY MAGIC ATTACK hit for {heavyDamage} damage!");
+                pHealth.TakeDamage(finalHeavyDamage);
             }
         }
     }
@@ -137,15 +139,11 @@ public class Orc : NormalEnemy
         if (isInvincible)
         {
             isInvincible = false;
-            Debug.Log("🎯 Rage Period Over: Invincibility OFF.");
         }
-        
-        Debug.Log("🎯 EndAttack Fired! The Orc can move now.");
     }
 
     public void EndHit()
     {
         isHitBase = false;
-        Debug.Log("🎯 EndHit Fired! The Orc should be chasing you now.");
     }
 }

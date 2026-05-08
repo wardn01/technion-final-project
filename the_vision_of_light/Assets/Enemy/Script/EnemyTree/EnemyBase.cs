@@ -6,8 +6,14 @@ public abstract class EnemyBase : MonoBehaviour
     [Header("Base Data")]
     [SerializeField] protected EnemyBaseStats stats; 
 
-    [Header("Base Components")]
+    [Header("Current Scaled Stats")]
+    public int enemyLevel = 1;
+    public float currentMaxHealth;
+    public float currentAttack;
+    public float currentDefense;
     protected float currentHealth;
+    
+    [Header("Base Components")]
     protected Animator anim;
     protected NavMeshAgent agent;
     protected bool isDead = false;
@@ -35,11 +41,42 @@ public abstract class EnemyBase : MonoBehaviour
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) target = player.transform;
 
+        if (PlayerData.Instance == null) 
+        {
+            PlayerData.Instance = FindFirstObjectByType<PlayerData>();
+        }
+
         if (stats != null)
         {
-            currentHealth = stats.MaxHealth;
+            ScaleStatsWithPlayer();
+            currentHealth = currentMaxHealth;
+            
             if (agent != null) agent.speed = stats.WalkSpeed; 
-            if (enemyUI != null) enemyUI.SetupHealthBar(stats.MaxHealth);
+            
+            if (enemyUI != null) 
+            {
+                enemyUI.SetupHealthBar(currentMaxHealth);
+                
+                enemyUI.SetupEnemyInfo(stats.EnemyName, enemyLevel);
+            }
+        }
+    }
+
+    protected virtual void ScaleStatsWithPlayer()
+    {
+        if (PlayerData.Instance != null && stats != null)
+        {
+            enemyLevel = PlayerData.Instance.currentLevel;
+            currentMaxHealth = stats.BaseMaxHealth + (enemyLevel * stats.HpScale);
+            currentAttack = stats.BaseAttack + (enemyLevel * stats.AtkScale);
+            currentDefense = stats.BaseDefense + (enemyLevel * stats.DefScale);
+        }
+        else if (stats != null)
+        {
+            enemyLevel = 1;
+            currentMaxHealth = stats.BaseMaxHealth;
+            currentAttack = stats.BaseAttack;
+            currentDefense = stats.BaseDefense;
         }
     }
 
@@ -72,17 +109,24 @@ public abstract class EnemyBase : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * stats.RotationSpeed);
     }
 
-    public virtual void TakeDamage(float amount)
+    public virtual void TakeDamage(float incomingDamage)
     {
         if (isDead) return;
-        currentHealth -= amount;
+
+        float damageMultiplier = 100f / (100f + currentDefense);
+        float finalDamage = incomingDamage * damageMultiplier;
+
+        int finalDamageInt = Mathf.RoundToInt(finalDamage);
+        finalDamageInt = Mathf.Max(1, finalDamageInt); 
+
+        currentHealth -= finalDamageInt;
         UpdateHealthUI();
 
         if (damageTextPrefab != null)
         {
             Vector3 spawnPos = textSpawnPoint != null ? textSpawnPoint.position : transform.position + Vector3.up * 2f;
             GameObject textObj = Instantiate(damageTextPrefab, spawnPos, Quaternion.identity);
-            textObj.GetComponent<DamageText>()?.Setup(amount);
+            textObj.GetComponent<DamageText>()?.Setup(finalDamageInt);
         }
 
         if (currentHealth <= 0) Die();
@@ -138,7 +182,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-    protected void ExecuteMeleeAttack(float damageAmount, float attackRange, float maxAngle = 60f)
+    protected void ExecuteMeleeAttack(float damageMultiplier = 1f, float attackRange = 2f, float maxAngle = 60f)
     {
         if (target == null) return;
 
@@ -155,7 +199,8 @@ public abstract class EnemyBase : MonoBehaviour
                 PlayerHealth pHealth = target.GetComponent<PlayerHealth>();
                 if (pHealth != null)
                 {
-                    pHealth.TakeDamage(damageAmount);
+                    float finalDamage = currentAttack * damageMultiplier;
+                    pHealth.TakeDamage(finalDamage);
                 }
             }
         }

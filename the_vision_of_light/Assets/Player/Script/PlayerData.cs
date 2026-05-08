@@ -30,19 +30,22 @@ public class PlayerData : MonoBehaviour
     public int currentAscensionIndex = 0;    
 
     [Header("Stat Points")]
-    public int availableStatPoints = 0;
+    public int availableStatPoints = 1;
     public int investedHPPoints = 0;
     public int investedAtkPoints = 0;
+    public int investedDefPoints = 0; 
     public int investedStaminaPoints = 0;
 
     [Header("Base Stats (Level 1)")]
-    public int baseAttack = 10;
-    public int baseMaxHealth = 100;
+    public int baseAttack = 15;
+    public int baseDefense = 10;
+    public int baseMaxHealth = 150;
     public float baseMaxStamina = 100f;
 
     [Header("Stat Multipliers (Per Point)")]
-    public int healthPerPoint = 100;
-    public int attackPerPoint = 10;
+    public int healthPerPoint = 20;
+    public int attackPerPoint = 3;
+    public int defensePerPoint = 2;
     public float staminaPerPoint = 10f;
     public float absoluteMaxStamina = 250f;
 
@@ -71,10 +74,13 @@ public class PlayerData : MonoBehaviour
 
     private void LevelUp()
     {
-        currentXP -= xpToNextLevel;
+        currentXP -= xpToNextLevel; 
         currentLevel++;
-        availableStatPoints++; 
-        xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.5f); 
+        availableStatPoints++;
+
+        xpToNextLevel += 100; 
+
+        Debug.Log("Leveled Up! New Level: " + currentLevel + " | Next Goal: " + xpToNextLevel);
     }
 
     public bool CanAscend()
@@ -121,7 +127,7 @@ public class PlayerData : MonoBehaviour
         }
     }
 
-    public enum StatType { HP, Attack, Stamina }
+    public enum StatType { HP, Attack, Defense, Stamina } 
 
     public void AllocateStatPoint(StatType stat)
     {
@@ -131,6 +137,7 @@ public class PlayerData : MonoBehaviour
         {
             case StatType.HP: investedHPPoints++; break;
             case StatType.Attack: investedAtkPoints++; break;
+            case StatType.Defense: investedDefPoints++; break; 
             case StatType.Stamina:
                 if (GetTotalMaxStamina() + staminaPerPoint > absoluteMaxStamina) return;
                 investedStaminaPoints++; break;
@@ -144,17 +151,19 @@ public class PlayerData : MonoBehaviour
         {
             case StatType.HP: if (investedHPPoints > 0) { investedHPPoints--; availableStatPoints++; } break;
             case StatType.Attack: if (investedAtkPoints > 0) { investedAtkPoints--; availableStatPoints++; } break;
+            case StatType.Defense: if (investedDefPoints > 0) { investedDefPoints--; availableStatPoints++; } break; 
             case StatType.Stamina: if (investedStaminaPoints > 0) { investedStaminaPoints--; availableStatPoints++; } break;
         }
     }
 
     public void ResetStatPoints()
     {
-        availableStatPoints += (investedHPPoints + investedAtkPoints + investedStaminaPoints);
-        investedHPPoints = investedAtkPoints = investedStaminaPoints = 0;
+        availableStatPoints += (investedHPPoints + investedAtkPoints + investedDefPoints + investedStaminaPoints);
+        investedHPPoints = investedAtkPoints = investedDefPoints = investedStaminaPoints = 0;
     }
 
     public int GetTotalMaxHealth() => baseMaxHealth + (investedHPPoints * healthPerPoint);
     public int GetTotalAttack() => baseAttack + (investedAtkPoints * attackPerPoint);
+    public int GetTotalDefense() => baseDefense + (investedDefPoints * defensePerPoint); 
     public float GetTotalMaxStamina() => baseMaxStamina + (investedStaminaPoints * staminaPerPoint);
 }
