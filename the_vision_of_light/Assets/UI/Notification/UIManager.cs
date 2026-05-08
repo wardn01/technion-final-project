@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     public GameObject inventoryPanel;
     public GameObject mapPanel;
     public GameObject shopPanel;
+    public GameObject attributesPanel;
     
     [HideInInspector] public bool isDialogueOpen = false;
 
@@ -21,6 +22,7 @@ public class UIManager : MonoBehaviour
         if (inventoryPanel != null && inventoryPanel.activeSelf && inventoryPanel != callerPanel) return true;
         if (mapPanel != null && mapPanel.activeSelf && mapPanel != callerPanel) return true;
         if (shopPanel != null && shopPanel.activeSelf && shopPanel != callerPanel) return true;
+        if (attributesPanel != null && attributesPanel.activeSelf && attributesPanel != callerPanel) return true;
         if (isDialogueOpen) return true;
 
         return false; 

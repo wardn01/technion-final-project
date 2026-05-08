@@ -27,6 +27,9 @@ public abstract class EnemyBaseStats : ScriptableObject
     [Header("Loot System")]
     [SerializeField] private LootDrop[] lootTable;
 
+    [Header("Rewards")]
+    [SerializeField] private int xpReward = 20;
+
     public string EnemyName => enemyName;
     public float MaxHealth => maxHealth;
     public float WalkSpeed => walkSpeed; 
@@ -35,4 +38,5 @@ public abstract class EnemyBaseStats : ScriptableObject
     public float RotationSpeed => rotationSpeed;
     
     public LootDrop[] LootTable => lootTable; 
+    public int XPReward => xpReward;
 }

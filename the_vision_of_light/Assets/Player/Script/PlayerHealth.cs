@@ -11,7 +11,7 @@ public class PlayerHealth : MonoBehaviour
     public GameObject hudScreen;
 
     [Header("Health Settings")]
-    public int maxHealth = 100;
+    [HideInInspector] public int maxHealth;
     public int currentHealth;
 
     [Header("Components")]
@@ -30,7 +30,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
-        ValidateSettings();
+        UpdateMaxHealthFromData();
         currentHealth = maxHealth;
         UpdateHealthUI();
 
@@ -46,6 +46,20 @@ public class PlayerHealth : MonoBehaviour
         }
 
         SetRagdollState(false);
+    }
+
+    public void UpdateMaxHealthFromData()
+    {
+        if (PlayerData.Instance != null)
+        {
+            maxHealth = PlayerData.Instance.GetTotalMaxHealth();
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+            UpdateHealthUI();
+        }
+        else
+        {
+            maxHealth = 100;
+        }
     }
 
     public void TakeDamage(float damageAmount)
@@ -117,6 +131,7 @@ public class PlayerHealth : MonoBehaviour
     public void Revive()
     {
         isDead = false;
+        UpdateMaxHealthFromData();
         currentHealth = maxHealth;
         UpdateHealthUI();
 
@@ -177,11 +192,5 @@ public class PlayerHealth : MonoBehaviour
                 col.enabled = state;
             }
         }
-    }
-
-    private void ValidateSettings()
-    {
-        maxHealth = Mathf.Max(1, maxHealth);
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
     }
 }

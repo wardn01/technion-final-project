@@ -96,49 +96,43 @@ public class PlayerCombat : MonoBehaviour
 
     public void UnequipCurrentWeapon()
     {
-    if (currentWeaponModel != null)
-    {
-        Destroy(currentWeaponModel);
-        currentWeaponModel = null;
-    }
-
-    activeWeaponData = null;
-
-    if (anim != null)
-    {
-        AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
-
-        if (!combatState.IsName("Empty"))
+        if (currentWeaponModel != null)
         {
-            anim.Play("Movement", 0); 
-            anim.Play("Empty", 1);
-            Debug.Log("Forced reset to Movement because player was in CombatLayer.");
-        }
-        else 
-        {
-            Debug.Log("Player already in BaseLayer, no animation snap needed.");
+            Destroy(currentWeaponModel);
+            currentWeaponModel = null;
         }
 
-        anim.runtimeAnimatorController = baseAnimatorController;
-        anim.SetBool("isAttacking", false);
-        anim.SetBool("isRolling", false);
-        anim.ResetTrigger("Attack");
-        anim.ResetTrigger("Skill_E");
-        anim.ResetTrigger("Skill_Q");
-    }
+        activeWeaponData = null;
 
-    inCombatStance = false;
-    isAttacking = false;
+        if (anim != null)
+        {
+            AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
+
+            if (!combatState.IsName("Empty"))
+            {
+                anim.Play("Movement", 0); 
+                anim.Play("Empty", 1);
+            }
+
+            anim.runtimeAnimatorController = baseAnimatorController;
+            anim.SetBool("isAttacking", false);
+            anim.SetBool("isRolling", false);
+            anim.ResetTrigger("Attack");
+            anim.ResetTrigger("Skill_E");
+            anim.ResetTrigger("Skill_Q");
+        }
+
+        inCombatStance = false;
+        isAttacking = false;
     }
 
     public bool IsSafeToEquip()
     {
-    AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
+        AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
+        bool isAttackingState = anim.GetBool("isAttacking");
+        bool isInCombatAnimation = !combatState.IsName("Empty");
 
-    bool isAttackingState = anim.GetBool("isAttacking");
-    bool isInCombatAnimation = !combatState.IsName("Empty");
-
-    return !isAttackingState && !isInCombatAnimation;
+        return !isAttackingState && !isInCombatAnimation;
     }
     
     private void HandleCooldowns()
@@ -202,7 +196,6 @@ public class PlayerCombat : MonoBehaviour
         bool grounded = movementScript != null && movementScript.isGrounded;
         if (!grounded) return;
 
-        
         if (!CanInterrupt() || activeWeaponData == null) return;
 
         if (Input.GetMouseButtonDown(0)) 
@@ -310,6 +303,10 @@ public class PlayerCombat : MonoBehaviour
     {
         if (activeWeaponData == null) return;
 
+        // 🔥 تم التحويل لـ float
+        float playerBonus = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+        float totalDamage = activeWeaponData.normalAttackDamage + playerBonus;
+
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
         foreach (Collider enemy in hitEnemies)
         {
@@ -323,12 +320,8 @@ public class PlayerCombat : MonoBehaviour
 
                 if (angle <= attackAngle)
                 {
-                    enemyBase.TakeDamage(activeWeaponData.normalAttackDamage);
-                    Debug.Log($"[Player] Slashed {enemy.name} for {activeWeaponData.normalAttackDamage} damage!");
-                }
-                else
-                {
-                    Debug.Log($"[Player] Missed! {enemy.name} was behind the player.");
+                    enemyBase.TakeDamage(totalDamage);
+                    Debug.Log($"[Player] Hit {enemy.name} for {totalDamage} damage! (Weapon: {activeWeaponData.normalAttackDamage} + Base: {playerBonus})");
                 }
             }
         }
@@ -353,11 +346,14 @@ public class PlayerCombat : MonoBehaviour
         {
             GameObject skill = Instantiate(activeWeaponData.skillEPrefab, eSpawnPoint.position, eSpawnPoint.rotation);
             
+            float playerBonus = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+            float totalDamage = activeWeaponData.skillEDamage + playerBonus;
+
             WindSkillEDamage windScript = skill.GetComponent<WindSkillEDamage>();
-            if (windScript != null) windScript.SetDamage(activeWeaponData.skillEDamage);
+            if (windScript != null) windScript.SetDamage(totalDamage);
 
             IceSkillEDamage iceScript = skill.GetComponent<IceSkillEDamage>();
-            if (iceScript != null) iceScript.SetDamage(activeWeaponData.skillEDamage);
+            if (iceScript != null) iceScript.SetDamage(totalDamage);
         }
     }
     
@@ -367,15 +363,18 @@ public class PlayerCombat : MonoBehaviour
         {
             GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
             
+            float playerBonus = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+            float totalDamage = activeWeaponData.skillQDamage + playerBonus;
+
             IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
             if (iceScript != null)
             {
                 skill.transform.parent = qSpawnPoint;
-                iceScript.SetDamage(activeWeaponData.skillQDamage);
+                iceScript.SetDamage(totalDamage);
             }
 
             WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
-            if (windScript != null) windScript.SetDamage(activeWeaponData.skillQDamage);
+            if (windScript != null) windScript.SetDamage(totalDamage);
         }
     }
 

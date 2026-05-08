@@ -7,7 +7,7 @@ public class PlayerStamina : MonoBehaviour
     public Image staminaBarFill;
 
     [Header("Stamina Settings")]
-    public float maxStamina = 100f;
+    [HideInInspector] public float maxStamina;
     public float currentStamina;
     public float staminaRegenRate = 20f;
     public float staminaRegenDelay = 1.5f;
@@ -16,25 +16,27 @@ public class PlayerStamina : MonoBehaviour
 
     void Start()
     {
+        UpdateMaxStaminaFromData();
         currentStamina = maxStamina;
+    }
+
+    public void UpdateMaxStaminaFromData()
+    {
+        if (PlayerData.Instance != null)
+        {
+            maxStamina = PlayerData.Instance.GetTotalMaxStamina();
+            currentStamina = Mathf.Min(currentStamina, maxStamina);
+        }
+        else
+        {
+            maxStamina = 100f;
+        }
     }
 
     void Update()
     {
-        if (maxStamina <= 0f)
-        {
-            maxStamina = 100f;
-        }
-
-        if (staminaRegenRate < 0f)
-        {
-            staminaRegenRate = 0f;
-        }
-
-        if (staminaRegenDelay < 0f)
-        {
-            staminaRegenDelay = 0f;
-        }
+        if (staminaRegenRate < 0f) staminaRegenRate = 0f;
+        if (staminaRegenDelay < 0f) staminaRegenDelay = 0f;
 
         if (regenTimer > 0f)
         {

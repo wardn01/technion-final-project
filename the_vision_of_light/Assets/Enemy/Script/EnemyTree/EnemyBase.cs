@@ -40,7 +40,6 @@ public abstract class EnemyBase : MonoBehaviour
             currentHealth = stats.MaxHealth;
             if (agent != null) agent.speed = stats.WalkSpeed; 
             if (enemyUI != null) enemyUI.SetupHealthBar(stats.MaxHealth);
-            Debug.Log($"{stats.EnemyName} initialized successfully.");
         }
     }
 
@@ -111,8 +110,16 @@ public abstract class EnemyBase : MonoBehaviour
         if (enemyUI != null) enemyUI.gameObject.SetActive(false);
         
         DropLoot();
+        GiveXP();
 
         Destroy(gameObject, 5f);
+    }
+
+    private void GiveXP()
+    {
+        if (stats == null || PlayerData.Instance == null) return;
+        
+        PlayerData.Instance.AddXP(stats.XPReward);
     }
 
     private void DropLoot()
@@ -149,12 +156,7 @@ public abstract class EnemyBase : MonoBehaviour
                 if (pHealth != null)
                 {
                     pHealth.TakeDamage(damageAmount);
-                    Debug.Log($"[{gameObject.name}] Hit the player for {damageAmount} damage!");
                 }
-            }
-            else
-            {
-                Debug.Log($"[{gameObject.name}] Missed! Player dodged out of angle.");
             }
         }
     }
