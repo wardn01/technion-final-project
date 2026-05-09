@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -33,9 +34,13 @@ public class PlayerCombat : MonoBehaviour
     public float attackAngle = 100f;
     public LayerMask enemyLayer;
 
-    [Header("Live Skill State")]
-    public float skillETimer = 0f;
-    public int currentE_Count = 0;
+    public class WeaponState
+    {
+        public float skillETimer = 0f;
+        public int currentE_Count = 0;
+    }
+
+    private Dictionary<WeaponItemData, WeaponState> weaponStates = new Dictionary<WeaponItemData, WeaponState>();
 
     private void Start()
     {
@@ -68,6 +73,18 @@ public class PlayerCombat : MonoBehaviour
             }
         }
     }
+
+    public WeaponState GetCurrentWeaponState()
+    {
+        if (activeWeaponData == null) return null;
+
+        if (!weaponStates.ContainsKey(activeWeaponData))
+        {
+            weaponStates.Add(activeWeaponData, new WeaponState());
+        }
+
+        return weaponStates[activeWeaponData];
+    }
     
     public void EquipWeapon(WeaponItemData newWeaponData)
     {
@@ -76,9 +93,6 @@ public class PlayerCombat : MonoBehaviour
         if (currentWeaponModel != null) Destroy(currentWeaponModel);
 
         activeWeaponData = newWeaponData;
-
-        skillETimer = 0f;
-        currentE_Count = 0;
 
         if (activeWeaponData.animatorOverride != null)
             anim.runtimeAnimatorController = activeWeaponData.animatorOverride;
@@ -128,18 +142,24 @@ public class PlayerCombat : MonoBehaviour
 
     public bool IsSafeToEquip()
     {
+        if (anim == null) return true;
         AnimatorStateInfo combatState = anim.GetCurrentAnimatorStateInfo(1);
-        bool isAttackingState = anim.GetBool("isAttacking");
-        bool isInCombatAnimation = !combatState.IsName("Empty");
 
-        return !isAttackingState && !isInCombatAnimation;
+        if (combatState.IsName("Empty") || combatState.IsName("Combat_Movement"))
+        {
+            return true; 
+        }
+        return false;
     }
     
     private void HandleCooldowns()
     {
-        if (skillETimer > 0f)
+        foreach (var state in weaponStates.Values)
         {
-            skillETimer -= Time.deltaTime;
+            if (state.skillETimer > 0f)
+            {
+                state.skillETimer -= Time.deltaTime;
+            }
         }
     }
 
@@ -204,24 +224,26 @@ public class PlayerCombat : MonoBehaviour
             RequestAttack(); 
         }
 
-        if (Input.GetKeyDown(KeyCode.Q) && currentE_Count >= activeWeaponData.requiredE_For_Q)
+        WeaponState state = GetCurrentWeaponState();
+
+        if (Input.GetKeyDown(KeyCode.Q) && state.currentE_Count >= activeWeaponData.requiredE_For_Q)
         {
             ForceCancelRoll();
             anim.SetTrigger("Skill_Q");
             isAttacking = true;
             ShowWeapon();
-            currentE_Count = 0;
+            state.currentE_Count = 0; 
             ClearBuffer();
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && skillETimer <= 0f)
+        if (Input.GetKeyDown(KeyCode.E) && state.skillETimer <= 0f)
         {
             ForceCancelRoll();
             anim.SetTrigger("Skill_E");
             isAttacking = true;
             ShowWeapon();
-            skillETimer = activeWeaponData.skillECooldown;
-            currentE_Count++;
+            state.skillETimer = activeWeaponData.skillECooldown; 
+            state.currentE_Count++; 
             ClearBuffer();
         }
     }
@@ -303,9 +325,9 @@ public class PlayerCombat : MonoBehaviour
     {
         if (activeWeaponData == null) return;
 
-        // 🔥 تم التحويل لـ float
-        float playerBonus = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
-        float totalDamage = activeWeaponData.normalAttackDamage + playerBonus;
+        float playerTotalAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+        float damageMultiplier = activeWeaponData.normalAttackDamage / 100f;
+        float totalDamage = playerTotalAttack * damageMultiplier;
 
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
         foreach (Collider enemy in hitEnemies)
@@ -321,7 +343,7 @@ public class PlayerCombat : MonoBehaviour
                 if (angle <= attackAngle)
                 {
                     enemyBase.TakeDamage(totalDamage);
-                    Debug.Log($"[Player] Hit {enemy.name} for {totalDamage} damage! (Weapon: {activeWeaponData.normalAttackDamage} + Base: {playerBonus})");
+                    Debug.Log($"[Player] Hit {enemy.name} for {totalDamage} damage! (Attack: {playerTotalAttack} * Multiplier: {damageMultiplier})");
                 }
             }
         }
@@ -346,8 +368,9 @@ public class PlayerCombat : MonoBehaviour
         {
             GameObject skill = Instantiate(activeWeaponData.skillEPrefab, eSpawnPoint.position, eSpawnPoint.rotation);
             
-            float playerBonus = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
-            float totalDamage = activeWeaponData.skillEDamage + playerBonus;
+            float playerTotalAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+            float damageMultiplier = activeWeaponData.skillEDamage / 100f;
+            float totalDamage = playerTotalAttack * damageMultiplier;
 
             WindSkillEDamage windScript = skill.GetComponent<WindSkillEDamage>();
             if (windScript != null) windScript.SetDamage(totalDamage);
@@ -363,8 +386,9 @@ public class PlayerCombat : MonoBehaviour
         {
             GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
             
-            float playerBonus = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
-            float totalDamage = activeWeaponData.skillQDamage + playerBonus;
+            float playerTotalAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+            float damageMultiplier = activeWeaponData.skillQDamage / 100f;
+            float totalDamage = playerTotalAttack * damageMultiplier;
 
             IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
             if (iceScript != null)

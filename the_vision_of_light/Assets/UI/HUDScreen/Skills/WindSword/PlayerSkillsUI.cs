@@ -110,8 +110,11 @@ public class PlayerSkillsUI : MonoBehaviour
 
         var ui = weaponUIs[index]; 
         var activeWeapon = combatScript.activeWeaponData; 
+        
+        var state = combatScript.GetCurrentWeaponState();
+        if (state == null) return;
 
-        bool isEReady = combatScript.skillETimer <= 0;
+        bool isEReady = state.skillETimer <= 0;
 
         if (isEReady && !wasEReady)
         {
@@ -120,15 +123,15 @@ public class PlayerSkillsUI : MonoBehaviour
         }
         wasEReady = isEReady;
 
-        if (combatScript.skillETimer > 0)
+        if (state.skillETimer > 0)
         {
             if (ui.eCooldownFill != null)
-                ui.eCooldownFill.fillAmount = combatScript.skillETimer / activeWeapon.skillECooldown;
+                ui.eCooldownFill.fillAmount = state.skillETimer / activeWeapon.skillECooldown;
 
             if (ui.eTimerText != null)
             {
                 ui.eTimerText.gameObject.SetActive(true);
-                int currentTimer = Mathf.CeilToInt(combatScript.skillETimer);
+                int currentTimer = Mathf.CeilToInt(state.skillETimer);
 
                 if (currentTimer != lastETimerValue)
                 {
@@ -161,8 +164,11 @@ public class PlayerSkillsUI : MonoBehaviour
 
         var ui = weaponUIs[index];
         var activeWeapon = combatScript.activeWeaponData;
+        
+        var state = combatScript.GetCurrentWeaponState();
+        if (state == null) return;
 
-        bool isQReady = combatScript.currentE_Count >= activeWeapon.requiredE_For_Q;
+        bool isQReady = state.currentE_Count >= activeWeapon.requiredE_For_Q;
 
         if (isQReady && !wasQReady)
         {
@@ -173,7 +179,7 @@ public class PlayerSkillsUI : MonoBehaviour
 
         if (ui.qCooldownFill != null)
         {
-            float fillRatio = (float)combatScript.currentE_Count / activeWeapon.requiredE_For_Q;
+            float fillRatio = (float)state.currentE_Count / activeWeapon.requiredE_For_Q;
             ui.qCooldownFill.fillAmount = 1f - fillRatio; 
         }
 

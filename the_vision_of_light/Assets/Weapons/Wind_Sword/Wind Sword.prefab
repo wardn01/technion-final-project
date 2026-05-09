@@ -26,7 +26,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 98318b7fbb6008a488a87d8f130a5b45, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.14
+      value: 0.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 98318b7fbb6008a488a87d8f130a5b45, type: 3}
       propertyPath: m_LocalPosition.z
@@ -112,8 +112,8 @@ MonoBehaviour:
   skillE_Sound:
   - {fileID: 8300000, guid: 465f3cfad95e7744c81d33f77a293d7b, type: 3}
   skillQ_Sound:
-  - {fileID: 0}
-  rollSound: {fileID: 8300000, guid: 8217828f49d55b543bea25ddba6b2f0f, type: 3}
+  - {fileID: 8300000, guid: 8217828f49d55b543bea25ddba6b2f0f, type: 3}
+  rollSound: {fileID: 8300000, guid: d2408db3580b50d48ab14dbeb5971759, type: 3}
   combatWalk:
   - {fileID: 8300000, guid: 075cc430054d37b41a8675b692cded80, type: 3}
   - {fileID: 8300000, guid: 02c9a8c7bd7dc8c4691c1ab8b1ac927e, type: 3}

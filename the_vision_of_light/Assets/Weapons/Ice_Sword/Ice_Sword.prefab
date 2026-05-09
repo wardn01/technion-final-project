@@ -10,19 +10,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 190.2584
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10.51592
+      value: 0.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -17.233438
+      value: 0.03
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalRotation.x
@@ -30,11 +30,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -46,7 +46,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -62,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 2d4f1511fc6ebea409895d08e30e32ac, type: 2}
     - target: {fileID: 919132149155446097, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_Name
-      value: KatsunesiSword 1
+      value: Ice_Sword
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e3e919f17c55c454596a6d34c475c49b, type: 3}
       propertyPath: m_IsActive

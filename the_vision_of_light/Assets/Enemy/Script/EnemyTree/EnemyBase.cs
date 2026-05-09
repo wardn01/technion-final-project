@@ -56,7 +56,6 @@ public abstract class EnemyBase : MonoBehaviour
             if (enemyUI != null) 
             {
                 enemyUI.SetupHealthBar(currentMaxHealth);
-                
                 enemyUI.SetupEnemyInfo(stats.EnemyName, enemyLevel);
             }
         }
@@ -66,17 +65,26 @@ public abstract class EnemyBase : MonoBehaviour
     {
         if (PlayerData.Instance != null && stats != null)
         {
-            enemyLevel = PlayerData.Instance.currentLevel;
+            int playerLevel = PlayerData.Instance.currentLevel;
+
+            int playerTier = playerLevel / 10;
+            int enemyTier = playerTier + 1;
+            
+            int minEnemyLevel = enemyTier * 10;       
+            int maxEnemyLevel = minEnemyLevel + 9;    
+            
+            enemyLevel = Random.Range(minEnemyLevel, maxEnemyLevel + 1);
+
             currentMaxHealth = stats.BaseMaxHealth + (enemyLevel * stats.HpScale);
             currentAttack = stats.BaseAttack + (enemyLevel * stats.AtkScale);
             currentDefense = stats.BaseDefense + (enemyLevel * stats.DefScale);
         }
         else if (stats != null)
         {
-            enemyLevel = 1;
-            currentMaxHealth = stats.BaseMaxHealth;
-            currentAttack = stats.BaseAttack;
-            currentDefense = stats.BaseDefense;
+            enemyLevel = 10; 
+            currentMaxHealth = stats.BaseMaxHealth + (10 * stats.HpScale);
+            currentAttack = stats.BaseAttack + (10 * stats.AtkScale);
+            currentDefense = stats.BaseDefense + (10 * stats.DefScale);
         }
     }
 

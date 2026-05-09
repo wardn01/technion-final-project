@@ -9,8 +9,15 @@ public class InventoryManager : MonoBehaviour
     public GameObject notificationPrefab;
     public Transform notificationParent;
 
-    [Header("Testing")]
-    public ItemData testWeaponToGive; 
+    [System.Serializable]
+    public struct StartingItem
+    {
+        public ItemData item;
+        public int amount;
+    }
+
+    [Header("Starting Items (Testing)")]
+    public StartingItem[] startingItems;
 
     private Dictionary<ItemData, int> inventory = new Dictionary<ItemData, int>();
 
@@ -29,9 +36,15 @@ public class InventoryManager : MonoBehaviour
 
     private void Start()
     {
-        if (testWeaponToGive != null)
+        if (startingItems != null)
         {
-            AddItem(testWeaponToGive, 1);
+            foreach (var startItem in startingItems)
+            {
+                if (startItem.item != null && startItem.amount > 0)
+                {
+                    AddItem(startItem.item, startItem.amount);
+                }
+            }
         }
     }
 
