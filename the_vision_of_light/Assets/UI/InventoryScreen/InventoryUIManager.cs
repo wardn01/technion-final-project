@@ -5,6 +5,8 @@ using TMPro;
 
 public class InventoryUIManager : MonoBehaviour
 {
+    public static InventoryUIManager Instance { get; private set; }
+
     [Header("References")]
     public PlayerCombat playerCombat;
 
@@ -54,6 +56,9 @@ public class InventoryUIManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+
         grid = GetComponent<InventoryUI_Grid>();
         equipHandler = GetComponent<InventoryUI_EquipHandler>();
     }
@@ -106,7 +111,6 @@ public class InventoryUIManager : MonoBehaviour
             OnTabClicked((int)currentFilter);
         if (!isOpening)
             QuickSlotManager.Instance.ResetSelection();
-
     }
 
     public void OnTabClicked(int tabIndex)

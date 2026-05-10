@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -10,19 +11,34 @@ public class InventorySlotUI : MonoBehaviour
     
     private ItemData itemData;
 
-    private InventoryUIManager uiManager;
+    private InventoryUIManager invManager;
+    private WeaponUpgradeUI weaponManager;
 
     public void Setup(ItemData item, int amount, InventoryUIManager manager)
     {
+        invManager = manager;
+        weaponManager = null; 
+        InternalSetup(item, amount);
+    }
+
+    public void Setup(ItemData item, int amount, WeaponUpgradeUI manager)
+    {
+        weaponManager = manager;
+        invManager = null; 
+        InternalSetup(item, amount);
+    }
+
+    private void InternalSetup(ItemData item, int amount)
+    {
         itemData = item;
-        uiManager = manager;
         if (icon != null) icon.sprite = item.itemIcon;
         
         if (amountText != null)
         {
             if (item.type == ItemType.Weapon)
             {
-                amountText.text = "-";
+                int lvl = PlayerData.Instance.GetWeaponLevel(item.itemName);
+                amountText.text = "Lv." + lvl;
             }
             else
             {
@@ -37,7 +53,13 @@ public class InventorySlotUI : MonoBehaviour
 
     private void OnSlotClicked()
     {
-        if (uiManager != null)
-            uiManager.DisplayItemDetails(itemData, true);
+        if (invManager != null)
+        {
+            invManager.DisplayItemDetails(itemData, true);
+        }
+        else if (weaponManager != null)
+        {
+            weaponManager.DisplayItemDetails(itemData, true);
+        }
     }
 }

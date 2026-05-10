@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -48,6 +49,9 @@ public class PlayerData : MonoBehaviour
     public int defensePerPoint = 2;
     public float staminaPerPoint = 10f;
     public float absoluteMaxStamina = 250f;
+
+    [Header("Weapon Levels")]
+    public Dictionary<string, int> weaponLevels = new Dictionary<string, int>();
 
     private void Awake()
     {
@@ -166,4 +170,20 @@ public class PlayerData : MonoBehaviour
     public int GetTotalAttack() => baseAttack + (investedAtkPoints * attackPerPoint);
     public int GetTotalDefense() => baseDefense + (investedDefPoints * defensePerPoint); 
     public float GetTotalMaxStamina() => baseMaxStamina + (investedStaminaPoints * staminaPerPoint);
+
+    public int GetWeaponLevel(string weaponName)
+    {
+        if (weaponLevels.ContainsKey(weaponName))
+            return weaponLevels[weaponName];
+        
+        return 1; 
+    }
+
+    public void LevelUpWeapon(string weaponName)
+    {
+        if (weaponLevels.ContainsKey(weaponName))
+            weaponLevels[weaponName]++;
+        else
+            weaponLevels.Add(weaponName, 2); 
+    }
 }

@@ -8,6 +8,7 @@ public class QuickSlotManager : MonoBehaviour
 
     [Header("References")]
     public PlayerCombat playerCombat;
+    public WeaponUpgradeUI weaponUI; 
 
     [Header("Slots Data")]
     public ItemData[] slots = new ItemData[4];
@@ -22,7 +23,6 @@ public class QuickSlotManager : MonoBehaviour
     private PlayerHealth playerHp;
     private InventoryUIManager inventoryUI;
 
-
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -32,13 +32,14 @@ public class QuickSlotManager : MonoBehaviour
     private void Start()
     {
         playerHp = FindFirstObjectByType<PlayerHealth>();
-        inventoryUI = FindFirstObjectByType<InventoryUIManager>();
+        inventoryUI = InventoryUIManager.Instance;
+        if (weaponUI == null) weaponUI = FindFirstObjectByType<WeaponUpgradeUI>();
         UpdateUI();
     }
 
     private void Update()
     {
-        if (Time.timeScale == 0f) return;
+        if (Time.timeScale == 0f && !IsAnyMenuOpen()) return;
         
         if (Input.GetKeyDown(KeyCode.Alpha1)) ExecuteSlotAction(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) ExecuteSlotAction(1);
@@ -46,7 +47,7 @@ public class QuickSlotManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha4)) ExecuteSlotAction(3);
     }
 
-   public void OnQuickSlotClicked(int index)
+    public void OnQuickSlotClicked(int index)
     {
         if (selectedSlotIndex != -1)
         {
@@ -63,11 +64,14 @@ public class QuickSlotManager : MonoBehaviour
 
             selectedSlotIndex = -1;
             UpdateUI();
-            if (inventoryUI != null) inventoryUI.RefreshUI();
+            inventoryUI?.RefreshUI();
             return;
         }
 
-        if (inventoryUI != null && inventoryUI.inventoryWindow.activeSelf &&
+        bool isInventoryOpen = (inventoryUI != null && inventoryUI.inventoryWindow.activeSelf);
+        bool isWeaponPageOpen = (weaponUI != null && weaponUI.gameObject.activeInHierarchy);
+
+        if ((isInventoryOpen || isWeaponPageOpen) && 
             inventoryUI.currentlySelectedItem != null && inventoryUI.isItemClickedFromGrid)
         {
             ItemData invItem = inventoryUI.currentlySelectedItem;
@@ -89,6 +93,9 @@ public class QuickSlotManager : MonoBehaviour
 
             UpdateUI();
             inventoryUI.RefreshUI();
+
+            if (isWeaponPageOpen) weaponUI.RefreshGrid(); 
+
             return;
         }
 
@@ -97,6 +104,13 @@ public class QuickSlotManager : MonoBehaviour
             selectedSlotIndex = index;
             UpdateUI();
         }
+    }
+
+    private bool IsAnyMenuOpen()
+    {
+        bool invOpen = inventoryUI != null && inventoryUI.inventoryWindow.activeInHierarchy;
+        bool weaponOpen = weaponUI != null && weaponUI.gameObject.activeInHierarchy;
+        return invOpen || weaponOpen;
     }
 
     public void AssignItem(ItemData item, int slotIndex)
@@ -137,11 +151,7 @@ public class QuickSlotManager : MonoBehaviour
             if (playerCombat != null && playerCombat.IsSafeToEquip()) 
             {
                 playerCombat.EquipWeapon(weapon);
-                
-                if (inventoryUI != null)
-                {
-                    inventoryUI.UpdateSkillHUD(weapon);
-                }
+                inventoryUI?.UpdateSkillHUD(weapon);
             }
         }
         else if (item is ConsumableItemData cons)
@@ -153,7 +163,7 @@ public class QuickSlotManager : MonoBehaviour
                 if (playerHp != null && playerHp.currentHealth < playerHp.maxHealth)
                 {
                     playerHp.HealPlayer(cons.healAmount);
-                    InventoryManager.Instance.AddItem(item, -1);
+                    InventoryManager.Instance.RemoveItem(item, 1);
 
                     if (InventoryManager.Instance.GetItemAmount(item) <= 0)
                     {

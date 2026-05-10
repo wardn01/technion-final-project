@@ -1,5 +1,13 @@
 using UnityEngine;
 
+[System.Serializable]
+public struct WeaponUpgradeLevel
+{
+    public int goldCost; 
+    public ItemRequirement[] materials; 
+    public int damageBoost; 
+}
+
 [CreateAssetMenu(fileName = "New Weapon", menuName = "Game Data/Inventory/Weapon")]
 public class WeaponItemData : ItemData
 {
@@ -13,9 +21,9 @@ public class WeaponItemData : ItemData
     public AnimatorOverrideController animatorOverride;
 
     [Header("Combat Stats")]
-    public float normalAttackDamage = 20f;
-    public float skillEDamage = 40f;
-    public float skillQDamage = 100f;
+    public int normalAttackDamage = 20;
+    public int skillEDamage = 40;
+    public int skillQDamage = 100;
 
     [Header("VFX & Skills")]
     public GameObject skillEPrefab;
@@ -24,6 +32,9 @@ public class WeaponItemData : ItemData
     [Header("Skill Settings")]
     public float skillECooldown = 8f;
     public int requiredE_For_Q = 2;
+
+    [Header("Upgrade System")]
+    public WeaponUpgradeLevel[] upgradeLevels;
 
     private void OnEnable()
     {
