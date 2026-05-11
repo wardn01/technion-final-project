@@ -3,11 +3,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Consumable", menuName = "Game Data/Inventory/Consumable")]
 public class ConsumableItemData : ItemData
 {
-    [Header("Consumable Effects")]
-    public float healAmount = 50f;
+    [Header("Heal Settings")]
+    public float instantHeal = 200f;
+    public float tickHealAmount = 100f;
+    public float tickInterval = 5f;
+    public int totalTicks = 4;
 
-    private void OnEnable()
-    {
-        type = ItemType.Consumable;
-    }
+    [Header("Cooldown Settings")]
+    public float cooldownTime = 40f;
 }

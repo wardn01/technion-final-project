@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class QuickSlotManager : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class QuickSlotManager : MonoBehaviour
 
     [Header("References")]
     public PlayerCombat playerCombat;
-    public WeaponUpgradeUI weaponUI; 
+    public WeaponUpgradeUI weaponUI;
 
     [Header("Slots Data")]
     public ItemData[] slots = new ItemData[4];
@@ -19,32 +20,94 @@ public class QuickSlotManager : MonoBehaviour
     [Header("UI Amount Texts")]
     public TextMeshProUGUI[] slotTexts = new TextMeshProUGUI[4];
 
+    [Header("UI Cooldowns")]
+    public Image[] cooldownOverlays = new Image[4];
+    public TextMeshProUGUI[] cooldownTexts = new TextMeshProUGUI[4];
+
     private int selectedSlotIndex = -1;
+
     private PlayerHealth playerHp;
     private InventoryUIManager inventoryUI;
 
+    private Dictionary<string, float> cooldownTimers = new Dictionary<string, float>();
+
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
     }
 
     private void Start()
     {
         playerHp = FindFirstObjectByType<PlayerHealth>();
         inventoryUI = InventoryUIManager.Instance;
-        if (weaponUI == null) weaponUI = FindFirstObjectByType<WeaponUpgradeUI>();
+
+        if (weaponUI == null)
+            weaponUI = FindFirstObjectByType<WeaponUpgradeUI>();
+
         UpdateUI();
     }
 
     private void Update()
     {
-        if (Time.timeScale == 0f && !IsAnyMenuOpen()) return;
-        
-        if (Input.GetKeyDown(KeyCode.Alpha1)) ExecuteSlotAction(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) ExecuteSlotAction(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) ExecuteSlotAction(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) ExecuteSlotAction(3);
+        UpdateCooldownUI();
+
+        if (Time.timeScale == 0f && !IsAnyMenuOpen())
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            ExecuteSlotAction(0);
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+            ExecuteSlotAction(1);
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+            ExecuteSlotAction(2);
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+            ExecuteSlotAction(3);
+    }
+
+    private void UpdateCooldownUI()
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (cooldownOverlays[i] == null || cooldownTexts[i] == null)
+            {
+                continue;
+            }
+
+            ItemData item = slots[i];
+
+            if (item is ConsumableItemData cons)
+            {
+                string id = "SharedPotionCD";
+
+                if (cooldownTimers.ContainsKey(id) && cooldownTimers[id] > Time.time)
+                {
+                    float remaining = cooldownTimers[id] - Time.time;
+
+                    cooldownOverlays[i].gameObject.SetActive(true);
+
+                    float totalCooldown = cooldownTimers["LastCooldownUsed"];
+                    cooldownOverlays[i].fillAmount = remaining / totalCooldown;
+
+                    cooldownTexts[i].text = Mathf.CeilToInt(remaining).ToString();
+                }
+                else
+                {
+                    cooldownOverlays[i].gameObject.SetActive(false);
+                    cooldownTexts[i].text = "";
+                }
+            }
+            else
+            {
+                cooldownOverlays[i].gameObject.SetActive(false);
+                cooldownTexts[i].text = "";
+            }
+        }
     }
 
     public void OnQuickSlotClicked(int index)
@@ -68,11 +131,12 @@ public class QuickSlotManager : MonoBehaviour
             return;
         }
 
-        bool isInventoryOpen = (inventoryUI != null && inventoryUI.inventoryWindow.activeSelf);
-        bool isWeaponPageOpen = (weaponUI != null && weaponUI.gameObject.activeInHierarchy);
+        bool isInventoryOpen = inventoryUI != null && inventoryUI.inventoryWindow.activeSelf;
+        bool isWeaponPageOpen = weaponUI != null && weaponUI.gameObject.activeInHierarchy;
 
-        if ((isInventoryOpen || isWeaponPageOpen) && 
-            inventoryUI.currentlySelectedItem != null && inventoryUI.isItemClickedFromGrid)
+        if ((isInventoryOpen || isWeaponPageOpen) &&
+            inventoryUI.currentlySelectedItem != null &&
+            inventoryUI.isItemClickedFromGrid)
         {
             ItemData invItem = inventoryUI.currentlySelectedItem;
 
@@ -89,12 +153,12 @@ public class QuickSlotManager : MonoBehaviour
                 inventoryUI.UpdateSkillHUD(weaponData);
             }
 
-            inventoryUI.isItemClickedFromGrid = false; 
-
+            inventoryUI.isItemClickedFromGrid = false;
             UpdateUI();
             inventoryUI.RefreshUI();
 
-            if (isWeaponPageOpen) weaponUI.RefreshGrid(); 
+            if (isWeaponPageOpen)
+                weaponUI.RefreshGrid();
 
             return;
         }
@@ -115,7 +179,8 @@ public class QuickSlotManager : MonoBehaviour
 
     public void AssignItem(ItemData item, int slotIndex)
     {
-        if (item == null) return;
+        if (item == null)
+            return;
 
         if (item is WeaponItemData)
         {
@@ -144,11 +209,13 @@ public class QuickSlotManager : MonoBehaviour
     private void ExecuteSlotAction(int index)
     {
         ItemData item = slots[index];
-        if (item == null) return;
+
+        if (item == null)
+            return;
 
         if (item is WeaponItemData weapon)
         {
-            if (playerCombat != null && playerCombat.IsSafeToEquip()) 
+            if (playerCombat != null && playerCombat.IsSafeToEquip())
             {
                 playerCombat.EquipWeapon(weapon);
                 inventoryUI?.UpdateSkillHUD(weapon);
@@ -156,13 +223,29 @@ public class QuickSlotManager : MonoBehaviour
         }
         else if (item is ConsumableItemData cons)
         {
+            string id = "SharedPotionCD";
+
+            if (cooldownTimers.ContainsKey(id) && cooldownTimers[id] > Time.time)
+            {
+                return;
+            }
+
             int amount = InventoryManager.Instance.GetItemAmount(item);
 
             if (amount > 0)
             {
                 if (playerHp != null && playerHp.currentHealth < playerHp.maxHealth)
                 {
-                    playerHp.HealPlayer(cons.healAmount);
+                    playerHp.HealPlayer(
+                        cons.instantHeal,
+                        cons.tickHealAmount,
+                        cons.tickInterval,
+                        cons.totalTicks
+                    );
+
+                    cooldownTimers[id] = Time.time + cons.cooldownTime;
+                    cooldownTimers["LastCooldownUsed"] = cons.cooldownTime;
+
                     InventoryManager.Instance.RemoveItem(item, 1);
 
                     if (InventoryManager.Instance.GetItemAmount(item) <= 0)
@@ -188,6 +271,8 @@ public class QuickSlotManager : MonoBehaviour
         {
             SetupSlot(slots[i], slotIcons[i], slotTexts[i], i);
         }
+
+        UpdateCooldownUI();
     }
 
     private void SetupSlot(ItemData item, Image icon, TextMeshProUGUI text, int index)
@@ -195,24 +280,31 @@ public class QuickSlotManager : MonoBehaviour
         if (item != null)
         {
             icon.sprite = item.itemIcon;
-            icon.color = (index == selectedSlotIndex) ? Color.gray : Color.white;
+            icon.color = index == selectedSlotIndex ? Color.gray : Color.white;
 
             if (text != null)
             {
                 int amt = InventoryManager.Instance.GetItemAmount(item);
-                text.text = (item is WeaponItemData) ? "" : (amt > 0 ? "x" + amt : "");
+
+                if (item is WeaponItemData)
+                    text.text = "";
+                else
+                    text.text = amt > 0 ? "x" + amt : "";
             }
         }
         else
         {
-            icon.color = (index == selectedSlotIndex) ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(1, 1, 1, 0);
-            if (text != null) text.text = "";
+            icon.color = index == selectedSlotIndex ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(1, 1, 1, 0);
+
+            if (text != null)
+                text.text = "";
         }
     }
 
     public void AssignToFirstEmptySlot(ItemData item)
     {
-        if (IsItemEquipped(item)) return;
+        if (IsItemEquipped(item))
+            return;
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -241,8 +333,10 @@ public class QuickSlotManager : MonoBehaviour
     {
         foreach (var s in slots)
         {
-            if (s == item) return true;
+            if (s == item)
+                return true;
         }
+
         return false;
     }
 
@@ -255,11 +349,13 @@ public class QuickSlotManager : MonoBehaviour
     private int CountWeapons()
     {
         int count = 0;
+
         foreach (var item in slots)
         {
-            if (item is WeaponItemData) 
+            if (item is WeaponItemData)
                 count++;
         }
+
         return count;
     }
 }

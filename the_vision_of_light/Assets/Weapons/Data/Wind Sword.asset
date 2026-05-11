@@ -16,11 +16,12 @@ MonoBehaviour:
   description: 'A blade forged in the heart of the storm. This lightweight sword
     grants its wielder absolute control over the winds.
 
-    [E] Wind Slash: Unleashes
-    a sharp gale that damages and knocks enemies back.
+    <b><color=#8E44AD>[E]</color></b>
+    Wind Slash: Unleashes a sharp gale that damages and knocks enemies back.
 
-    [Q] Cyclone''s Wrath:
-    Summons a raging tornado that sweeps enemies away with continuous damage.'
+    <b><color=#8E44AD>[Q]</color></b>
+    Cyclone''s Wrath: Summons a raging tornado that sweeps enemies away with continuous
+    damage.'
   itemIcon: {fileID: 1877259014, guid: ee387c99489c72a44813d44397ca885a, type: 3}
   value: 1000
   type: 2
@@ -45,4 +46,4 @@ MonoBehaviour:
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
       amount: 20
-    damageBoost: 40
+    damageBoost: 10

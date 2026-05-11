@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -32,16 +33,11 @@ public class PlayerHealth : MonoBehaviour
     void Start()
     {
         UpdateMaxHealthFromData();
-
         currentHealth = maxHealth;
-
         UpdateHealthUI();
 
-        if (deathScreen != null)
-            deathScreen.SetActive(false);
-
-        if (hudScreen != null)
-            hudScreen.SetActive(true);
+        if (deathScreen != null) deathScreen.SetActive(false);
+        if (hudScreen != null) hudScreen.SetActive(true);
 
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
         ragdollColliders = GetComponentsInChildren<Collider>();
@@ -67,9 +63,7 @@ public class PlayerHealth : MonoBehaviour
             if (oldMaxHealth > 0)
             {
                 float healthPercentage = (float)currentHealth / oldMaxHealth;
-
                 maxHealth = newMaxHealth;
-
                 currentHealth = Mathf.RoundToInt(maxHealth * healthPercentage);
             }
             else
@@ -78,7 +72,6 @@ public class PlayerHealth : MonoBehaviour
             }
 
             currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
             UpdateHealthUI();
         }
         else
@@ -89,45 +82,64 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float incomingDamage)
     {
-        if (isDead)
-            return;
+        if (isDead) return;
 
-        int playerDefense = PlayerData.Instance != null
-            ? PlayerData.Instance.GetTotalDefense()
-            : 0;
-
+        int playerDefense = PlayerData.Instance != null ? PlayerData.Instance.GetTotalDefense() : 0;
         float damageMultiplier = 100f / (100f + playerDefense);
-
         int finalDamage = Mathf.RoundToInt(incomingDamage * damageMultiplier);
-
         finalDamage = Mathf.Max(0, finalDamage);
 
         currentHealth -= finalDamage;
-
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         ShowFloatingText("-" + finalDamage.ToString(), Color.red);
-
         UpdateHealthUI();
 
-        if (currentHealth <= 0)
-            Die();
+        if (currentHealth <= 0) Die();
     }
 
     public void HealPlayer(float healAmount)
     {
-        if (isDead)
-            return;
+        HealPlayer(healAmount, 0f, 0f, 0);
+    }
 
-        int finalHeal = Mathf.RoundToInt(healAmount);
+    public void HealPlayer(float instantAmount, float tickAmount, float interval, int count)
+    {
+        if (isDead) return;
 
-        currentHealth += finalHeal;
+        if (instantAmount > 0)
+        {
+            int finalHeal = Mathf.RoundToInt(instantAmount);
+            currentHealth += finalHeal;
+            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+            ShowFloatingText("+" + finalHeal.ToString(), Color.green);
+            UpdateHealthUI();
+        }
 
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        if (tickAmount > 0 && count > 0)
+        {
+            StartCoroutine(HealTickedCoroutine(tickAmount, interval, count));
+        }
+    }
 
-        ShowFloatingText("+" + finalHeal.ToString(), Color.green);
+    private IEnumerator HealTickedCoroutine(float amountPerTick, float interval, int totalTicks)
+    {
+        int ticksDone = 0;
 
-        UpdateHealthUI();
+        while (ticksDone < totalTicks)
+        {
+            yield return new WaitForSeconds(interval);
+
+            if (isDead) yield break;
+
+            int healInt = Mathf.RoundToInt(amountPerTick);
+            currentHealth = Mathf.Min(currentHealth + healInt, maxHealth);
+            UpdateHealthUI();
+
+            ShowFloatingText("+" + healInt.ToString(), new Color(0.2f, 1f, 0.2f));
+
+            ticksDone++;
+        }
     }
 
     private void UpdateHealthUI()
@@ -147,24 +159,15 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = false;
-
-        if (deathScreen != null)
-            deathScreen.SetActive(true);
-
-        if (hudScreen != null)
-            hudScreen.SetActive(false);
+        if (playerMovementScript != null) playerMovementScript.enabled = false;
+        if (deathScreen != null) deathScreen.SetActive(true);
+        if (hudScreen != null) hudScreen.SetActive(false);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        if (animator != null)
-            animator.enabled = false;
-
-        if (characterController != null)
-            characterController.enabled = false;
+        if (animator != null) animator.enabled = false;
+        if (characterController != null) characterController.enabled = false;
 
         SetRagdollState(true);
     }
@@ -172,30 +175,20 @@ public class PlayerHealth : MonoBehaviour
     public void Revive()
     {
         isDead = false;
-
         UpdateMaxHealthFromData();
-
         currentHealth = maxHealth;
-
         UpdateHealthUI();
 
-        if (deathScreen != null)
-            deathScreen.SetActive(false);
-
-        if (hudScreen != null)
-            hudScreen.SetActive(true);
-
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = true;
+        if (deathScreen != null) deathScreen.SetActive(false);
+        if (hudScreen != null) hudScreen.SetActive(true);
+        if (playerMovementScript != null) playerMovementScript.enabled = true;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
         SetRagdollState(false);
 
-        if (characterController != null)
-            characterController.enabled = true;
-
+        if (characterController != null) characterController.enabled = true;
         if (animator != null)
         {
             animator.enabled = true;
@@ -207,17 +200,9 @@ public class PlayerHealth : MonoBehaviour
     {
         if (uiFloatingTextPrefab != null && uiTextSpawnPoint != null)
         {
-            GameObject obj = Instantiate(
-                uiFloatingTextPrefab,
-                uiTextSpawnPoint.position,
-                Quaternion.identity,
-                uiTextSpawnPoint.parent
-            );
-
+            GameObject obj = Instantiate(uiFloatingTextPrefab, uiTextSpawnPoint.position, Quaternion.identity, uiTextSpawnPoint.parent);
             UIFloatingText floatingText = obj.GetComponent<UIFloatingText>();
-
-            if (floatingText != null)
-                floatingText.Setup(text, color);
+            if (floatingText != null) floatingText.Setup(text, color);
         }
     }
 
@@ -227,8 +212,7 @@ public class PlayerHealth : MonoBehaviour
         {
             foreach (Rigidbody rb in ragdollRigidbodies)
             {
-                if (rb != null)
-                    rb.isKinematic = !state;
+                if (rb != null) rb.isKinematic = !state;
             }
         }
 
@@ -236,8 +220,7 @@ public class PlayerHealth : MonoBehaviour
         {
             foreach (Collider col in ragdollColliders)
             {
-                if (col != null && col != mainCharacterCollider)
-                    col.enabled = state;
+                if (col != null && col != mainCharacterCollider) col.enabled = state;
             }
         }
     }

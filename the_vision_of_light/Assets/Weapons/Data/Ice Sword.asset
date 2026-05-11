@@ -14,9 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemData
   itemName: Ice sword
   description: 'A heavy blade infused with eternal frost. It chills enemies to the
-    bone. [E] Frost Strike: Slashes with absolute zero energy, freezing enemies in
-    place. [Q] Winter''s Domain: Creates a freezing aura that continuously damages
-    and slows enemies inside it.'
+    bone.
+
+    <b><color=#8E44AD>[E]</color></b> Frost Strike: Slashes with absolute
+    zero energy, freezing enemies in place.
+
+    <b><color=#8E44AD>[Q]</color></b>
+    Winter''s Domain: Creates a freezing aura that continuously damages and slows
+    enemies inside it.'
   itemIcon: {fileID: 1877259014, guid: ee387c99489c72a44813d44397ca885a, type: 3}
   value: 1000
   type: 2
@@ -31,4 +36,12 @@ MonoBehaviour:
   skillQPrefab: {fileID: 9177886612219991525, guid: 75a99ff903dda504da3d88d728523dbe, type: 3}
   skillECooldown: 10
   requiredE_For_Q: 2
-  upgradeLevels: []
+  upgradeLevels:
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 10
+    damageBoost: 10
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 20
+    damageBoost: 10
