@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class ShopManager : MonoBehaviour
 {
@@ -13,6 +14,18 @@ public class ShopManager : MonoBehaviour
     public TextMeshProUGUI amountText;
     public TextMeshProUGUI totalPriceText;
     public Transform itemsListContainer;
+
+    [Header("Dynamic Shop Generation")]
+    public GameObject shopSlotPrefab; 
+    
+    private List<GameObject> pooledSlots = new List<GameObject>(); 
+
+    [Header("Dialogue UI (Shared)")]
+    public GameObject dialoguePanel; 
+    public Button shopButton; 
+    public Button exitButton; 
+    public GameObject shopPromptUI; 
+    public TextMeshProUGUI promptNameText;
 
     [Header("Slot Highlight")]
     public Color normalColor = Color.white;
@@ -38,72 +51,152 @@ public class ShopManager : MonoBehaviour
         if (Instance == null) Instance = this;
     }
 
-    public void OpenShop()
+    private void Start()
+    {
+        if (shopButton != null) shopButton.onClick.AddListener(OnShopButtonClicked);
+        if (exitButton != null) exitButton.onClick.AddListener(CloseDialogue);
+        
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        if (shopPromptUI != null) shopPromptUI.SetActive(false);
+    }
+
+    public void ShowInteractPrompt(string npcName)
+    {
+        if (shopPromptUI != null) shopPromptUI.SetActive(true);
+        if (promptNameText != null) promptNameText.text = npcName;
+    }
+
+    public void HideInteractPrompt()
+    {
+        if (shopPromptUI != null) shopPromptUI.SetActive(false);
+    }
+
+    public void OpenDialogue(ShopkeeperNPC npc)
+    {
+        currentNPC = npc;
+        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = true;
+        if (dialoguePanel != null) dialoguePanel.SetActive(true);
+
+        currentShopkeeperAnim = npc.GetComponent<Animator>();
+        if (currentShopkeeperAnim != null) currentShopkeeperAnim.SetTrigger("Talk");
+
+        FreezePlayer(true);
+    }
+
+    public void CloseDialogue()
+    {
+        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = false;
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        
+        FreezePlayer(false);
+        currentNPC = null;
+    }
+
+    private void OnShopButtonClicked()
+    {
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        if (currentNPC != null) OpenShop(currentNPC.itemsToSell); 
+    }
+
+    public void OpenShop(List<ItemData> itemsToSell)
     {
         shopPanel.SetActive(true);
         UpdateGoldUI();
         
         if (amountSlider != null) amountSlider.value = 1;
-
         if (currentSelectedSlotImage != null) currentSelectedSlotImage.color = normalColor;
 
-        if (itemsListContainer != null && itemsListContainer.childCount > 0)
+        for (int i = 0; i < pooledSlots.Count; i++)
         {
-            Button firstItemBtn = itemsListContainer.GetChild(0).GetComponentInChildren<Button>();
-            if (firstItemBtn != null) firstItemBtn.onClick.Invoke(); 
-        }
-        else
-        {
-            UpdateTotalPrice();
+            pooledSlots[i].SetActive(false);
         }
 
-        if (playerAnimator != null)
+        for (int i = 0; i < itemsToSell.Count; i++)
         {
-            playerAnimator.Play("Movement"); 
-            playerAnimator.SetFloat("Speed", 0f); 
-        }
-        if (playerMovementScript != null) playerMovementScript.enabled = false;
+            ItemData item = itemsToSell[i];
+            GameObject slot;
 
-        if (playerCameraObject != null)
-        {
-            MonoBehaviour camInput = playerCameraObject.GetComponent("CinemachineInputAxisController") as MonoBehaviour;
-            if (camInput != null) camInput.enabled = false;
+            if (i < pooledSlots.Count)
+            {
+                slot = pooledSlots[i];
+                slot.SetActive(true);
+            }
+            else
+            {
+                slot = Instantiate(shopSlotPrefab, itemsListContainer);
+                pooledSlots.Add(slot);
+            }
+
+            Image[] images = slot.GetComponentsInChildren<Image>();
+            foreach (Image img in images)
+            {
+                if (img.gameObject != slot) 
+                {
+                    img.sprite = item.itemIcon;
+                    break;
+                }
+            }
+
+            Button btn = slot.GetComponent<Button>();
+            Image bgImage = slot.GetComponent<Image>();
+
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => 
+            {
+                SelectItem(item);
+                HighlightSlot(bgImage);
+            });
+
+            if (i == 0) btn.onClick.Invoke();
         }
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        if (itemsToSell.Count == 0) UpdateTotalPrice();
+        FreezePlayer(true);
     }
 
     public void CloseShop()
     {
         shopPanel.SetActive(false);
-
-        if (playerMovementScript != null) playerMovementScript.enabled = true;
-
-        if (playerCameraObject != null)
-        {
-            MonoBehaviour camInput = playerCameraObject.GetComponent("CinemachineInputAxisController") as MonoBehaviour;
-            if (camInput != null) camInput.enabled = true;
-        }
-
+        FreezePlayer(false);
         currentShopkeeperAnim = null;
         currentNPC = null;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     public void BackToDialogue()
     {
         shopPanel.SetActive(false); 
+        if (currentNPC != null) OpenDialogue(currentNPC); 
+        else CloseShop(); 
+    }
 
-        if (currentNPC != null)
+    private void FreezePlayer(bool freeze)
+    {
+        if (freeze)
         {
-            currentNPC.ReopenDialogue(); 
+            if (playerAnimator != null)
+            {
+                playerAnimator.Play("Movement"); 
+                playerAnimator.SetFloat("Speed", 0f); 
+            }
+            if (playerMovementScript != null) playerMovementScript.enabled = false;
+            if (playerCameraObject != null)
+            {
+                MonoBehaviour camInput = playerCameraObject.GetComponent("CinemachineInputAxisController") as MonoBehaviour;
+                if (camInput != null) camInput.enabled = false;
+            }
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
         else
         {
-            CloseShop(); 
+            if (playerMovementScript != null) playerMovementScript.enabled = true;
+            if (playerCameraObject != null)
+            {
+                MonoBehaviour camInput = playerCameraObject.GetComponent("CinemachineInputAxisController") as MonoBehaviour;
+                if (camInput != null) camInput.enabled = true;
+            }
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 
