@@ -24,6 +24,7 @@ public class PlayerHealth : MonoBehaviour
     public Transform uiTextSpawnPoint;
 
     public bool isDead = false;
+
     private Rigidbody[] ragdollRigidbodies;
     private Collider[] ragdollColliders;
     private Collider mainCharacterCollider;
@@ -31,29 +32,53 @@ public class PlayerHealth : MonoBehaviour
     void Start()
     {
         UpdateMaxHealthFromData();
+
         currentHealth = maxHealth;
+
         UpdateHealthUI();
 
-        if (deathScreen != null) deathScreen.SetActive(false);
-        if (hudScreen != null) hudScreen.SetActive(true);
+        if (deathScreen != null)
+            deathScreen.SetActive(false);
+
+        if (hudScreen != null)
+            hudScreen.SetActive(true);
 
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
         ragdollColliders = GetComponentsInChildren<Collider>();
 
         if (characterController != null)
-        {
             mainCharacterCollider = characterController.GetComponent<Collider>();
-        }
 
         SetRagdollState(false);
+    }
+
+    public void UpdateStatsFromData()
+    {
+        UpdateMaxHealthFromData();
     }
 
     public void UpdateMaxHealthFromData()
     {
         if (PlayerData.Instance != null)
         {
-            maxHealth = PlayerData.Instance.GetTotalMaxHealth();
-            currentHealth = Mathf.Min(currentHealth, maxHealth);
+            int oldMaxHealth = maxHealth;
+            int newMaxHealth = PlayerData.Instance.GetTotalMaxHealth();
+
+            if (oldMaxHealth > 0)
+            {
+                float healthPercentage = (float)currentHealth / oldMaxHealth;
+
+                maxHealth = newMaxHealth;
+
+                currentHealth = Mathf.RoundToInt(maxHealth * healthPercentage);
+            }
+            else
+            {
+                maxHealth = newMaxHealth;
+            }
+
+            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
             UpdateHealthUI();
         }
         else
@@ -64,46 +89,59 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float incomingDamage)
     {
-        if (isDead) return;
+        if (isDead)
+            return;
 
-        int playerDefense = PlayerData.Instance != null ? PlayerData.Instance.GetTotalDefense() : 0;
+        int playerDefense = PlayerData.Instance != null
+            ? PlayerData.Instance.GetTotalDefense()
+            : 0;
+
         float damageMultiplier = 100f / (100f + playerDefense);
-        
+
         int finalDamage = Mathf.RoundToInt(incomingDamage * damageMultiplier);
+
         finalDamage = Mathf.Max(0, finalDamage);
-        
+
         currentHealth -= finalDamage;
+
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         ShowFloatingText("-" + finalDamage.ToString(), Color.red);
+
         UpdateHealthUI();
 
         if (currentHealth <= 0)
-        {
             Die();
-        }
     }
 
     public void HealPlayer(float healAmount)
     {
-        if (isDead) return;
+        if (isDead)
+            return;
 
         int finalHeal = Mathf.RoundToInt(healAmount);
-        
+
         currentHealth += finalHeal;
+
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-        
-        ShowFloatingText("+" + healAmount.ToString(), Color.green);
+
+        ShowFloatingText("+" + finalHeal.ToString(), Color.green);
+
         UpdateHealthUI();
     }
 
     private void UpdateHealthUI()
     {
         if (healthBarFill != null)
-            healthBarFill.fillAmount = maxHealth > 0 ? (float)currentHealth / maxHealth : 0f;
+        {
+            if (maxHealth > 0)
+                healthBarFill.fillAmount = (float)currentHealth / maxHealth;
+            else
+                healthBarFill.fillAmount = 0f;
+        }
 
         if (hpText != null)
-            hpText.text = $"{currentHealth}/{maxHealth}";
+            hpText.text = currentHealth + "/" + maxHealth;
     }
 
     private void Die()
@@ -115,7 +153,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (deathScreen != null)
             deathScreen.SetActive(true);
-            
+
         if (hudScreen != null)
             hudScreen.SetActive(false);
 
@@ -134,13 +172,16 @@ public class PlayerHealth : MonoBehaviour
     public void Revive()
     {
         isDead = false;
+
         UpdateMaxHealthFromData();
+
         currentHealth = maxHealth;
+
         UpdateHealthUI();
 
         if (deathScreen != null)
             deathScreen.SetActive(false);
-            
+
         if (hudScreen != null)
             hudScreen.SetActive(true);
 
@@ -166,33 +207,37 @@ public class PlayerHealth : MonoBehaviour
     {
         if (uiFloatingTextPrefab != null && uiTextSpawnPoint != null)
         {
-            GameObject obj = Instantiate(uiFloatingTextPrefab, uiTextSpawnPoint.position, Quaternion.identity, uiTextSpawnPoint.parent);
-            
+            GameObject obj = Instantiate(
+                uiFloatingTextPrefab,
+                uiTextSpawnPoint.position,
+                Quaternion.identity,
+                uiTextSpawnPoint.parent
+            );
+
             UIFloatingText floatingText = obj.GetComponent<UIFloatingText>();
+
             if (floatingText != null)
-            {
                 floatingText.Setup(text, color);
-            }
         }
     }
 
     private void SetRagdollState(bool state)
     {
-        if (ragdollRigidbodies == null || ragdollRigidbodies.Length == 0) return;
-
-        foreach (Rigidbody rb in ragdollRigidbodies)
+        if (ragdollRigidbodies != null)
         {
-            if (rb != null)
-                rb.isKinematic = !state;
+            foreach (Rigidbody rb in ragdollRigidbodies)
+            {
+                if (rb != null)
+                    rb.isKinematic = !state;
+            }
         }
 
-        if (ragdollColliders == null || ragdollColliders.Length == 0) return;
-
-        foreach (Collider col in ragdollColliders)
+        if (ragdollColliders != null)
         {
-            if (col != null && col != mainCharacterCollider)
+            foreach (Collider col in ragdollColliders)
             {
-                col.enabled = state;
+                if (col != null && col != mainCharacterCollider)
+                    col.enabled = state;
             }
         }
     }

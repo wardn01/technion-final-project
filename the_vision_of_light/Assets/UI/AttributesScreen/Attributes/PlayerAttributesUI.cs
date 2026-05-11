@@ -36,28 +36,34 @@ public class PlayerAttributesUI : MonoBehaviour
     public Button hpMinusBtn, atkMinusBtn, defMinusBtn, stmMinusBtn;
     public Button resetBtn;
 
-    // 🔥 الحل لمشكلة التحديث أول مرة: OnEnable ينادي التحديث فور ظهور الشاشة
     private void OnEnable()
     {
-        // تأخير بسيط جداً لضمان أن PlayerData جاهز في أول فريم
         Invoke(nameof(RefreshUI), 0.02f);
     }
 
     void Start()
     {
-        // ربط كل الكبسات بـ PlayerData
-        if(hpPlusBtn) hpPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.HP); RefreshUI(); });
+        if(hpPlusBtn) hpPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.HP); RefreshUI(); SyncPlayerStats(); });
         if(atkPlusBtn) atkPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
         if(defPlusBtn) defPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
-        if(stmPlusBtn) stmPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Stamina); RefreshUI(); });
+        if(stmPlusBtn) stmPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Stamina); RefreshUI(); SyncPlayerStats(); });
         
-        if(hpMinusBtn) hpMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.HP); RefreshUI(); });
+        if(hpMinusBtn) hpMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.HP); RefreshUI(); SyncPlayerStats(); });
         if(atkMinusBtn) atkMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
         if(defMinusBtn) defMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
-        if(stmMinusBtn) stmMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Stamina); RefreshUI(); });
+        if(stmMinusBtn) stmMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Stamina); RefreshUI(); SyncPlayerStats(); });
         
-        if(resetBtn) resetBtn.onClick.AddListener(() => { PlayerData.Instance.ResetStatPoints(); RefreshUI(); });
-        if(ascendBtn) ascendBtn.onClick.AddListener(() => { PlayerData.Instance.TryAscend(); RefreshUI(); });
+        if(resetBtn) resetBtn.onClick.AddListener(() => { PlayerData.Instance.ResetStatPoints(); RefreshUI(); SyncPlayerStats(); });
+        if(ascendBtn) ascendBtn.onClick.AddListener(() => { PlayerData.Instance.TryAscend(); RefreshUI(); SyncPlayerStats(); });
+    }
+
+    private void SyncPlayerStats()
+    {
+        PlayerHealth pHealth = FindFirstObjectByType<PlayerHealth>();
+        if (pHealth != null)
+        {
+            pHealth.UpdateStatsFromData(); 
+        }
     }
 
     public void RefreshUI()
@@ -68,10 +74,14 @@ public class PlayerAttributesUI : MonoBehaviour
         levelInfoText.text = $"Level {data.currentLevel} / {data.maxLevelCap}";
         availablePointsText.text = $"Stat Points: {data.availableStatPoints}";
 
-        hpText.text = $"Max HP: {data.baseMaxHealth} <color=#00FF00>(+{data.investedHPPoints * data.healthPerPoint})</color>";
-        attackText.text = $"Attack: {data.baseAttack} <color=#00FF00>(+{data.investedAtkPoints * data.attackPerPoint})</color>";
-        defenseText.text = $"Defense: {data.baseDefense} <color=#00FF00>(+{data.investedDefPoints * data.defensePerPoint})</color>";
-        staminaText.text = $"Stamina: {data.baseMaxStamina} <color=#00FF00>(+{data.investedStaminaPoints * data.staminaPerPoint})</color>";
+        int totalHP = data.baseMaxHealth + (data.investedHPPoints * data.healthPerPoint);
+        int totalAtk = data.baseAttack + (data.investedAtkPoints * data.attackPerPoint);
+        int totalDef = data.baseDefense + (data.investedDefPoints * data.defensePerPoint);
+        int totalStm = (int)(data.baseMaxStamina + (data.investedStaminaPoints * data.staminaPerPoint));
+        hpText.text = $"Max HP: {totalHP} <color=#00FF00>(+{data.investedHPPoints})</color>";
+        attackText.text = $"Attack: {totalAtk} <color=#00FF00>(+{data.investedAtkPoints})</color>";
+        defenseText.text = $"Defense: {totalDef} <color=#00FF00>(+{data.investedDefPoints})</color>";
+        staminaText.text = $"Stamina: {totalStm} <color=#00FF00>(+{data.investedStaminaPoints})</color>";
 
         if (goldText != null && goldItemData != null)
             goldText.text = InventoryManager.Instance.GetItemAmount(goldItemData).ToString("N0");

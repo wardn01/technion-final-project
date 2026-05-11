@@ -321,13 +321,31 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
+    private int GetWeaponUpgradeBoost(WeaponItemData weapon)
+    {
+        if (PlayerData.Instance == null || weapon == null) return 0;
+        
+        int currentLvl = PlayerData.Instance.GetWeaponLevel(weapon.itemName);
+        int totalBoost = 0;
+
+        for (int i = 0; i < currentLvl - 1; i++)
+        {
+            if (weapon.upgradeLevels != null && i < weapon.upgradeLevels.Length)
+            {
+                totalBoost += weapon.upgradeLevels[i].damageBoost;
+            }
+        }
+        return totalBoost;
+    }
+
     public void DealNormalDamage()
     {
         if (activeWeaponData == null) return;
 
-        float playerTotalAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
-        float damageMultiplier = activeWeaponData.normalAttackDamage / 100f;
-        float totalDamage = playerTotalAttack * damageMultiplier;
+        float playerBaseAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+        int weaponBoost = GetWeaponUpgradeBoost(activeWeaponData);
+        float totalAttack = playerBaseAttack + activeWeaponData.weaponBaseAttack + weaponBoost;
+        float finalDamage = totalAttack * (activeWeaponData.normalAttackDamage / 100f);
 
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
         foreach (Collider enemy in hitEnemies)
@@ -342,8 +360,7 @@ public class PlayerCombat : MonoBehaviour
 
                 if (angle <= attackAngle)
                 {
-                    enemyBase.TakeDamage(totalDamage);
-                    Debug.Log($"[Player] Hit {enemy.name} for {totalDamage} damage! (Attack: {playerTotalAttack} * Multiplier: {damageMultiplier})");
+                    enemyBase.TakeDamage(finalDamage);
                 }
             }
         }
@@ -368,15 +385,17 @@ public class PlayerCombat : MonoBehaviour
         {
             GameObject skill = Instantiate(activeWeaponData.skillEPrefab, eSpawnPoint.position, eSpawnPoint.rotation);
             
-            float playerTotalAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
-            float damageMultiplier = activeWeaponData.skillEDamage / 100f;
-            float totalDamage = playerTotalAttack * damageMultiplier;
+            float playerBaseAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+            int weaponBoost = GetWeaponUpgradeBoost(activeWeaponData);
+            
+            float totalAttack = playerBaseAttack + activeWeaponData.weaponBaseAttack + weaponBoost;
+            float finalDamage = totalAttack * (activeWeaponData.skillEDamage / 100f);
 
             WindSkillEDamage windScript = skill.GetComponent<WindSkillEDamage>();
-            if (windScript != null) windScript.SetDamage(totalDamage);
+            if (windScript != null) windScript.SetDamage(finalDamage);
 
             IceSkillEDamage iceScript = skill.GetComponent<IceSkillEDamage>();
-            if (iceScript != null) iceScript.SetDamage(totalDamage);
+            if (iceScript != null) iceScript.SetDamage(finalDamage);
         }
     }
     
@@ -386,19 +405,21 @@ public class PlayerCombat : MonoBehaviour
         {
             GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
             
-            float playerTotalAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
-            float damageMultiplier = activeWeaponData.skillQDamage / 100f;
-            float totalDamage = playerTotalAttack * damageMultiplier;
+            float playerBaseAttack = PlayerData.Instance != null ? PlayerData.Instance.GetTotalAttack() : 0f;
+            int weaponBoost = GetWeaponUpgradeBoost(activeWeaponData);
+            
+            float totalAttack = playerBaseAttack + activeWeaponData.weaponBaseAttack + weaponBoost;
+            float finalDamage = totalAttack * (activeWeaponData.skillQDamage / 100f);
 
             IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
             if (iceScript != null)
             {
                 skill.transform.parent = qSpawnPoint;
-                iceScript.SetDamage(totalDamage);
+                iceScript.SetDamage(finalDamage);
             }
 
             WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
-            if (windScript != null) windScript.SetDamage(totalDamage);
+            if (windScript != null) windScript.SetDamage(finalDamage);
         }
     }
 

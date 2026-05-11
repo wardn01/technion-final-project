@@ -23,6 +23,7 @@ MonoBehaviour:
   weaponElement: 2
   weaponModelPrefab: {fileID: 6573923370113695857, guid: 17b1897eab9aee5459c5911fb0b6b371, type: 3}
   animatorOverride: {fileID: 22100000, guid: 02913bc2bc38fbc409a46a02800be412, type: 2}
+  weaponBaseAttack: 15
   normalAttackDamage: 130
   skillEDamage: 200
   skillQDamage: 90
@@ -30,3 +31,4 @@ MonoBehaviour:
   skillQPrefab: {fileID: 9177886612219991525, guid: 75a99ff903dda504da3d88d728523dbe, type: 3}
   skillECooldown: 10
   requiredE_For_Q: 2
+  upgradeLevels: []

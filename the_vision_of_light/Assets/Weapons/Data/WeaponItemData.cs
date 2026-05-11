@@ -3,7 +3,6 @@ using UnityEngine;
 [System.Serializable]
 public struct WeaponUpgradeLevel
 {
-    public int goldCost; 
     public ItemRequirement[] materials; 
     public int damageBoost; 
 }
@@ -21,9 +20,10 @@ public class WeaponItemData : ItemData
     public AnimatorOverrideController animatorOverride;
 
     [Header("Combat Stats")]
-    public int normalAttackDamage = 20;
-    public int skillEDamage = 40;
-    public int skillQDamage = 100;
+    public int weaponBaseAttack = 50; 
+    public int normalAttackDamage = 80; 
+    public int skillEDamage = 250; 
+    public int skillQDamage = 100; 
 
     [Header("VFX & Skills")]
     public GameObject skillEPrefab;
