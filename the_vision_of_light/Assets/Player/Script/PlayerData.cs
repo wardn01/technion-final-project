@@ -15,6 +15,17 @@ public class AscensionPhase
     public ItemRequirement[] requiredItems;
 }
 
+[System.Serializable]
+public class BuildLoadout
+{
+    public bool isSaved;
+    public int hpPoints;
+    public int atkPoints;
+    public int defPoints;
+    public int stmPoints;
+    public ItemData[] hotbarSlots = new ItemData[4];
+}
+
 public class PlayerData : MonoBehaviour
 {
     public static PlayerData Instance; 
@@ -53,6 +64,9 @@ public class PlayerData : MonoBehaviour
     [Header("Weapon Levels")]
     public Dictionary<string, int> weaponLevels = new Dictionary<string, int>();
 
+    [Header("Build Loadouts")]
+    public BuildLoadout[] loadouts = new BuildLoadout[3] { new BuildLoadout(), new BuildLoadout(), new BuildLoadout() };
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -81,10 +95,7 @@ public class PlayerData : MonoBehaviour
         currentXP -= xpToNextLevel; 
         currentLevel++;
         availableStatPoints++;
-
         xpToNextLevel += 100; 
-
-        Debug.Log("Leveled Up! New Level: " + currentLevel + " | Next Goal: " + xpToNextLevel);
     }
 
     public bool CanAscend()
@@ -185,5 +196,52 @@ public class PlayerData : MonoBehaviour
             weaponLevels[weaponName]++;
         else
             weaponLevels.Add(weaponName, 2); 
+    }
+
+    public void SaveBuild(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= loadouts.Length) return;
+        
+        loadouts[slotIndex].hpPoints = investedHPPoints;
+        loadouts[slotIndex].atkPoints = investedAtkPoints;
+        loadouts[slotIndex].defPoints = investedDefPoints;
+        loadouts[slotIndex].stmPoints = investedStaminaPoints;
+        
+        for (int i = 0; i < 4; i++)
+        {
+            if (QuickSlotManager.Instance != null)
+                loadouts[slotIndex].hotbarSlots[i] = QuickSlotManager.Instance.slots[i];
+        }
+        loadouts[slotIndex].isSaved = true;
+    }
+
+    public void LoadBuild(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= loadouts.Length) return;
+
+        int totalPoints = availableStatPoints + investedHPPoints + investedAtkPoints + investedDefPoints + investedStaminaPoints;
+        int requiredPoints = loadouts[slotIndex].hpPoints + loadouts[slotIndex].atkPoints + loadouts[slotIndex].defPoints + loadouts[slotIndex].stmPoints;
+
+        if (requiredPoints <= totalPoints)
+        {
+            investedHPPoints = loadouts[slotIndex].hpPoints;
+            investedAtkPoints = loadouts[slotIndex].atkPoints;
+            investedDefPoints = loadouts[slotIndex].defPoints;
+            investedStaminaPoints = loadouts[slotIndex].stmPoints;
+            availableStatPoints = totalPoints - requiredPoints;
+
+            if (QuickSlotManager.Instance != null)
+            {
+                PlayerCombat pc = FindFirstObjectByType<PlayerCombat>();
+                if (pc != null) pc.UnequipCurrentWeapon();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    QuickSlotManager.Instance.slots[i] = loadouts[slotIndex].hotbarSlots[i];
+                }
+                QuickSlotManager.Instance.ResetSelection();
+                QuickSlotManager.Instance.UpdateUI();
+            }
+        }
     }
 }

@@ -17,9 +17,20 @@ public class WeaponUpgradeUI : MonoBehaviour
     public TextMeshProUGUI topGoldText;
     public ItemData goldCoinData;
 
+    [Header("Tabs UI Colors")]
+    public Image weaponsTabIcon;
+    public Image potionsTabIcon;
+    public Color activeTabColor = Color.white;
+    public Color inactiveTabColor = Color.gray;
+
     [Header("Left Panel - Grid")]
     public Transform slotsParent;
     public GameObject loadoutSlotPrefab;
+
+    [Header("Slot Highlight Colors")]
+    public Color selectedSlotColor = Color.white;
+    public Color unselectedSlotColor = new Color(0.3f, 0.3f, 0.3f, 1f); 
+    private Image currentSelectedSlotImage;
 
     [Header("Right Panel - Details")]
     public Image detailIcon;
@@ -43,19 +54,33 @@ public class WeaponUpgradeUI : MonoBehaviour
 
     public void OnEnable()
     {
+        UpdateTabColors();
         RefreshGrid();
     }
 
     public void ShowWeaponsTab()
     {
         showingWeapons = true;
+        UpdateTabColors();
+        ResetHighlight();
         RefreshGrid();
     }
 
     public void ShowPotionsTab()
     {
         showingWeapons = false;
+        UpdateTabColors();
+        ResetHighlight();
         RefreshGrid();
+    }
+
+    private void UpdateTabColors()
+    {
+        if (weaponsTabIcon != null)
+            weaponsTabIcon.color = showingWeapons ? activeTabColor : inactiveTabColor;
+            
+        if (potionsTabIcon != null)
+            potionsTabIcon.color = !showingWeapons ? activeTabColor : inactiveTabColor;
     }
 
     public void RefreshGrid()
@@ -238,6 +263,26 @@ public class WeaponUpgradeUI : MonoBehaviour
         }
     }
 
+    public void HighlightSlot(Image clickedBgImage)
+    {
+        if (currentSelectedSlotImage != null) 
+            currentSelectedSlotImage.color = unselectedSlotColor;
+        
+        currentSelectedSlotImage = clickedBgImage;
+        
+        if (currentSelectedSlotImage != null) 
+            currentSelectedSlotImage.color = selectedSlotColor;
+    }
+
+    public void ResetHighlight()
+    {
+        if (currentSelectedSlotImage != null)
+        {
+            currentSelectedSlotImage.color = unselectedSlotColor;
+            currentSelectedSlotImage = null;
+        }
+    }
+
     private void SetupUpgradeUI(WeaponUpgradeLevel data)
     {
         foreach (var slot in materialSlots)
@@ -389,5 +434,7 @@ public class WeaponUpgradeUI : MonoBehaviour
         ascendGroupPanel.SetActive(false);
 
         equipBtn.gameObject.SetActive(false);
+        
+        ResetHighlight();
     }
 }

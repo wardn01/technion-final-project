@@ -78,6 +78,7 @@ public class PlayerAttributesUI : MonoBehaviour
         int totalAtk = data.baseAttack + (data.investedAtkPoints * data.attackPerPoint);
         int totalDef = data.baseDefense + (data.investedDefPoints * data.defensePerPoint);
         int totalStm = (int)(data.baseMaxStamina + (data.investedStaminaPoints * data.staminaPerPoint));
+        
         hpText.text = $"Max HP: {totalHP} <color=#00FF00>(+{data.investedHPPoints})</color>";
         attackText.text = $"Attack: {totalAtk} <color=#00FF00>(+{data.investedAtkPoints})</color>";
         defenseText.text = $"Defense: {totalDef} <color=#00FF00>(+{data.investedDefPoints})</color>";
