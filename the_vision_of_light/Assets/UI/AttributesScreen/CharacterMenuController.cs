@@ -35,16 +35,6 @@ public class CharacterMenuController : MonoBehaviour
         if(openWeaponsBtn) openWeaponsBtn.onClick.AddListener(() => SwitchTab(false));
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            if (UIManager.Instance != null && UIManager.Instance.IsAnyOtherPanelOpen(attributesScreen)) return;
-            if (Time.timeScale == 0f && !attributesScreen.activeSelf) return;
-            ToggleMenu();
-        }
-    }
-
     public void ToggleMenu()
     {
         bool isOpening = !attributesScreen.activeSelf;

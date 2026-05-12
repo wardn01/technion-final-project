@@ -49,6 +49,15 @@ public class ShopManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
+
+        if (itemsListContainer != null)
+        {
+            foreach (Transform child in itemsListContainer)
+            {
+                pooledSlots.Add(child.gameObject);
+                child.gameObject.SetActive(false);
+            }
+        }
     }
 
     private void Start()
@@ -119,7 +128,6 @@ public class ShopManager : MonoBehaviour
             if (i < pooledSlots.Count)
             {
                 slot = pooledSlots[i];
-                slot.SetActive(true);
             }
             else
             {
@@ -127,15 +135,16 @@ public class ShopManager : MonoBehaviour
                 pooledSlots.Add(slot);
             }
 
-            Image[] images = slot.GetComponentsInChildren<Image>();
-            foreach (Image img in images)
-            {
-                if (img.gameObject != slot) 
-                {
-                    img.sprite = item.itemIcon;
-                    break;
-                }
-            }
+            slot.SetActive(true);
+
+            Transform iconTr = slot.transform.Find("Icon");
+            if (iconTr != null) iconTr.GetComponent<Image>().sprite = item.itemIcon;
+
+            Transform nameTr = slot.transform.Find("Name");
+            if (nameTr != null) nameTr.GetComponent<TextMeshProUGUI>().text = item.itemName;
+
+            Transform priceTr = slot.transform.Find("Price");
+            if (priceTr != null) priceTr.GetComponent<TextMeshProUGUI>().text = item.value.ToString();
 
             Button btn = slot.GetComponent<Button>();
             Image bgImage = slot.GetComponent<Image>();
@@ -146,12 +155,23 @@ public class ShopManager : MonoBehaviour
                 SelectItem(item);
                 HighlightSlot(bgImage);
             });
-
-            if (i == 0) btn.onClick.Invoke();
         }
 
-        if (itemsToSell.Count == 0) UpdateTotalPrice();
-        FreezePlayer(true);
+        if (itemsListContainer.GetComponent<LayoutGroup>() != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(itemsListContainer.GetComponent<RectTransform>());
+        }
+
+        Canvas.ForceUpdateCanvases();
+
+        if (itemsToSell.Count > 0)
+        {
+            SelectItem(itemsToSell[0]);
+            if (pooledSlots.Count > 0 && pooledSlots[0].GetComponent<Image>() != null) 
+                HighlightSlot(pooledSlots[0].GetComponent<Image>());
+                
+            UpdateTotalPrice();
+        }
     }
 
     public void CloseShop()

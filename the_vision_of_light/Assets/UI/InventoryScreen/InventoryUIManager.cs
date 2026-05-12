@@ -79,20 +79,7 @@ public class InventoryUIManager : MonoBehaviour
         UpdateSkillHUD(null);
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            if (UIManager.Instance != null && UIManager.Instance.IsAnyOtherPanelOpen(inventoryWindow)) 
-                return;
-
-            if (Time.timeScale == 0f && !inventoryWindow.activeSelf) return;
-
-            ToggleInventory();
-        }
-    }
-
-    private void ToggleInventory()
+    public void ToggleInventory()
     {
         bool isOpening = !inventoryWindow.activeSelf;
         inventoryWindow.SetActive(isOpening);

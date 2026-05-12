@@ -5,11 +5,14 @@ using System.Collections.Generic;
 
 public class ShopkeeperNPC : MonoBehaviour
 {
-    [Header("NPC Identity")]
-    public string npcName = "Merchant"; 
-    public Sprite npcIcon; 
-    public List<ItemData> itemsToSell; 
-    
+    [Header("NPC Data")]
+    public NPCData myData;
+
+    public List<ItemData> itemsToSell => myData != null ? myData.itemsToSell : new List<ItemData>();
+
+    [Header("Map Settings")]
+    public Transform mapIconObject; 
+
     [Header("Overhead UI (World Space)")]
     public GameObject overheadUI; 
     public GameObject npcNameTextObj; 
@@ -27,8 +30,26 @@ public class ShopkeeperNPC : MonoBehaviour
 
         if (overheadUI != null) overheadUI.SetActive(false);
 
-        if (overheadNameText != null) overheadNameText.text = npcName;
-        if (overheadIconImage != null && npcIcon != null) overheadIconImage.sprite = npcIcon;
+        if (myData != null)
+        {
+            if (overheadNameText != null) overheadNameText.text = myData.npcName;
+            if (overheadIconImage != null && myData.npcIcon != null) overheadIconImage.sprite = myData.npcIcon;
+            
+            SetupMapIcon();
+        }
+    }
+
+    void SetupMapIcon()
+    {
+        if (mapIconObject == null || myData.npcIcon == null) return;
+
+        SpriteRenderer sr = mapIconObject.GetComponent<SpriteRenderer>();
+        if (sr == null) sr = mapIconObject.gameObject.AddComponent<SpriteRenderer>();
+
+        sr.sprite = myData.npcIcon;
+        sr.sortingOrder = 10;
+        
+        mapIconObject.gameObject.layer = LayerMask.NameToLayer("Minimap");
     }
 
     private void Update()
@@ -51,14 +72,14 @@ public class ShopkeeperNPC : MonoBehaviour
             }
         }
 
-        if (isPlayerInRange)
+        if (isPlayerInRange && myData != null)
         {
             bool isGrounded = ShopManager.Instance.playerAnimator != null && ShopManager.Instance.playerAnimator.GetBool("IsGrounded");
             bool showPrompts = !isMenuOpen && isGrounded;
 
             if (showPrompts)
             {
-                ShopManager.Instance.ShowInteractPrompt(npcName);
+                ShopManager.Instance.ShowInteractPrompt(myData.npcName);
 
                 if (Input.GetKeyDown(KeyCode.F) && Time.timeScale != 0f)
                 {

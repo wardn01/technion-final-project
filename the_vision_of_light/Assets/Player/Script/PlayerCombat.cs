@@ -213,12 +213,14 @@ public class PlayerCombat : MonoBehaviour
     {   
         if (EventSystem.current.IsPointerOverGameObject()) return;
 
+        if (PlayerInputManager.Instance != null && PlayerInputManager.Instance.isInputLocked) return;
+
         bool grounded = movementScript != null && movementScript.isGrounded;
         if (!grounded) return;
 
         if (!CanInterrupt() || activeWeaponData == null) return;
 
-        if (Input.GetMouseButtonDown(0)) 
+        if (PlayerInputManager.Instance != null && PlayerInputManager.Instance.AttackPressed) 
         { 
             ForceCancelRoll(); 
             RequestAttack(); 

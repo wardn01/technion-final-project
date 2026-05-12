@@ -53,21 +53,6 @@ public class QuickSlotManager : MonoBehaviour
     private void Update()
     {
         UpdateCooldownUI();
-
-        if (Time.timeScale == 0f && !IsAnyMenuOpen())
-            return;
-
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            ExecuteSlotAction(0);
-
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-            ExecuteSlotAction(1);
-
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-            ExecuteSlotAction(2);
-
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-            ExecuteSlotAction(3);
     }
 
     private void UpdateCooldownUI()
@@ -206,7 +191,7 @@ public class QuickSlotManager : MonoBehaviour
         UpdateUI();
     }
 
-    private void ExecuteSlotAction(int index)
+    public void ExecuteSlotAction(int index)
     {
         ItemData item = slots[index];
 

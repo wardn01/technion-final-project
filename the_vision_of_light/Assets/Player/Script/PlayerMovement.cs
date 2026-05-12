@@ -131,12 +131,12 @@ public class PlayerMovement : MonoBehaviour
     void HandleMovement()
     {
     if (isRolling)
-    {
-        currentHorizontalMove = Vector3.zero; 
-        return; 
-    }   
-        float x = Input.GetAxisRaw("Horizontal");
-        float z = Input.GetAxisRaw("Vertical");
+        {
+            currentHorizontalMove = Vector3.zero; 
+            return; 
+        }   
+        float x = PlayerInputManager.Instance != null ? PlayerInputManager.Instance.Horizontal : 0f;
+        float z = PlayerInputManager.Instance != null ? PlayerInputManager.Instance.Vertical : 0f;
         float currentSpeed = walkSpeed;
 
         if (combatScript != null && combatScript.inCombatStance)
@@ -216,10 +216,10 @@ public class PlayerMovement : MonoBehaviour
 
     void LateUpdate()
     {
-        if (isGliding && !isSwimming)
+       if (isGliding && !isSwimming)
         {
-            float x = Input.GetAxisRaw("Horizontal");
-            float z = Input.GetAxisRaw("Vertical");
+            float x = PlayerInputManager.Instance != null ? PlayerInputManager.Instance.Horizontal : 0f;
+            float z = PlayerInputManager.Instance != null ? PlayerInputManager.Instance.Vertical : 0f;
             float targetX = (Mathf.Abs(x) > 0.1f || Mathf.Abs(z) > 0.1f) ? forwardTiltAngle : 0f;
             float targetZ = x * -sideTiltAngle;
             Quaternion targetRotation = Quaternion.Euler(targetX, transform.eulerAngles.y, targetZ);
@@ -278,20 +278,22 @@ public class PlayerMovement : MonoBehaviour
         wasGrounded = isGrounded;
         if (isGrounded && velocity.y < 0 && !isSwimming) { velocity.y = -2f; animator.ResetTrigger("Jump"); }
     }
-void HandleJumping()
-{
-    if (Input.GetButtonDown("Jump") && isGrounded && !isSwimming && Time.time >= nextJumpTime)
+    void HandleJumping()
     {
-        if (combatScript != null && combatScript.inCombatStance)
-        {
-            if (combatScript.CanInterrupt() && !isRolling && playerStamina != null && playerStamina.HasStamina(rollStaminaCost))
-            {
-                playerStamina.ConsumeStamina(rollStaminaCost);
-                nextJumpTime = Time.time + rollDuration; 
+        bool jumpPressed = PlayerInputManager.Instance != null && PlayerInputManager.Instance.JumpPressed;
 
-                float x = Input.GetAxisRaw("Horizontal");
-                float z = Input.GetAxisRaw("Vertical");
-                Vector3 dodgeDirection = new Vector3(x, 0f, z).normalized;
+        if (jumpPressed && isGrounded && !isSwimming && Time.time >= nextJumpTime)
+        {
+            if (combatScript != null && combatScript.inCombatStance)
+            {
+                if (combatScript.CanInterrupt() && !isRolling && playerStamina != null && playerStamina.HasStamina(rollStaminaCost))
+                {
+                    playerStamina.ConsumeStamina(rollStaminaCost);
+                    nextJumpTime = Time.time + rollDuration; 
+
+                    float x = PlayerInputManager.Instance != null ? PlayerInputManager.Instance.Horizontal : 0f;
+                    float z = PlayerInputManager.Instance != null ? PlayerInputManager.Instance.Vertical : 0f;
+                    Vector3 dodgeDirection = new Vector3(x, 0f, z).normalized;
 
                 if (dodgeDirection.magnitude >= 0.1f)
                 {
@@ -343,7 +345,9 @@ IEnumerator RollRoutine()
     void HandleGliding()
     {
         if (isSwimming || inWaterBounds || Time.time < nextToggleTime) return;
-        if (Input.GetButtonDown("Jump"))
+        bool jumpPressed = PlayerInputManager.Instance != null && PlayerInputManager.Instance.JumpPressed;
+        
+        if (jumpPressed)
         {
             if (!isGliding)
             {

@@ -42,39 +42,32 @@ public class FullMapController : MonoBehaviour
             ToggleUIElements(true);
         }
         wasMapOpen = isMapOpen;
+    }
 
-        if (Input.GetKeyDown(KeyCode.M))
+    public void ToggleMap()
+    {
+
+        if (Time.timeScale == 0f && !fullMapScreen.activeSelf) return;
+
+        bool isOpen = fullMapScreen.activeSelf;
+        fullMapScreen.SetActive(!isOpen);
+
+        if (!isOpen) 
         {
-            if (UIManager.Instance != null && UIManager.Instance.IsAnyOtherPanelOpen(fullMapScreen)) 
-                return;
-
-            if (Time.timeScale == 0f && !fullMapScreen.activeSelf) return;
-
-            bool isOpen = fullMapScreen.activeSelf;
-            fullMapScreen.SetActive(!isOpen);
-
-            if (!isOpen) 
-            {
-                Time.timeScale = 0f;
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-                
-                fullMapCamera.gameObject.SetActive(true); 
-
-                ToggleUIElements(false);
-
-                CenterMapOnPlayer(); 
-            }
-            else 
-            {
-                Time.timeScale = 1f;
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-
-                fullMapCamera.gameObject.SetActive(false); 
-                
-                ToggleUIElements(true);
-            }
+            Time.timeScale = 0f;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            fullMapCamera.gameObject.SetActive(true); 
+            ToggleUIElements(false);
+            CenterMapOnPlayer(); 
+        }
+        else 
+        {
+            Time.timeScale = 1f;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            fullMapCamera.gameObject.SetActive(false); 
+            ToggleUIElements(true);
         }
     }
 
