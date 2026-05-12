@@ -160,7 +160,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Strength: 1
+    - _Strength: 0.2981117
     - _SunDisk: 2
     - _SunSize: 0.04
     - _SunSizeConvergence: 5
