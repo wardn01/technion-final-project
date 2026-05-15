@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f146423d63e8c84c9e15766f48c8920, type: 3}
+  m_Name: Ork_Audio_Library
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAudioData
+  sounds:
+  - actionName: Attack
+    clips:
+    - {fileID: 8300000, guid: cca808ee31b0b2e4da5d6b3ec8817742, type: 3}
+    - {fileID: 8300000, guid: acac3844e3fda29408e5656aecb81509, type: 3}
+    - {fileID: 8300000, guid: 9da64fce690aaa142a3cec2f3321c854, type: 3}
+    volume: 0.2
+  - actionName: Death
+    clips:
+    - {fileID: 8300000, guid: 856927d0de864ab428039d80790c443a, type: 3}
+    - {fileID: 8300000, guid: d9ddb1015a992f848afcdc9d82ec2af3, type: 3}
+    volume: 1
+  - actionName: RageAttack
+    clips:
+    - {fileID: 8300000, guid: e3107ca236111d747a04d32a21612a46, type: 3}
+    volume: 1
+  - actionName: Rage
+    clips:
+    - {fileID: 8300000, guid: 40b237eb037f8dc4bbac3bdbe722cdc3, type: 3}
+    volume: 1
+  - actionName: Gethit
+    clips:
+    - {fileID: 8300000, guid: e8589cb346b81a84390b929928af313c, type: 3}
+    - {fileID: 8300000, guid: 03bbaf999c39ab74e95ea808623bf6b9, type: 3}
+    - {fileID: 8300000, guid: 978f28acde3e248449f4bf1205b97f00, type: 3}
+    volume: 1
+  - actionName: Step
+    clips:
+    - {fileID: 8300000, guid: e3271cd13e4d4c141a42b92222bb21b4, type: 3}
+    - {fileID: 8300000, guid: 9bb0cee5c78b52d459b29389d6289709, type: 3}
+    - {fileID: 8300000, guid: e76613c4308e9084293e47f7a32b5348, type: 3}
+    volume: 0.1

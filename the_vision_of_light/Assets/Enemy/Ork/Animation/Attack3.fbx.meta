@@ -1520,7 +1520,14 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.37181997
+      - time: 0.29875192
+        functionName: PlayEnemySound
+        data: Attack
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.37939572
         functionName: AnimHit
         data: 
         objectReferenceParameter: {instanceID: 0}

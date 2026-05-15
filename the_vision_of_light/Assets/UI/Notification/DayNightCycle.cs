@@ -58,7 +58,19 @@ public class DayNightCycle : MonoBehaviour
     {
         if (sunLight == null) return;
 
-        float sunRotation = (currentTime / 24f) * 360f - 90f;
+        float sunRotation;
+
+        if (currentTime >= 4f && currentTime <= 20f) 
+        {
+            float dayProgress = (currentTime - 4f) / 16f;
+            sunRotation = Mathf.Lerp(0f, 180f, dayProgress);
+        } 
+        else 
+        {
+            float nightProgress = (currentTime > 20f) ? (currentTime - 20f) / 8f : (currentTime + 4f) / 8f;
+            sunRotation = Mathf.Lerp(180f, 360f, nightProgress);
+        }
+
         sunLight.transform.rotation = Quaternion.Euler(sunRotation, 15f, 0f);
 
         if (sunMesh != null) sunMesh.LookAt(Vector3.zero);
@@ -66,7 +78,7 @@ public class DayNightCycle : MonoBehaviour
 
         float sunHeight = Vector3.Dot(sunLight.transform.forward, Vector3.down);
         
-        float t = Mathf.Clamp01(sunHeight + 0.2f);
+        float t = Mathf.Clamp01(sunHeight);
         t = Mathf.SmoothStep(0f, 1f, t);
 
         float worldLightT = Mathf.Lerp(0.65f, 1f, t);
@@ -81,7 +93,6 @@ public class DayNightCycle : MonoBehaviour
         }
 
         RenderSettings.ambientMode = AmbientMode.Flat;
-        
         RenderSettings.ambientLight = Color.Lerp(nightAmbientColor, dayAmbientColor, worldLightT);
 
         if (useFog) {
