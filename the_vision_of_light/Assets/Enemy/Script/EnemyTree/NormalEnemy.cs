@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class NormalEnemy : EnemyBase
 {
@@ -18,9 +19,9 @@ public class NormalEnemy : EnemyBase
 
     protected NormalEnemyStats MeleeStats => stats as NormalEnemyStats;
 
-    protected override void Start()
+    protected override IEnumerator Start()
     {
-        base.Start();
+        yield return base.Start();
         
         statusEffects = GetComponent<EnemyStatusEffects>();
         if (target != null)

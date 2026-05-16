@@ -166,11 +166,10 @@ Assets/
   VertexShakeB.cs
   VertexZoom.cs
   WarpTextExample.cs
- Inventory/
+ Inventory/Scipts/
+  ConsumableItemData.cs
   InventoryManager.cs
-  ItemData/Scipts/
-   ConsumableItemData.cs
-   ItemData.cs
+  ItemData.cs
  MainMenu/MainMenuManager.cs
  MapAdditions/Teleport/Scripts/
   TeleportManager.cs
@@ -179,6 +178,7 @@ Assets/
   NPCData.cs
   ShopkeeperNPC.cs
   ShopManager.cs
+ PauseMenu/InGameHandler.cs
  Player/Script/
   CameraZoom.cs
   PlayerCombat.cs
@@ -187,6 +187,9 @@ Assets/
   PlayerMovement.cs
   PlayerMovementSound.cs
   PlayerStamina.cs
+ Resources/Scripts/
+  GameData.cs
+  SaveManager.cs
  Scenes/Map1/
   Demo/Scripts/MS_CameraMovement.cs
   Environment/Trees/Scripts/MS_StylizedTreeCollision.cs

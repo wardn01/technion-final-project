@@ -54,6 +54,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5475dfebd97a00c4bb8a2eeb72ae0fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventorySlotUI
+  playerData: {fileID: 11400000, guid: b5d270fc67575f148861a06db0a29448, type: 2}
   icon: {fileID: 630055893729307837}
   amountText: {fileID: 5440010123756198937}
 --- !u!222 &5974971895080847348

@@ -6,6 +6,9 @@ using TMPro;
 [RequireComponent(typeof(Button))]
 public class InventorySlotUI : MonoBehaviour
 {
+    [Header("Player Data Reference")]
+    public PlayerData playerData;
+
     public Image icon;
     public TextMeshProUGUI amountText;
     
@@ -37,7 +40,7 @@ public class InventorySlotUI : MonoBehaviour
         {
             if (item.type == ItemType.Weapon)
             {
-                int lvl = PlayerData.Instance.GetWeaponLevel(item.itemName);
+                int lvl = playerData != null ? playerData.GetWeaponLevel(item.itemName) : 1;
                 amountText.text = "Lv." + lvl;
             }
             else

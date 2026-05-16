@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 public class PlayerStamina : MonoBehaviour
 {
+    [Header("Player Data Reference")]
+    public PlayerData playerData;
+
     [Header("UI References")]
     public Image staminaBarFill;
 
@@ -22,9 +25,9 @@ public class PlayerStamina : MonoBehaviour
 
     public void UpdateMaxStaminaFromData()
     {
-        if (PlayerData.Instance != null)
+        if (playerData != null)
         {
-            maxStamina = PlayerData.Instance.GetTotalMaxStamina();
+            maxStamina = playerData.GetTotalMaxStamina();
             currentStamina = Mathf.Min(currentStamina, maxStamina);
         }
         else

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class AnimalEnemy : EnemyBase
 {
@@ -14,9 +15,9 @@ public class AnimalEnemy : EnemyBase
 
     protected AnimalEnemyStats AnimalStats => stats as AnimalEnemyStats;
 
-    protected override void Start()
+    protected override IEnumerator Start()
     {
-        base.Start(); 
+        yield return base.Start(); 
 
         statusEffects = GetComponent<EnemyStatusEffects>(); 
 

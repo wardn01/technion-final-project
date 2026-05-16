@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8cba3a58248a574d973d7cc4ed89d9b, type: 3}
+  m_Name: Fruit_Merchant_Data
+  m_EditorClassIdentifier: Assembly-CSharp::NPCData
+  npcName: Barnaby
+  npcIcon: {fileID: 21300000, guid: 41cddf1b1a4bd0444b2bcf5da376be8e, type: 3}
+  itemsToSell:
+  - {fileID: 11400000, guid: 6db0936be6dca264faf2afda425b34b1, type: 2}
+  - {fileID: 11400000, guid: f3c73b8ee4ffd4744beaf893e84ff0fd, type: 2}
+  - {fileID: 11400000, guid: 705cce1441e9e15438100639d5bec1c0, type: 2}
+  - {fileID: 11400000, guid: 4a21a515f09668e45a042c53ffa072e5, type: 2}
+  - {fileID: 11400000, guid: 4d66acd5c853e704ab71fe07296639d0, type: 2}

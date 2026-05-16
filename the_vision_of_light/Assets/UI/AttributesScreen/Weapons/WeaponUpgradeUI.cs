@@ -5,6 +5,9 @@ using TMPro;
 
 public class WeaponUpgradeUI : MonoBehaviour
 {
+    [Header("Player Data Reference")]
+    public PlayerData playerData;
+
     [System.Serializable]
     public class UpgradeMaterialSlot
     {
@@ -29,7 +32,8 @@ public class WeaponUpgradeUI : MonoBehaviour
 
     [Header("Slot Highlight Colors")]
     public Color selectedSlotColor = Color.white;
-    public Color unselectedSlotColor = new Color(0.3f, 0.3f, 0.3f, 1f); 
+    public Color unselectedSlotColor = new Color(0.3f, 0.3f, 0.3f, 1f);
+
     private Image currentSelectedSlotImage;
 
     [Header("Right Panel - Details")]
@@ -49,7 +53,9 @@ public class WeaponUpgradeUI : MonoBehaviour
     public TextMeshProUGUI equipBtnText;
 
     private List<GameObject> pool = new List<GameObject>();
+
     private ItemData currentlySelectedItem;
+
     private bool showingWeapons = true;
 
     public void OnEnable()
@@ -61,26 +67,38 @@ public class WeaponUpgradeUI : MonoBehaviour
     public void ShowWeaponsTab()
     {
         showingWeapons = true;
+
         UpdateTabColors();
+
         ResetHighlight();
+
         RefreshGrid();
     }
 
     public void ShowPotionsTab()
     {
         showingWeapons = false;
+
         UpdateTabColors();
+
         ResetHighlight();
+
         RefreshGrid();
     }
 
     private void UpdateTabColors()
     {
         if (weaponsTabIcon != null)
-            weaponsTabIcon.color = showingWeapons ? activeTabColor : inactiveTabColor;
-            
+            weaponsTabIcon.color =
+                showingWeapons
+                ? activeTabColor
+                : inactiveTabColor;
+
         if (potionsTabIcon != null)
-            potionsTabIcon.color = !showingWeapons ? activeTabColor : inactiveTabColor;
+            potionsTabIcon.color =
+                !showingWeapons
+                ? activeTabColor
+                : inactiveTabColor;
     }
 
     public void RefreshGrid()
@@ -123,7 +141,8 @@ public class WeaponUpgradeUI : MonoBehaviour
                 pool.Add(slot);
             }
 
-            slot.GetComponent<InventorySlotUI>().Setup(item, amount, this);
+            slot.GetComponent<InventorySlotUI>()
+                .Setup(item, amount, this);
 
             index++;
         }
@@ -133,7 +152,8 @@ public class WeaponUpgradeUI : MonoBehaviour
 
         if (topGoldText != null && goldCoinData != null)
         {
-            int currentGold = InventoryManager.Instance.GetItemAmount(goldCoinData);
+            int currentGold =
+                InventoryManager.Instance.GetItemAmount(goldCoinData);
 
             topGoldText.text = currentGold.ToString();
         }
@@ -146,9 +166,12 @@ public class WeaponUpgradeUI : MonoBehaviour
             ClearDetails();
     }
 
-    public void DisplayItemDetails(ItemData item, bool fromUserClick = false)
+    public void DisplayItemDetails(
+        ItemData item,
+        bool fromUserClick = false
+    )
     {
-        if (item == null)
+        if (item == null || playerData == null)
             return;
 
         currentlySelectedItem = item;
@@ -156,7 +179,8 @@ public class WeaponUpgradeUI : MonoBehaviour
         if (InventoryUIManager.Instance != null)
         {
             InventoryUIManager.Instance.currentlySelectedItem = item;
-            InventoryUIManager.Instance.isItemClickedFromGrid = fromUserClick;
+            InventoryUIManager.Instance.isItemClickedFromGrid =
+                fromUserClick;
         }
 
         detailIcon.sprite = item.itemIcon;
@@ -166,13 +190,17 @@ public class WeaponUpgradeUI : MonoBehaviour
 
         equipBtn.gameObject.SetActive(true);
 
-        equipBtnText.text = QuickSlotManager.Instance.IsItemEquipped(item)
+        equipBtnText.text =
+            QuickSlotManager.Instance.IsItemEquipped(item)
             ? "Remove"
             : "Equip";
 
         equipBtn.onClick.RemoveAllListeners();
 
-        equipBtn.onClick.AddListener(() => HandleEquip(item));
+        equipBtn.onClick.AddListener(() =>
+        {
+            HandleEquip(item);
+        });
 
         if (item is WeaponItemData weapon)
         {
@@ -184,7 +212,8 @@ public class WeaponUpgradeUI : MonoBehaviour
             if (detailDescriptionText != null)
                 detailDescriptionText.gameObject.SetActive(false);
 
-            int currentLvl = PlayerData.Instance.GetWeaponLevel(weapon.itemName);
+            int currentLvl =
+                playerData.GetWeaponLevel(weapon.itemName);
 
             bool hasNextUpgrade =
                 weapon.upgradeLevels != null &&
@@ -195,11 +224,15 @@ public class WeaponUpgradeUI : MonoBehaviour
                 WeaponUpgradeLevel upgradeData =
                     weapon.upgradeLevels[currentLvl - 1];
 
-                detailLevelText.text = "Level " + currentLvl;
+                detailLevelText.text =
+                    "Level " + currentLvl;
 
                 int currentDamage =
                     weapon.weaponBaseAttack +
-                    GetTotalBoostUntil(weapon, currentLvl - 1);
+                    GetTotalBoostUntil(
+                        weapon,
+                        currentLvl - 1
+                    );
 
                 int nextDamage =
                     currentDamage +
@@ -209,7 +242,7 @@ public class WeaponUpgradeUI : MonoBehaviour
                     $"Damage: {currentDamage} -> <color=#00FF00>{nextDamage}</color>";
 
                 bool isAscensionLocked =
-                    PlayerData.Instance.currentAscensionIndex < currentLvl;
+                    playerData.currentAscensionIndex < currentLvl;
 
                 SetupUpgradeUI(upgradeData);
 
@@ -228,19 +261,27 @@ public class WeaponUpgradeUI : MonoBehaviour
                     }
                     else
                     {
-                        UpgradeWeapon(weapon, upgradeData);
+                        UpgradeWeapon(
+                            weapon,
+                            upgradeData
+                        );
                     }
                 });
             }
             else
             {
-                detailLevelText.text = $"Level {currentLvl} (MAX)";
+                detailLevelText.text =
+                    $"Level {currentLvl} (MAX)";
 
                 int finalDamage =
                     weapon.weaponBaseAttack +
-                    GetTotalBoostUntil(weapon, currentLvl - 1);
+                    GetTotalBoostUntil(
+                        weapon,
+                        currentLvl - 1
+                    );
 
-                detailStatsText.text = $"Damage: {finalDamage}";
+                detailStatsText.text =
+                    $"Damage: {finalDamage}";
 
                 ClearMaterialSlots();
 
@@ -258,32 +299,39 @@ public class WeaponUpgradeUI : MonoBehaviour
             {
                 detailDescriptionText.gameObject.SetActive(true);
 
-                detailDescriptionText.text = item.description;
+                detailDescriptionText.text =
+                    item.description;
             }
         }
     }
 
     public void HighlightSlot(Image clickedBgImage)
     {
-        if (currentSelectedSlotImage != null) 
-            currentSelectedSlotImage.color = unselectedSlotColor;
-        
+        if (currentSelectedSlotImage != null)
+            currentSelectedSlotImage.color =
+                unselectedSlotColor;
+
         currentSelectedSlotImage = clickedBgImage;
-        
-        if (currentSelectedSlotImage != null) 
-            currentSelectedSlotImage.color = selectedSlotColor;
+
+        if (currentSelectedSlotImage != null)
+            currentSelectedSlotImage.color =
+                selectedSlotColor;
     }
 
     public void ResetHighlight()
     {
         if (currentSelectedSlotImage != null)
         {
-            currentSelectedSlotImage.color = unselectedSlotColor;
+            currentSelectedSlotImage.color =
+                unselectedSlotColor;
+
             currentSelectedSlotImage = null;
         }
     }
 
-    private void SetupUpgradeUI(WeaponUpgradeLevel data)
+    private void SetupUpgradeUI(
+        WeaponUpgradeLevel data
+    )
     {
         foreach (var slot in materialSlots)
             slot.slotObject.SetActive(false);
@@ -295,8 +343,10 @@ public class WeaponUpgradeUI : MonoBehaviour
 
         for (int i = 0; i < data.materials.Length; i++)
         {
-            if (data.materials[i].item != null &&
-                uiSlotIndex < materialSlots.Length)
+            if (
+                data.materials[i].item != null &&
+                uiSlotIndex < materialSlots.Length
+            )
             {
                 UpdateSlotUI(
                     uiSlotIndex,
@@ -311,14 +361,19 @@ public class WeaponUpgradeUI : MonoBehaviour
         CheckCanUpgrade(data);
     }
 
-    private void UpdateSlotUI(int index, ItemData item, int requiredAmount)
+    private void UpdateSlotUI(
+        int index,
+        ItemData item,
+        int requiredAmount
+    )
     {
         if (item == null)
             return;
 
         materialSlots[index].slotObject.SetActive(true);
 
-        materialSlots[index].icon.sprite = item.itemIcon;
+        materialSlots[index].icon.sprite =
+            item.itemIcon;
 
         int currentAmount =
             InventoryManager.Instance.GetItemAmount(item);
@@ -332,7 +387,9 @@ public class WeaponUpgradeUI : MonoBehaviour
             $"{colorTag}{currentAmount}</color>/{requiredAmount}";
     }
 
-    private void CheckCanUpgrade(WeaponUpgradeLevel data)
+    private void CheckCanUpgrade(
+        WeaponUpgradeLevel data
+    )
     {
         bool hasMaterials = true;
 
@@ -342,8 +399,13 @@ public class WeaponUpgradeUI : MonoBehaviour
             {
                 if (m.item != null)
                 {
-                    if (InventoryManager.Instance.GetItemAmount(m.item) < m.amount)
+                    if (
+                        InventoryManager.Instance.GetItemAmount(m.item)
+                        < m.amount
+                    )
+                    {
                         hasMaterials = false;
+                    }
                 }
             }
         }
@@ -370,7 +432,12 @@ public class WeaponUpgradeUI : MonoBehaviour
             }
         }
 
-        PlayerData.Instance.LevelUpWeapon(weapon.itemName);
+        if (playerData != null)
+        {
+            playerData.LevelUpWeapon(
+                weapon.itemName
+            );
+        }
 
         RefreshGrid();
     }
@@ -385,7 +452,11 @@ public class WeaponUpgradeUI : MonoBehaviour
         for (int i = 0; i < levelIndex; i++)
         {
             if (i < weapon.upgradeLevels.Length)
-                total += weapon.upgradeLevels[i].damageBoost;
+            {
+                total +=
+                    weapon.upgradeLevels[i]
+                        .damageBoost;
+            }
         }
 
         return total;
@@ -399,9 +470,12 @@ public class WeaponUpgradeUI : MonoBehaviour
 
     private void HandleEquip(ItemData item)
     {
-        if (QuickSlotManager.Instance.IsItemEquipped(item))
+        if (
+            QuickSlotManager.Instance.IsItemEquipped(item)
+        )
         {
-            QuickSlotManager.Instance.ClearItemFromAllSlots(item);
+            QuickSlotManager.Instance
+                .ClearItemFromAllSlots(item);
 
             if (item.type == ItemType.Weapon)
             {
@@ -411,7 +485,8 @@ public class WeaponUpgradeUI : MonoBehaviour
         }
         else
         {
-            QuickSlotManager.Instance.AssignToFirstEmptySlot(item);
+            QuickSlotManager.Instance
+                .AssignToFirstEmptySlot(item);
         }
 
         DisplayItemDetails(item, false);
@@ -424,17 +499,20 @@ public class WeaponUpgradeUI : MonoBehaviour
         if (InventoryUIManager.Instance != null)
         {
             InventoryUIManager.Instance.currentlySelectedItem = null;
-            InventoryUIManager.Instance.isItemClickedFromGrid = false;
+
+            InventoryUIManager.Instance.isItemClickedFromGrid =
+                false;
         }
 
-        detailIcon.color = new Color(1, 1, 1, 0);
+        detailIcon.color =
+            new Color(1, 1, 1, 0);
 
         detailNameText.text = "Empty";
 
         ascendGroupPanel.SetActive(false);
 
         equipBtn.gameObject.SetActive(false);
-        
+
         ResetHighlight();
     }
 }

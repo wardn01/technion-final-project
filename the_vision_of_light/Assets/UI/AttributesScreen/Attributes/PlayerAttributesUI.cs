@@ -4,6 +4,9 @@ using TMPro;
 
 public class PlayerAttributesUI : MonoBehaviour
 {
+    [Header("Player Data Reference")]
+    public PlayerData playerData;
+
     [System.Serializable]
     public class AscensionItemSlotUI
     {
@@ -43,18 +46,18 @@ public class PlayerAttributesUI : MonoBehaviour
 
     void Start()
     {
-        if(hpPlusBtn) hpPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.HP); RefreshUI(); SyncPlayerStats(); });
-        if(atkPlusBtn) atkPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
-        if(defPlusBtn) defPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
-        if(stmPlusBtn) stmPlusBtn.onClick.AddListener(() => { PlayerData.Instance.AllocateStatPoint(PlayerData.StatType.Stamina); RefreshUI(); SyncPlayerStats(); });
+        if(hpPlusBtn) hpPlusBtn.onClick.AddListener(() => { playerData.AllocateStatPoint(PlayerData.StatType.HP); RefreshUI(); SyncPlayerStats(); });
+        if(atkPlusBtn) atkPlusBtn.onClick.AddListener(() => { playerData.AllocateStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
+        if(defPlusBtn) defPlusBtn.onClick.AddListener(() => { playerData.AllocateStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
+        if(stmPlusBtn) stmPlusBtn.onClick.AddListener(() => { playerData.AllocateStatPoint(PlayerData.StatType.Stamina); RefreshUI(); SyncPlayerStats(); });
         
-        if(hpMinusBtn) hpMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.HP); RefreshUI(); SyncPlayerStats(); });
-        if(atkMinusBtn) atkMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
-        if(defMinusBtn) defMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
-        if(stmMinusBtn) stmMinusBtn.onClick.AddListener(() => { PlayerData.Instance.RemoveStatPoint(PlayerData.StatType.Stamina); RefreshUI(); SyncPlayerStats(); });
+        if(hpMinusBtn) hpMinusBtn.onClick.AddListener(() => { playerData.RemoveStatPoint(PlayerData.StatType.HP); RefreshUI(); SyncPlayerStats(); });
+        if(atkMinusBtn) atkMinusBtn.onClick.AddListener(() => { playerData.RemoveStatPoint(PlayerData.StatType.Attack); RefreshUI(); });
+        if(defMinusBtn) defMinusBtn.onClick.AddListener(() => { playerData.RemoveStatPoint(PlayerData.StatType.Defense); RefreshUI(); });
+        if(stmMinusBtn) stmMinusBtn.onClick.AddListener(() => { playerData.RemoveStatPoint(PlayerData.StatType.Stamina); RefreshUI(); SyncPlayerStats(); });
         
-        if(resetBtn) resetBtn.onClick.AddListener(() => { PlayerData.Instance.ResetStatPoints(); RefreshUI(); SyncPlayerStats(); });
-        if(ascendBtn) ascendBtn.onClick.AddListener(() => { PlayerData.Instance.TryAscend(); RefreshUI(); SyncPlayerStats(); });
+        if(resetBtn) resetBtn.onClick.AddListener(() => { playerData.ResetStatPoints(); RefreshUI(); SyncPlayerStats(); });
+        if(ascendBtn) ascendBtn.onClick.AddListener(() => { playerData.TryAscend(); RefreshUI(); SyncPlayerStats(); });
     }
 
     private void SyncPlayerStats()
@@ -68,8 +71,8 @@ public class PlayerAttributesUI : MonoBehaviour
 
     public void RefreshUI()
     {
-        if (PlayerData.Instance == null) return;
-        var data = PlayerData.Instance;
+        if (playerData == null) return;
+        var data = playerData;
 
         levelInfoText.text = $"Level {data.currentLevel} / {data.maxLevelCap}";
         availablePointsText.text = $"Stat Points: {data.availableStatPoints}";
@@ -94,21 +97,23 @@ public class PlayerAttributesUI : MonoBehaviour
 
     private void UpdateXPBar()
     {
-        var data = PlayerData.Instance;
+        if (playerData == null) return;
+        var data = playerData;
         if (xpBarFill) xpBarFill.fillAmount = (float)data.currentXP / data.xpToNextLevel;
         if (xpText) xpText.text = (data.currentLevel >= data.maxLevelCap) ? "MAX" : $"{data.currentXP} / {data.xpToNextLevel}";
     }
 
     private void UpdateStarsUI()
     {
-        if (ascensionStars == null) return;
+        if (ascensionStars == null || playerData == null) return;
         for (int i = 0; i < ascensionStars.Length; i++)
-            ascensionStars[i].color = (i < PlayerData.Instance.currentAscensionIndex) ? litStarColor : unlitStarColor;
+            ascensionStars[i].color = (i < playerData.currentAscensionIndex) ? litStarColor : unlitStarColor;
     }
 
     private void UpdateAscensionUI()
     {
-        var data = PlayerData.Instance;
+        if (playerData == null) return;
+        var data = playerData;
         if (data.currentAscensionIndex < data.ascensionPhases.Length)
         {
             if (ascendGroup) ascendGroup.SetActive(true);

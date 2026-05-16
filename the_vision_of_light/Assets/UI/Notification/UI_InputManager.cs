@@ -50,10 +50,13 @@ public class UI_InputManager : MonoBehaviour
     {
         if (PlayerInputManager.Instance != null)
         {
+            bool isPauseMenuOpen = InGameHandler.Instance != null && InGameHandler.Instance.isPaused;
+
             bool isAnyScreenOpen = IsShopOrDialogueOpen() || 
                                    (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
                                    (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf) ||
-                                   (FindObjectOfType<FullMapController>() != null && FindObjectOfType<FullMapController>().fullMapScreen.activeSelf);
+                                   (FindObjectOfType<FullMapController>() != null && FindObjectOfType<FullMapController>().fullMapScreen.activeSelf) ||
+                                   isPauseMenuOpen;
                                    
             PlayerInputManager.Instance.isInputLocked = isAnyScreenOpen;
         }
@@ -68,6 +71,12 @@ public class UI_InputManager : MonoBehaviour
 
     private void HandleEscapeKey()
     {
+        if (InGameHandler.Instance != null && InGameHandler.Instance.isPaused)
+        {
+            InGameHandler.Instance.Resume();
+            return;
+        }
+
         if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
         {
             ShopManager.Instance.BackToDialogue();
@@ -97,6 +106,11 @@ public class UI_InputManager : MonoBehaviour
         {
             map.ToggleMap();
             return;
+        }
+
+        if (InGameHandler.Instance != null)
+        {
+            InGameHandler.Instance.Pause();
         }
     }
 }

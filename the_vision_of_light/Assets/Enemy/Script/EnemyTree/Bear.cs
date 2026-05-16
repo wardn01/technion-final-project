@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class Bear : AnimalEnemy
 {
@@ -8,9 +9,10 @@ public class Bear : AnimalEnemy
     private bool isPlayerNearby;
     private bool isRoaring = false;
 
-    protected override void Start()
+    protected override IEnumerator Start()
     {
-        base.Start();
+        yield return base.Start();
+        
         SetSleepState(true);
     }
 

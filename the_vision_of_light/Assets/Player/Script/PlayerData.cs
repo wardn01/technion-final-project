@@ -24,11 +24,13 @@ public class BuildLoadout
     public int defPoints;
     public int stmPoints;
     public ItemData[] hotbarSlots = new ItemData[4];
+    public string[] savedHotbarItemNames = new string[4]; 
 }
 
-public class PlayerData : MonoBehaviour
+[CreateAssetMenu(fileName = "MainPlayerData", menuName = "Game Data/Player Data")]
+public class PlayerData : ScriptableObject
 {
-    public static PlayerData Instance; 
+    public int currentActiveLoadout = 0; 
 
     [Header("Level & XP System")]
     public int currentLevel = 1;
@@ -66,11 +68,6 @@ public class PlayerData : MonoBehaviour
 
     [Header("Build Loadouts")]
     public BuildLoadout[] loadouts = new BuildLoadout[3] { new BuildLoadout(), new BuildLoadout(), new BuildLoadout() };
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-    }
 
     public void AddXP(int amount)
     {
@@ -219,6 +216,8 @@ public class PlayerData : MonoBehaviour
     {
         if (slotIndex < 0 || slotIndex >= loadouts.Length) return;
 
+        currentActiveLoadout = slotIndex; 
+
         int totalPoints = availableStatPoints + investedHPPoints + investedAtkPoints + investedDefPoints + investedStaminaPoints;
         int requiredPoints = loadouts[slotIndex].hpPoints + loadouts[slotIndex].atkPoints + loadouts[slotIndex].defPoints + loadouts[slotIndex].stmPoints;
 
@@ -241,6 +240,94 @@ public class PlayerData : MonoBehaviour
                 }
                 QuickSlotManager.Instance.ResetSelection();
                 QuickSlotManager.Instance.UpdateUI();
+            }
+        }
+    }
+
+    public void PrepareForSave()
+    {
+        if (QuickSlotManager.Instance != null)
+        {
+            SaveBuild(currentActiveLoadout);
+        }
+
+        for (int j = 0; j < loadouts.Length; j++)
+        {
+            if (loadouts[j].savedHotbarItemNames == null || loadouts[j].savedHotbarItemNames.Length != 4)
+                loadouts[j].savedHotbarItemNames = new string[4];
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (loadouts[j].hotbarSlots[i] != null)
+                    loadouts[j].savedHotbarItemNames[i] = loadouts[j].hotbarSlots[i].name;
+                else
+                    loadouts[j].savedHotbarItemNames[i] = "";
+            }
+        }
+    }
+
+    public void RestoreAfterLoad()
+    {
+        ItemData[] allItems = Resources.LoadAll<ItemData>("");
+        for (int j = 0; j < loadouts.Length; j++)
+        {
+            if (loadouts[j].savedHotbarItemNames == null) continue;
+
+            for (int i = 0; i < 4; i++)
+            {
+                string itemName = loadouts[j].savedHotbarItemNames[i];
+                loadouts[j].hotbarSlots[i] = null; 
+
+                if (!string.IsNullOrEmpty(itemName))
+                {
+                    foreach (ItemData itemAsset in allItems)
+                    {
+                        if (itemAsset.name == itemName)
+                        {
+                            loadouts[j].hotbarSlots[i] = itemAsset;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void ResetToDefault()
+    {
+        currentActiveLoadout = 0; 
+        currentLevel = 1;
+        currentXP = 0;
+        xpToNextLevel = 100;
+        maxLevelCap = 10; 
+        currentAscensionIndex = 0;
+
+        availableStatPoints = 1;
+        investedHPPoints = 0;
+        investedAtkPoints = 0;
+        investedDefPoints = 0; 
+        investedStaminaPoints = 0;
+
+        weaponLevels.Clear();
+
+        for (int i = 0; i < loadouts.Length; i++)
+        {
+            loadouts[i].isSaved = false;
+            loadouts[i].hpPoints = 0;
+            loadouts[i].atkPoints = 0;
+            loadouts[i].defPoints = 0;
+            loadouts[i].stmPoints = 0;
+            
+            if (loadouts[i].hotbarSlots == null || loadouts[i].hotbarSlots.Length != 4)
+                loadouts[i].hotbarSlots = new ItemData[4];
+                
+            if (loadouts[i].savedHotbarItemNames == null || loadouts[i].savedHotbarItemNames.Length != 4)
+                loadouts[i].savedHotbarItemNames = new string[4];
+
+            for (int j = 0; j < 4; j++)
+            {
+                loadouts[i].hotbarSlots[j] = null;
+                loadouts[i].savedHotbarItemNames[j] = "";
             }
         }
     }

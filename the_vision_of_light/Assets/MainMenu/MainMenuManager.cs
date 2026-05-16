@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using System.IO;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -167,7 +168,8 @@ public class MainMenuManager : MonoBehaviour
     {
         if (slotToDelete != -1)
         {
-            PlayerPrefs.SetInt("Slot_" + slotToDelete + "_Exists", 0);
+            SaveManager.DeleteGame(slotToDelete);
+            
             slotToDelete = -1;
             confirmDeletePanel.SetActive(false);
             RefreshSlots();

@@ -1,8 +1,12 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    [Header("Player Data Reference")]
+    public PlayerData playerData;
+
     [Header("Base Data")]
     [SerializeField] protected EnemyBaseStats stats; 
 
@@ -36,15 +40,12 @@ public abstract class EnemyBase : MonoBehaviour
         enemyUI = GetComponentInChildren<EnemyUI>();
     }
     
-    protected virtual void Start()
+    protected virtual IEnumerator Start()
     {
+        yield return new WaitForSeconds(0.15f); 
+
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) target = player.transform;
-
-        if (PlayerData.Instance == null) 
-        {
-            PlayerData.Instance = FindFirstObjectByType<PlayerData>();
-        }
 
         if (stats != null)
         {
@@ -63,9 +64,9 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void ScaleStatsWithPlayer()
     {
-        if (PlayerData.Instance != null && stats != null)
+        if (playerData != null && stats != null)
         {
-            int playerLevel = PlayerData.Instance.currentLevel;
+            int playerLevel = playerData.currentLevel;
 
             int playerTier = playerLevel / 10;
             int enemyTier = playerTier + 1;
@@ -169,9 +170,9 @@ public abstract class EnemyBase : MonoBehaviour
 
     private void GiveXP()
     {
-        if (stats == null || PlayerData.Instance == null) return;
+        if (stats == null || playerData == null) return;
         
-        PlayerData.Instance.AddXP(stats.XPReward);
+        playerData.AddXP(stats.XPReward);
     }
 
     private void DropLoot()
