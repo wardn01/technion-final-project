@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro; 
 
-public class SettingsManager : MonoBehaviour
+public class GraphicsManager : MonoBehaviour
 {
     [Header("UI Dropdowns")]
     public TMP_Dropdown qualityDropdown;

@@ -31,6 +31,11 @@ public class MainMenuManager : MonoBehaviour
     public GameObject audioTab;
     public GameObject keyTab;
 
+    [Header("Settings Tab Texts")]
+    public TMP_Text graphicsBtnText;
+    public TMP_Text audioBtnText;
+    public TMP_Text keyBtnText;
+
     private void Start()
     {
         playPanel.SetActive(false);
@@ -63,6 +68,8 @@ public class MainMenuManager : MonoBehaviour
     {
         blurOverlay.SetActive(false);
         settingsPanel.SetActive(false);
+        
+        if (KeybindManager.Instance != null) KeybindManager.Instance.CancelRebind();
     }
 
     public void ShowGraphicsTab()
@@ -70,6 +77,12 @@ public class MainMenuManager : MonoBehaviour
         graphicsTab.SetActive(true);
         audioTab.SetActive(false);
         keyTab.SetActive(false);
+
+        if(graphicsBtnText != null) graphicsBtnText.text = "> Graphics";
+        if(audioBtnText != null) audioBtnText.text = "Audio";
+        if(keyBtnText != null) keyBtnText.text = "KeyBindings";
+
+        if (KeybindManager.Instance != null) KeybindManager.Instance.CancelRebind();
     }
 
     public void ShowAudioTab()
@@ -77,6 +90,12 @@ public class MainMenuManager : MonoBehaviour
         graphicsTab.SetActive(false);
         audioTab.SetActive(true);
         keyTab.SetActive(false);
+
+        if(graphicsBtnText != null) graphicsBtnText.text = "Graphics";
+        if(audioBtnText != null) audioBtnText.text = "> Audio";
+        if(keyBtnText != null) keyBtnText.text = "KeyBindings";
+
+        if (KeybindManager.Instance != null) KeybindManager.Instance.CancelRebind();
     }
 
     public void ShowKeyTab()
@@ -84,6 +103,10 @@ public class MainMenuManager : MonoBehaviour
         graphicsTab.SetActive(false);
         audioTab.SetActive(false);
         keyTab.SetActive(true);
+
+        if(graphicsBtnText != null) graphicsBtnText.text = "Graphics";
+        if(audioBtnText != null) audioBtnText.text = "Audio";
+        if(keyBtnText != null) keyBtnText.text = "> KeyBindings";
     }
 
     public void RefreshSlots()

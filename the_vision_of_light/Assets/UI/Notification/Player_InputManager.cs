@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class PlayerInputManager : MonoBehaviour
+public class Player_InputManager : MonoBehaviour
 {
-    public static PlayerInputManager Instance;
+    public static Player_InputManager Instance;
 
     public bool isInputLocked = false;
 
@@ -28,10 +28,20 @@ public class PlayerInputManager : MonoBehaviour
             return;
         }
 
-        Horizontal = Input.GetAxisRaw("Horizontal");
-        Vertical = Input.GetAxisRaw("Vertical");
-        JumpPressed = Input.GetKeyDown(KeyCode.Space);
-        AttackPressed = Input.GetMouseButtonDown(0);
+        float h = 0f;
+        float v = 0f;
+
+        if (Input.GetKey(KeybindManager.Instance.keys["MoveRight"])) h += 1f;
+        if (Input.GetKey(KeybindManager.Instance.keys["MoveLeft"])) h -= 1f;
+
+        if (Input.GetKey(KeybindManager.Instance.keys["MoveForward"])) v += 1f;
+        if (Input.GetKey(KeybindManager.Instance.keys["MoveBackward"])) v -= 1f;
+
+        Horizontal = h;
+        Vertical = v;
+
+        JumpPressed = Input.GetKeyDown(KeybindManager.Instance.keys["Jump"]);
+        AttackPressed = Input.GetKeyDown(KeybindManager.Instance.keys["NormalAttack"]);
 
         HandleQuickSlots();
     }
@@ -40,9 +50,9 @@ public class PlayerInputManager : MonoBehaviour
     {
         if (QuickSlotManager.Instance == null) return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)) QuickSlotManager.Instance.ExecuteSlotAction(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) QuickSlotManager.Instance.ExecuteSlotAction(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) QuickSlotManager.Instance.ExecuteSlotAction(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) QuickSlotManager.Instance.ExecuteSlotAction(3);
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot1"])) QuickSlotManager.Instance.ExecuteSlotAction(0);
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot2"])) QuickSlotManager.Instance.ExecuteSlotAction(1);
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot3"])) QuickSlotManager.Instance.ExecuteSlotAction(2);
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot4"])) QuickSlotManager.Instance.ExecuteSlotAction(3);
     }
 }

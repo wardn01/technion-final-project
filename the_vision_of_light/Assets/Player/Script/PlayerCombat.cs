@@ -324,8 +324,8 @@ public class PlayerCombat : MonoBehaviour
             return;
 
         if (
-            PlayerInputManager.Instance != null &&
-            PlayerInputManager.Instance.isInputLocked
+            Player_InputManager.Instance != null &&
+            Player_InputManager.Instance.isInputLocked
         )
         {
             return;
@@ -342,8 +342,8 @@ public class PlayerCombat : MonoBehaviour
             return;
 
         if (
-            PlayerInputManager.Instance != null &&
-            PlayerInputManager.Instance.AttackPressed
+            Player_InputManager.Instance != null &&
+            Player_InputManager.Instance.AttackPressed
         )
         {
             ForceCancelRoll();

@@ -1,4 +1,8 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
+using System.IO;
 
 public class UI_InputManager : MonoBehaviour
 {
@@ -19,7 +23,7 @@ public class UI_InputManager : MonoBehaviour
             return; 
         }
 
-        if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["OpenInventory"]) || Input.GetKeyDown(KeyCode.Tab))
         {
             if (!IsShopOrDialogueOpen() && !CharacterMenuController.Instance.attributesScreen.activeSelf) 
             {
@@ -27,7 +31,7 @@ public class UI_InputManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["OpenCharacterScreen"]))
         {
             if (!IsShopOrDialogueOpen() && !InventoryUIManager.Instance.inventoryWindow.activeSelf)
             {
@@ -35,7 +39,7 @@ public class UI_InputManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.M))
+        if (Input.GetKeyDown(KeybindManager.Instance.keys["OpenMap"]))
         {
             if (!IsShopOrDialogueOpen() && !InventoryUIManager.Instance.inventoryWindow.activeSelf && !CharacterMenuController.Instance.attributesScreen.activeSelf)
             {
@@ -48,7 +52,7 @@ public class UI_InputManager : MonoBehaviour
 
     private void UpdatePlayerInputLock()
     {
-        if (PlayerInputManager.Instance != null)
+        if (Player_InputManager.Instance != null)
         {
             bool isPauseMenuOpen = InGameHandler.Instance != null && InGameHandler.Instance.isPaused;
 
@@ -58,7 +62,7 @@ public class UI_InputManager : MonoBehaviour
                                    (FindObjectOfType<FullMapController>() != null && FindObjectOfType<FullMapController>().fullMapScreen.activeSelf) ||
                                    isPauseMenuOpen;
                                    
-            PlayerInputManager.Instance.isInputLocked = isAnyScreenOpen;
+            Player_InputManager.Instance.isInputLocked = isAnyScreenOpen;
         }
     }
 
