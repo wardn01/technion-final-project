@@ -30,18 +30,31 @@ public class Player_InputManager : MonoBehaviour
 
         float h = 0f;
         float v = 0f;
+        bool jump = false;
+        bool attack = false;
 
-        if (Input.GetKey(KeybindManager.Instance.keys["MoveRight"])) h += 1f;
-        if (Input.GetKey(KeybindManager.Instance.keys["MoveLeft"])) h -= 1f;
+        if (KeybindManager.Instance != null)
+        {
+            if (Input.GetKey(KeybindManager.Instance.keys["MoveRight"])) h += 1f;
+            if (Input.GetKey(KeybindManager.Instance.keys["MoveLeft"])) h -= 1f;
+            if (Input.GetKey(KeybindManager.Instance.keys["MoveForward"])) v += 1f;
+            if (Input.GetKey(KeybindManager.Instance.keys["MoveBackward"])) v -= 1f;
 
-        if (Input.GetKey(KeybindManager.Instance.keys["MoveForward"])) v += 1f;
-        if (Input.GetKey(KeybindManager.Instance.keys["MoveBackward"])) v -= 1f;
+            jump = Input.GetKeyDown(KeybindManager.Instance.keys["Jump"]);
+            attack = Input.GetKeyDown(KeybindManager.Instance.keys["NormalAttack"]);
+        }
+        else
+        {
+            h = Input.GetAxisRaw("Horizontal");
+            v = Input.GetAxisRaw("Vertical");
+            jump = Input.GetKeyDown(KeyCode.Space);
+            attack = Input.GetMouseButtonDown(0);
+        }
 
         Horizontal = h;
         Vertical = v;
-
-        JumpPressed = Input.GetKeyDown(KeybindManager.Instance.keys["Jump"]);
-        AttackPressed = Input.GetKeyDown(KeybindManager.Instance.keys["NormalAttack"]);
+        JumpPressed = jump;
+        AttackPressed = attack;
 
         HandleQuickSlots();
     }
@@ -50,9 +63,19 @@ public class Player_InputManager : MonoBehaviour
     {
         if (QuickSlotManager.Instance == null) return;
 
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot1"])) QuickSlotManager.Instance.ExecuteSlotAction(0);
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot2"])) QuickSlotManager.Instance.ExecuteSlotAction(1);
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot3"])) QuickSlotManager.Instance.ExecuteSlotAction(2);
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot4"])) QuickSlotManager.Instance.ExecuteSlotAction(3);
+        if (KeybindManager.Instance != null)
+        {
+            if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot1"])) QuickSlotManager.Instance.ExecuteSlotAction(0);
+            if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot2"])) QuickSlotManager.Instance.ExecuteSlotAction(1);
+            if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot3"])) QuickSlotManager.Instance.ExecuteSlotAction(2);
+            if (Input.GetKeyDown(KeybindManager.Instance.keys["Slot4"])) QuickSlotManager.Instance.ExecuteSlotAction(3);
+        }
+        else
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1)) QuickSlotManager.Instance.ExecuteSlotAction(0);
+            if (Input.GetKeyDown(KeyCode.Alpha2)) QuickSlotManager.Instance.ExecuteSlotAction(1);
+            if (Input.GetKeyDown(KeyCode.Alpha3)) QuickSlotManager.Instance.ExecuteSlotAction(2);
+            if (Input.GetKeyDown(KeyCode.Alpha4)) QuickSlotManager.Instance.ExecuteSlotAction(3);
+        }
     }
 }

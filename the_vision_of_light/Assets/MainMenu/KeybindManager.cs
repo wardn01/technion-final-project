@@ -28,15 +28,14 @@ public class KeybindManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        Instance = this; 
 
         LoadKeys(); 
-        conflictPopup.SetActive(false); 
+        if (conflictPopup != null) conflictPopup.SetActive(false); 
         if (escapeWarningPopup != null) escapeWarningPopup.SetActive(false);
 
-        confirmBtn.onClick.AddListener(ConfirmSwap);
-        cancelBtn.onClick.AddListener(CancelRebind);
+        if (confirmBtn != null) { confirmBtn.onClick.RemoveAllListeners(); confirmBtn.onClick.AddListener(ConfirmSwap); }
+        if (cancelBtn != null) { cancelBtn.onClick.RemoveAllListeners(); cancelBtn.onClick.AddListener(CancelRebind); }
     }
 
     private void Update()

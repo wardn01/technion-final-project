@@ -23,25 +23,45 @@ public class UI_InputManager : MonoBehaviour
             return; 
         }
 
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["OpenInventory"]) || Input.GetKeyDown(KeyCode.Tab))
+        bool inventoryKey = false;
+        bool characterKey = false;
+        bool mapKey = false;
+
+        if (KeybindManager.Instance != null)
         {
-            if (!IsShopOrDialogueOpen() && !CharacterMenuController.Instance.attributesScreen.activeSelf) 
+            inventoryKey = Input.GetKeyDown(KeybindManager.Instance.keys["OpenInventory"]) || Input.GetKeyDown(KeyCode.Tab);
+            characterKey = Input.GetKeyDown(KeybindManager.Instance.keys["OpenCharacterScreen"]);
+            mapKey = Input.GetKeyDown(KeybindManager.Instance.keys["OpenMap"]);
+        }
+        else
+        {
+            inventoryKey = Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab);
+            characterKey = Input.GetKeyDown(KeyCode.C);
+            mapKey = Input.GetKeyDown(KeyCode.M);
+        }
+
+        if (inventoryKey)
+        {
+            if (!IsShopOrDialogueOpen() && CharacterMenuController.Instance != null && !CharacterMenuController.Instance.attributesScreen.activeSelf) 
             {
-                InventoryUIManager.Instance.ToggleInventory(); 
+                if (InventoryUIManager.Instance != null) InventoryUIManager.Instance.ToggleInventory(); 
             }
         }
 
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["OpenCharacterScreen"]))
+        if (characterKey)
         {
-            if (!IsShopOrDialogueOpen() && !InventoryUIManager.Instance.inventoryWindow.activeSelf)
+            if (!IsShopOrDialogueOpen() && InventoryUIManager.Instance != null && !InventoryUIManager.Instance.inventoryWindow.activeSelf)
             {
-                CharacterMenuController.Instance.ToggleMenu();
+                if (CharacterMenuController.Instance != null) CharacterMenuController.Instance.ToggleMenu();
             }
         }
 
-        if (Input.GetKeyDown(KeybindManager.Instance.keys["OpenMap"]))
+        if (mapKey)
         {
-            if (!IsShopOrDialogueOpen() && !InventoryUIManager.Instance.inventoryWindow.activeSelf && !CharacterMenuController.Instance.attributesScreen.activeSelf)
+            bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
+            bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
+            
+            if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen)
             {
                 FindObjectOfType<FullMapController>()?.ToggleMap();
             }

@@ -68,11 +68,11 @@ public class PlayerSkillsUI : MonoBehaviour
 
     private int GetCurrentUIIndex()
     {
-        if (combatScript.activeWeaponData == null) return -1;
+        if (combatScript == null || combatScript.activeWeaponData == null) return -1;
         
         for (int i = 0; i < weaponUIs.Length; i++)
         {
-            if (weaponUIs[i].weaponName == combatScript.activeWeaponData.itemName)
+            if (string.Equals(weaponUIs[i].weaponName.Trim(), combatScript.activeWeaponData.itemName.Trim(), System.StringComparison.OrdinalIgnoreCase))
             {
                 return i;
             }
