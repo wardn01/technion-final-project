@@ -7,6 +7,7 @@ public class InGameHandler : MonoBehaviour
     public static InGameHandler Instance;
 
     public GameObject pauseMenuUI;
+    public GameObject settingsMenuUI; 
     public Transform playerTransform; 
     public PlayerData playerProfile; 
     [HideInInspector] public bool isPaused = false; 
@@ -26,15 +27,27 @@ public class InGameHandler : MonoBehaviour
     public void Pause()
     {
         pauseMenuUI.SetActive(true);
+        if (settingsMenuUI != null) settingsMenuUI.SetActive(false); 
         Time.timeScale = 0f; 
         isPaused = true;
     }
 
     public void Resume()
     {
+        if (settingsMenuUI != null) settingsMenuUI.SetActive(false); 
         pauseMenuUI.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
+    }
+
+    public void OpenSettings()
+    {
+        if (settingsMenuUI != null) settingsMenuUI.SetActive(true);
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
     }
 
     public void SaveAndExit()
