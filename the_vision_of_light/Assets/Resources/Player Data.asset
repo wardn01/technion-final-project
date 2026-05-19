@@ -12,19 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1080ae1a217e1064aacdeede0ed848a0, type: 3}
   m_Name: Player Data
   m_EditorClassIdentifier: Assembly-CSharp::PlayerData
-  currentLevel: 1
+  currentActiveLoadout: 0
+  currentLevel: 10
   currentXP: 0
-  xpToNextLevel: 100
+  xpToNextLevel: 1000
   maxLevelCap: 10
   absoluteMaxLevel: 100
   ascensionPhases:
   - newLevelCap: 10
     requiredItems:
-    - item: {fileID: 11400000, guid: 6db0936be6dca264faf2afda425b34b1, type: 2}
+    - item: {fileID: 0}
       amount: 5
-  currentAscensionIndex: 0
-  availableStatPoints: 0
-  investedHPPoints: 1
+  currentAscensionIndex: 1
+  availableStatPoints: 10
+  investedHPPoints: 0
   investedAtkPoints: 0
   investedDefPoints: 0
   investedStaminaPoints: 0
@@ -39,7 +40,7 @@ MonoBehaviour:
   absoluteMaxStamina: 250
   loadouts:
   - isSaved: 1
-    hpPoints: 1
+    hpPoints: 0
     atkPoints: 0
     defPoints: 0
     stmPoints: 0
@@ -48,9 +49,14 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
-  - isSaved: 1
+    savedHotbarItemNames:
+    - Wind Sword
+    - 
+    - 
+    - 
+  - isSaved: 0
     hpPoints: 0
-    atkPoints: 1
+    atkPoints: 0
     defPoints: 0
     stmPoints: 0
     hotbarSlots:
@@ -58,13 +64,23 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
-  - isSaved: 1
+    savedHotbarItemNames:
+    - 
+    - 
+    - 
+    - 
+  - isSaved: 0
     hpPoints: 0
     atkPoints: 0
-    defPoints: 1
+    defPoints: 0
     stmPoints: 0
     hotbarSlots:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
+    savedHotbarItemNames:
+    - 
+    - 
+    - 
+    - 

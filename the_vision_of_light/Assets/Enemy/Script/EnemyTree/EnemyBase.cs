@@ -66,14 +66,17 @@ public abstract class EnemyBase : MonoBehaviour
     {
         if (playerData != null && stats != null)
         {
-            int playerLevel = playerData.currentLevel;
+            int worldLevel = playerData.currentAscensionIndex; 
 
-            int playerTier = playerLevel / 10;
-            int enemyTier = playerTier + 1;
-            
-            int minEnemyLevel = enemyTier * 10;       
-            int maxEnemyLevel = minEnemyLevel + 9;    
-            
+            int minEnemyLevel = Mathf.Max(1, worldLevel * 10);
+            int maxEnemyLevel = minEnemyLevel + 9;
+
+            if (worldLevel >= 10)
+            {
+                minEnemyLevel = 100;
+                maxEnemyLevel = 110;
+            }
+
             enemyLevel = Random.Range(minEnemyLevel, maxEnemyLevel + 1);
 
             currentMaxHealth = stats.BaseMaxHealth + (enemyLevel * stats.HpScale);

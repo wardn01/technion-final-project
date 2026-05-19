@@ -71,19 +71,23 @@ public class PlayerData : ScriptableObject
 
     public void AddXP(int amount)
     {
-        if (currentLevel >= absoluteMaxLevel) return;
-
-        currentXP += amount;
-
-        if (currentLevel >= maxLevelCap && currentXP >= xpToNextLevel)
+        if (currentLevel >= maxLevelCap || currentLevel >= absoluteMaxLevel)
         {
-            currentXP = xpToNextLevel; 
+            currentXP = 0;
             return;
         }
+
+        currentXP += amount;
 
         while (currentXP >= xpToNextLevel && currentLevel < maxLevelCap)
         {
             LevelUp();
+        }
+
+        if (currentLevel >= maxLevelCap)
+        {
+            currentLevel = maxLevelCap;
+            currentXP = 0;
         }
     }
 
@@ -132,11 +136,6 @@ public class PlayerData : ScriptableObject
 
         maxLevelCap = phase.newLevelCap;
         currentAscensionIndex++;
-        
-        while (currentXP >= xpToNextLevel && currentLevel < maxLevelCap)
-        {
-            LevelUp();
-        }
     }
 
     public enum StatType { HP, Attack, Defense, Stamina } 
