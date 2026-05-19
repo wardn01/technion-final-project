@@ -74,7 +74,7 @@ public class UI_InputManager : MonoBehaviour
     {
         if (Player_InputManager.Instance != null)
         {
-            bool isPauseMenuOpen = InGameHandler.Instance != null && InGameHandler.Instance.isPaused;
+            bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
 
             bool isAnyScreenOpen = IsShopOrDialogueOpen() || 
                                    (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
@@ -95,12 +95,6 @@ public class UI_InputManager : MonoBehaviour
 
     private void HandleEscapeKey()
     {
-        if (InGameHandler.Instance != null && InGameHandler.Instance.isPaused)
-        {
-            InGameHandler.Instance.Resume();
-            return;
-        }
-
         if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
         {
             ShopManager.Instance.BackToDialogue();
@@ -113,28 +107,52 @@ public class UI_InputManager : MonoBehaviour
             return;
         }
 
+        bool closedSubScreen = false;
+
         if (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf)
         {
             InventoryUIManager.Instance.ToggleInventory();
-            return;
+            closedSubScreen = true;
         }
 
         if (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf)
         {
             CharacterMenuController.Instance.ToggleMenu();
-            return;
+            closedSubScreen = true;
         }
 
         FullMapController map = FindObjectOfType<FullMapController>();
         if (map != null && map.fullMapScreen.activeSelf)
         {
             map.ToggleMap();
+            closedSubScreen = true;
+        }
+
+        if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.settingsMenuUI != null && PauseMenuManager.Instance.settingsMenuUI.activeSelf)
+        {
+            PauseMenuManager.Instance.CloseSettings();
+            closedSubScreen = true;
+        }
+
+        if (closedSubScreen)
+        {
+            if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
+            {
+                PauseMenuManager.Instance.Resume();
+            }
             return;
         }
 
-        if (InGameHandler.Instance != null)
+        if (PauseMenuManager.Instance != null)
         {
-            InGameHandler.Instance.Pause();
+            if (PauseMenuManager.Instance.isPaused)
+            {
+                PauseMenuManager.Instance.Resume();
+            }
+            else
+            {
+                PauseMenuManager.Instance.Pause();
+            }
         }
     }
 }
