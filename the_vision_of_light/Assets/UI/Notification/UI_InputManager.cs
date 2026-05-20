@@ -103,7 +103,8 @@ public class UI_InputManager : MonoBehaviour
 
         if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen)
         {
-            if (ShopManager.Instance != null) ShopManager.Instance.CloseDialogue();
+            // تم تحديث هذا السطر ليستخدم الـ DialogueManager
+            if (DialogueManager.Instance != null) DialogueManager.Instance.EndDialogue();
             return;
         }
 
