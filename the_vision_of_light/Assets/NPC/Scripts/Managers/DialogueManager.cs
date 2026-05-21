@@ -78,6 +78,7 @@ public class DialogueManager : MonoBehaviour
             dialogueText.text = currentSentence;
             isTyping = false;
             CheckIfLastSentence();
+            SetNPCTalkingState(false);
             return;
         }
 
@@ -96,6 +97,8 @@ public class DialogueManager : MonoBehaviour
         isTyping = true;
         dialogueText.text = "";
         
+        SetNPCTalkingState(true);
+
         foreach (char letter in sentence.ToCharArray())
         {
             dialogueText.text += letter;
@@ -104,6 +107,22 @@ public class DialogueManager : MonoBehaviour
         
         isTyping = false;
         CheckIfLastSentence();
+        SetNPCTalkingState(false);
+    }
+
+    private void SetNPCTalkingState(bool isTalking)
+    {
+        Animator anim = (currentShopNPC != null) ? currentShopNPC.GetComponent<Animator>() : 
+                        (GameObject.FindObjectOfType<StoryNPC>() != null ? GameObject.FindObjectOfType<StoryNPC>().GetComponentInChildren<Animator>() : null);
+        
+        if (anim != null)
+        {
+            if (isTalking)
+            {
+                anim.SetInteger("TalkIndex", Random.Range(0, 3));
+            }
+            anim.SetBool("IsTalk", isTalking);
+        }
     }
 
     private void CheckIfLastSentence()
@@ -135,6 +154,8 @@ public class DialogueManager : MonoBehaviour
 
     public void EndDialogue()
     {
+        SetNPCTalkingState(false);
+
         dialoguePanel.SetActive(false);
         isDialogueOpen = false;
         isShopDialogue = false;
@@ -142,8 +163,6 @@ public class DialogueManager : MonoBehaviour
 
         if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = false;
         if (ShopManager.Instance != null && !ShopManager.Instance.shopPanel.activeSelf) 
-        {
             ShopManager.Instance.SetPlayerFreeze(false);
-        }
     }
 }

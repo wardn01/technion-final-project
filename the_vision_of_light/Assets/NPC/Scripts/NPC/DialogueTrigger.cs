@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class DialogueTrigger : MonoBehaviour
 {
     public List<QuestDialogueEntry> dialogueStates;
-    public DialogueData defaultDialogue;
 
     public void TriggerDialogue()
     {
@@ -19,11 +18,21 @@ public class DialogueTrigger : MonoBehaviour
                 
                 if (currentState == 0) QuestManager.Instance.mainQuestState = 1;
                 else if (currentState == 2) QuestManager.Instance.mainQuestState = 3;
+                return;
             }
         }
-        else if (defaultDialogue != null)
+
+        StoryNPC storyNPC = GetComponent<StoryNPC>();
+        if (storyNPC != null && storyNPC.myData != null)
         {
-            DialogueManager.Instance.StartDialogue(defaultDialogue.npcName, defaultDialogue.dialogueLines);
+            DialogueManager.Instance.StartDialogue(storyNPC.myData.npcName, storyNPC.myData.welcomeDialogue, false, null);
+            return;
+        }
+
+        ShopkeeperNPC shopNPC = GetComponent<ShopkeeperNPC>();
+        if (shopNPC != null && shopNPC.myData != null)
+        {
+            DialogueManager.Instance.StartDialogue(shopNPC.myData.npcName, shopNPC.myData.welcomeDialogue, true, shopNPC);
         }
     }
 }

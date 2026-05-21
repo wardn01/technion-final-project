@@ -87,19 +87,29 @@ public class ShopkeeperNPC : MonoBehaviour
                     
                     ShopManager.Instance.currentNPC = this;
                     ShopManager.Instance.currentShopkeeperAnim = GetComponent<Animator>();
+                    
                     if (ShopManager.Instance.currentShopkeeperAnim != null) 
+                    {
+                        ShopManager.Instance.currentShopkeeperAnim.SetInteger("TalkIndex", Random.Range(0, 3));
                         ShopManager.Instance.currentShopkeeperAnim.SetTrigger("Talk");
+                    }
 
-                    if (DialogueManager.Instance != null)
+                    DialogueTrigger questTrigger = GetComponent<DialogueTrigger>();
+                    if (questTrigger != null)
+                    {
+                        questTrigger.TriggerDialogue();
+                    }
+                    else if (DialogueManager.Instance != null)
                     {
                         DialogueManager.Instance.StartDialogue(myData.npcName, myData.welcomeDialogue, true, this);
                     }
                 }
             }
             else
-            {
-                ShopManager.Instance.HideInteractPrompt();
-            }
+                {
+                    if (!isPlayerInRange)
+                        ShopManager.Instance.HideInteractPrompt();
+                }
         }
     }
 

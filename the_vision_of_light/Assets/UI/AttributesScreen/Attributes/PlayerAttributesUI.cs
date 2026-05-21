@@ -114,6 +114,7 @@ public class PlayerAttributesUI : MonoBehaviour
     {
         if (playerData == null) return;
         var data = playerData;
+
         if (data.currentAscensionIndex < data.ascensionPhases.Length)
         {
             if (ascendGroup) ascendGroup.SetActive(true);
@@ -122,19 +123,39 @@ public class PlayerAttributesUI : MonoBehaviour
             for (int i = 0; i < requiredItemSlots.Length; i++)
             {
                 if (requiredItemSlots[i]?.slotObject == null) continue;
+
                 if (i < phase.requiredItems.Length)
                 {
                     var req = phase.requiredItems[i];
+                    
+                    if (req.item == null) continue; 
+
                     requiredItemSlots[i].slotObject.SetActive(true);
-                    requiredItemSlots[i].itemIcon.sprite = req.item.itemIcon;
-                    int currentAmount = InventoryManager.Instance.GetItemAmount(req.item);
+
+                    if (requiredItemSlots[i].itemIcon != null)
+                        requiredItemSlots[i].itemIcon.sprite = req.item.itemIcon;
+
+                    int currentAmount = 0;
+                    if (InventoryManager.Instance != null)
+                    {
+                        currentAmount = InventoryManager.Instance.GetItemAmount(req.item);
+                    }
+
                     string colorTag = currentAmount >= req.amount ? "<color=green>" : "<color=red>";
-                    requiredItemSlots[i].amountText.text = $"{colorTag}{currentAmount}</color>/{req.amount}";
+                    
+                    if (requiredItemSlots[i].amountText != null)
+                        requiredItemSlots[i].amountText.text = $"{colorTag}{currentAmount}</color>/{req.amount}";
                 }
-                else requiredItemSlots[i].slotObject.SetActive(false);
+                else 
+                {
+                    requiredItemSlots[i].slotObject.SetActive(false);
+                }
             }
             if (ascendBtn) ascendBtn.interactable = data.CanAscend();
         }
-        else if (ascendGroup) ascendGroup.SetActive(false);
+        else if (ascendGroup) 
+        {
+            ascendGroup.SetActive(false);
+        }
     }
 }

@@ -3,16 +3,15 @@ using System.Collections;
 using UnityEngine.EventSystems;
 
 public class TeleportManager : MonoBehaviour
-{   
+{
     [Header("Teleportation Settings")]
-    [Header("Settings")]
     public float loadingDuration = 1.5f;
 
     [Header("Player")]
-    public Transform player;  
+    public Transform player;
 
-    [Header("UI Elements")]       
-    public GameObject fullMapScreen; 
+    [Header("UI Elements")]
+    public GameObject fullMapScreen;
     public GameObject loadingScreen;
 
     [Header("Confirmation UI")]
@@ -20,6 +19,7 @@ public class TeleportManager : MonoBehaviour
     public GameObject mapSelectionGlow;
 
     public Vector2 selectionOffset = new Vector2(0f, -30f);
+
     private TeleportPoint selectedDestination;
 
     [Header("Audio")]
@@ -31,10 +31,15 @@ public class TeleportManager : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
-        if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(false);
-        if (mapSelectionGlow != null) mapSelectionGlow.SetActive(false);
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+
+        if (teleportConfirmPanel != null)
+            teleportConfirmPanel.SetActive(false);
+
+        if (mapSelectionGlow != null)
+            mapSelectionGlow.SetActive(false);
     }
 
     public void SelectTeleportPoint(TeleportPoint destination)
@@ -42,25 +47,26 @@ public class TeleportManager : MonoBehaviour
         if (destination.isUnlocked)
         {
             selectedDestination = destination;
-            
-            if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(true);
+
+            if (teleportConfirmPanel != null)
+                teleportConfirmPanel.SetActive(true);
 
             if (mapSelectionGlow != null)
             {
                 mapSelectionGlow.SetActive(true);
-                
+
                 GameObject clickedButton = EventSystem.current.currentSelectedGameObject;
+
                 if (clickedButton != null)
                 {
                     mapSelectionGlow.transform.SetParent(clickedButton.transform.parent, false);
                     mapSelectionGlow.transform.position = clickedButton.transform.position;
-                    mapSelectionGlow.transform.SetAsFirstSibling(); 
+                    mapSelectionGlow.transform.SetAsFirstSibling();
 
                     RectTransform glowRect = mapSelectionGlow.GetComponent<RectTransform>();
+
                     if (glowRect != null)
-                    {
                         glowRect.anchoredPosition += selectionOffset;
-                    }
                 }
             }
         }
@@ -70,9 +76,12 @@ public class TeleportManager : MonoBehaviour
     {
         if (selectedDestination != null)
         {
-            if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(false);
-            if (mapSelectionGlow != null) mapSelectionGlow.SetActive(false); 
-            
+            if (teleportConfirmPanel != null)
+                teleportConfirmPanel.SetActive(false);
+
+            if (mapSelectionGlow != null)
+                mapSelectionGlow.SetActive(false);
+
             StartCoroutine(TeleportSequence(selectedDestination));
         }
     }
@@ -80,36 +89,47 @@ public class TeleportManager : MonoBehaviour
     public void CancelSelection()
     {
         selectedDestination = null;
-        if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(false);
-        if (mapSelectionGlow != null) mapSelectionGlow.SetActive(false);
+
+        if (teleportConfirmPanel != null)
+            teleportConfirmPanel.SetActive(false);
+
+        if (mapSelectionGlow != null)
+            mapSelectionGlow.SetActive(false);
     }
 
     private IEnumerator TeleportSequence(TeleportPoint destination)
     {
-        if (teleportSound != null) {
+        if (teleportSound != null)
+        {
             audioSource.volume = teleportVolume;
             audioSource.PlayOneShot(teleportSound);
         }
 
-        if (fullMapScreen != null) fullMapScreen.SetActive(false);
-        if (loadingScreen != null) loadingScreen.SetActive(true);
+        if (fullMapScreen != null)
+            fullMapScreen.SetActive(false);
+
+        if (loadingScreen != null)
+            loadingScreen.SetActive(true);
 
         yield return new WaitForSecondsRealtime(loadingDuration);
 
         Vector3 targetPosition;
-        if (destination.spawnLocation != null) targetPosition = destination.spawnLocation.position;
-        else targetPosition = destination.transform.position + new Vector3(2f, 1f, 0f);
+
+        if (destination.spawnLocation != null)
+            targetPosition = destination.spawnLocation.position;
+        else
+            targetPosition = destination.transform.position + new Vector3(2f, 1f, 0f);
 
         CharacterController cc = player.GetComponent<CharacterController>();
         Rigidbody rb = player.GetComponent<Rigidbody>();
 
-        if (cc != null) 
+        if (cc != null)
         {
-            cc.enabled = false;          
-            player.position = targetPosition; 
-            cc.enabled = true;           
+            cc.enabled = false;
+            player.position = targetPosition;
+            cc.enabled = true;
         }
-        else 
+        else
         {
             player.position = targetPosition;
         }
@@ -124,12 +144,17 @@ public class TeleportManager : MonoBehaviour
         player.SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
         player.SendMessage("CancelAttack", SendMessageOptions.DontRequireReceiver);
 
-        if (loadingScreen != null) loadingScreen.SetActive(false);
-        
+        if (UIManager.Instance != null)
+            UIManager.Instance.isDialogueOpen = false;
+
+        if (loadingScreen != null)
+            loadingScreen.SetActive(false);
+
         Time.timeScale = 1f;
+
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-        
+
         selectedDestination = null;
     }
 }

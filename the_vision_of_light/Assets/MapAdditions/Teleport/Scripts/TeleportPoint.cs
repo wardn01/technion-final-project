@@ -4,36 +4,38 @@ using UnityEngine.UI;
 public class TeleportPoint : MonoBehaviour
 {
     [Header("Teleport Point Settings")]
-    public bool isUnlocked = false; 
+    public bool isUnlocked = false;
 
-    [Header("Player landing point")]
-    public Transform spawnLocation; 
+    [Header("Player Landing Point")]
+    public Transform spawnLocation;
 
-    [Header("--- Portal Visual Settings ---")]
-    public Portal_Controller portalController; 
+    [Header("Portal Visual Settings")]
+    public Portal_Controller portalController;
 
     [Header("Icon Sprites")]
-    public Sprite lockedIcon;    
-    public Sprite unlockedIcon;   
+    public Sprite lockedIcon;
+    public Sprite unlockedIcon;
 
     [Header("Map Icons")]
-    public Image mapIcon;        
+    public Image mapIcon;
     public SpriteRenderer minimapIcon;
 
-    [Header("Interaction (F Key UI)")]
+    [Header("Interaction UI")]
     public GameObject interactPrompt;
-    
+
+    [TextArea]
+    public string interactMessage = "Open Teleport [F]";
+
     private bool isPlayerNear = false;
 
     void Start()
     {
-        if (interactPrompt != null) interactPrompt.SetActive(false);
+        if (interactPrompt != null)
+            interactPrompt.SetActive(false);
 
         if (isUnlocked && portalController != null)
-        {
             portalController.TogglePortal(true);
-        }
-        
+
         UpdateMapIcons();
     }
 
@@ -48,54 +50,80 @@ public class TeleportPoint : MonoBehaviour
     void UnlockPoint()
     {
         isUnlocked = true;
-        
+
         if (portalController != null)
-        {
             portalController.TogglePortal(true);
-        }
-        
+
         UpdateMapIcons();
 
-        if (interactPrompt != null) interactPrompt.SetActive(false);
+        if (interactPrompt != null)
+            interactPrompt.SetActive(false);
 
-        Debug.Log("Portal Unlocked with Cinematic Audio & Effects!");
+        Debug.Log("Teleport Point Unlocked");
     }
 
     void UpdateMapIcons()
     {
         if (isUnlocked)
         {
-            if (mapIcon != null && unlockedIcon != null) { mapIcon.sprite = unlockedIcon; mapIcon.color = Color.white; }
-            if (minimapIcon != null && unlockedIcon != null) { minimapIcon.sprite = unlockedIcon; minimapIcon.color = Color.white; }
+            if (mapIcon != null && unlockedIcon != null)
+            {
+                mapIcon.sprite = unlockedIcon;
+                mapIcon.color = Color.white;
+            }
+
+            if (minimapIcon != null && unlockedIcon != null)
+            {
+                minimapIcon.sprite = unlockedIcon;
+                minimapIcon.color = Color.white;
+            }
         }
         else
         {
-            if (mapIcon != null && lockedIcon != null) { mapIcon.sprite = lockedIcon; mapIcon.color = Color.white; }
-            if (minimapIcon != null && lockedIcon != null) { minimapIcon.sprite = lockedIcon; minimapIcon.color = Color.white; }
+            if (mapIcon != null && lockedIcon != null)
+            {
+                mapIcon.sprite = lockedIcon;
+                mapIcon.color = Color.white;
+            }
+
+            if (minimapIcon != null && lockedIcon != null)
+            {
+                minimapIcon.sprite = lockedIcon;
+                minimapIcon.color = Color.white;
+            }
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) 
+        if (!other.CompareTag("Player"))
+            return;
+
+        isPlayerNear = true;
+
+        if (isUnlocked)
+            return;
+
+        if (interactPrompt != null)
         {
-            isPlayerNear = true;
-            if (!isUnlocked && interactPrompt != null) 
-            {
-                interactPrompt.SetActive(true);
-            }
+            TMPro.TextMeshProUGUI text =
+                interactPrompt.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+
+            if (text != null)
+                text.text = interactMessage;
+
+            interactPrompt.SetActive(true);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player")) 
-        {
-            isPlayerNear = false;
-            if (interactPrompt != null) 
-            {
-                interactPrompt.SetActive(false);
-            }
-        }
+        if (!other.CompareTag("Player"))
+            return;
+
+        isPlayerNear = false;
+
+        if (interactPrompt != null)
+            interactPrompt.SetActive(false);
     }
 }
