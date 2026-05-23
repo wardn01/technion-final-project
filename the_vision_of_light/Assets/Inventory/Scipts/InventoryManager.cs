@@ -34,11 +34,6 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        ApplyStartingItems();
-    }
-
     public void ApplyStartingItems()
     {
         if (startingItems != null)

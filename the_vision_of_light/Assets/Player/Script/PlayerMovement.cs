@@ -392,8 +392,18 @@ IEnumerator RollRoutine()
             float targetY = waterSurfaceY - swimFloatOffset;
             velocity.y = Mathf.Lerp(velocity.y, (targetY - transform.position.y) * floatSmoothness, Time.deltaTime * floatSmoothness);
         }
-        else if (isGliding) velocity.y = glideFallSpeed;
-        else velocity.y += gravity * Time.deltaTime;
+        else if (isGliding) 
+        {
+            velocity.y = glideFallSpeed;
+        }
+        else 
+        {
+            velocity.y += gravity * Time.deltaTime;
+            if (velocity.y < -40f) 
+            {
+                velocity.y = -40f; 
+            }
+        }
 
         if (controller != null && controller.enabled)
             controller.Move((currentHorizontalMove + velocity) * Time.deltaTime);

@@ -20,8 +20,8 @@ public class PauseMenuManager : MonoBehaviour
     [Header("Player & Data")]
     public Transform playerTransform;
     public PlayerData playerProfile;
-    
-    [HideInInspector] public bool isPaused = false;
+
+    [HideInInspector] public bool isPaused;
 
     private void Awake()
     {
@@ -29,13 +29,11 @@ public class PauseMenuManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    void Start()
+    private void Start()
     {
         if (backBtn != null)
-        {
             backBtn.onClick.AddListener(Resume);
-        }
-        
+
         Resume();
         LoadPlayerData();
     }
@@ -43,111 +41,145 @@ public class PauseMenuManager : MonoBehaviour
     public void Pause()
     {
         pauseMenuUI.SetActive(true);
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
+
+        if (settingsMenuUI != null)
+            settingsMenuUI.SetActive(false);
+
         Time.timeScale = 0f;
         isPaused = true;
     }
 
     public void Resume()
     {
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
+        if (settingsMenuUI != null)
+            settingsMenuUI.SetActive(false);
+
         pauseMenuUI.SetActive(false);
+
         Time.timeScale = 1f;
         isPaused = false;
     }
 
     public void OpenSettings()
     {
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(true);
+        if (settingsMenuUI != null)
+            settingsMenuUI.SetActive(true);
     }
 
     public void CloseSettings()
     {
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
+        if (settingsMenuUI != null)
+            settingsMenuUI.SetActive(false);
     }
 
-    public void SaveAndExit()
+    public void SaveGameSilently()
     {
         int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
-        GameData dataCube = new GameData();
 
-        dataCube.worldName = PlayerPrefs.GetString("Slot_" + currentSlot + "_Name", "World " + currentSlot);
-        dataCube.currentTime = DayNightCycle.Instance != null ? DayNightCycle.Instance.currentTime : 12f;
+        GameData data = SaveManager.LoadGame(currentSlot);
+        if (data == null) data = new GameData();
+
+        data.worldName = PlayerPrefs.GetString("Slot_" + currentSlot + "_Name", "World " + currentSlot);
+        data.currentTime = DayNightCycle.Instance != null ? DayNightCycle.Instance.currentTime : 12f;
 
         if (playerTransform != null)
         {
-            dataCube.playerPos[0] = playerTransform.position.x;
-            dataCube.playerPos[1] = playerTransform.position.y;
-            dataCube.playerPos[2] = playerTransform.position.z;
+            data.playerPos[0] = playerTransform.position.x;
+            data.playerPos[1] = playerTransform.position.y;
+            data.playerPos[2] = playerTransform.position.z;
         }
 
         if (InventoryManager.Instance != null)
         {
+            data.inventoryItems.Clear();
+
             foreach (var kvp in InventoryManager.Instance.GetInventory())
             {
-                SavedItem sItem = new SavedItem();
-                sItem.itemName = kvp.Key.name;
-                sItem.amount = kvp.Value;
-                dataCube.inventoryItems.Add(sItem);
+                data.inventoryItems.Add(new SavedItem
+                {
+                    itemName = kvp.Key.name,
+                    amount = kvp.Value
+                });
             }
         }
 
         if (playerProfile != null)
         {
             playerProfile.PrepareForSave();
-            dataCube.playerDataJson = JsonUtility.ToJson(playerProfile);
+            data.playerDataJson = JsonUtility.ToJson(playerProfile);
         }
 
-        SaveManager.SaveGame(currentSlot, dataCube);
+        if (QuestManager.Instance != null)
+            data.mainQuestState = QuestManager.Instance.mainQuestState;
 
+        SaveManager.SaveGame(currentSlot, data);
+    }
+
+    public void SaveAndExit()
+    {
+        SaveGameSilently();
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
     }
 
-    void LoadPlayerData()
+    private void LoadPlayerData()
     {
         int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
-        GameData dataCube = SaveManager.LoadGame(currentSlot);
+        GameData data = SaveManager.LoadGame(currentSlot);
 
-        if (playerProfile != null) playerProfile.ResetToDefault();
-        if (InventoryManager.Instance != null) InventoryManager.Instance.ClearInventory();
+        if (playerProfile != null)
+            playerProfile.ResetToDefault();
+
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.ClearInventory();
+
         if (QuickSlotManager.Instance != null)
         {
-            for (int i = 0; i < 4; i++) QuickSlotManager.Instance.slots[i] = null;
+            for (int i = 0; i < 4; i++)
+                QuickSlotManager.Instance.slots[i] = null;
+
             QuickSlotManager.Instance.UpdateUI();
         }
 
-        if (dataCube != null)
+        if (data != null)
         {
             if (playerTransform != null)
             {
-                playerTransform.position = new Vector3(dataCube.playerPos[0], dataCube.playerPos[1], dataCube.playerPos[2]);
+                CharacterController cc = playerTransform.GetComponent<CharacterController>();
+                if (cc != null) cc.enabled = false;
+
+                playerTransform.position = new Vector3(
+                    data.playerPos[0],
+                    data.playerPos[1],
+                    data.playerPos[2]
+                );
+
+                if (cc != null) cc.enabled = true;
             }
+
             if (DayNightCycle.Instance != null)
-            {
-                DayNightCycle.Instance.currentTime = dataCube.currentTime;
-            }
+                DayNightCycle.Instance.currentTime = data.currentTime;
 
             if (InventoryManager.Instance != null)
             {
                 ItemData[] allItems = Resources.LoadAll<ItemData>("");
 
-                foreach (SavedItem savedItem in dataCube.inventoryItems)
+                foreach (SavedItem savedItem in data.inventoryItems)
                 {
-                    foreach (ItemData itemAsset in allItems)
+                    foreach (ItemData item in allItems)
                     {
-                        if (itemAsset.name == savedItem.itemName)
+                        if (item.name == savedItem.itemName)
                         {
-                            InventoryManager.Instance.AddItem(itemAsset, savedItem.amount);
+                            InventoryManager.Instance.AddItem(item, savedItem.amount);
                             break;
                         }
                     }
                 }
             }
 
-            if (playerProfile != null && !string.IsNullOrEmpty(dataCube.playerDataJson))
+            if (playerProfile != null && !string.IsNullOrEmpty(data.playerDataJson))
             {
-                JsonUtility.FromJsonOverwrite(dataCube.playerDataJson, playerProfile);
+                JsonUtility.FromJsonOverwrite(data.playerDataJson, playerProfile);
                 playerProfile.RestoreAfterLoad();
                 playerProfile.LoadBuild(playerProfile.currentActiveLoadout);
             }
@@ -155,9 +187,7 @@ public class PauseMenuManager : MonoBehaviour
         else
         {
             if (InventoryManager.Instance != null)
-            {
                 InventoryManager.Instance.ApplyStartingItems();
-            }
         }
     }
 }

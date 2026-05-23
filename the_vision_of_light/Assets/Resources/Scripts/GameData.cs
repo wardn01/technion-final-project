@@ -17,4 +17,6 @@ public class GameData
     public List<SavedItem> inventoryItems = new List<SavedItem>();
     
     public string playerDataJson;
+
+    public int mainQuestState; 
 }
