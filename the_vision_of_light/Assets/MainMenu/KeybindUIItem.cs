@@ -19,7 +19,7 @@ public class KeybindUIItem : MonoBehaviour
 
     void Update()
     {
-        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.ContainsKey(actionName))
+        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.TryGetValue(actionName, out KeyCode currentKey))
         {
             if (KeybindManager.Instance.GetActionToRebind() == actionName)
             {
@@ -28,7 +28,6 @@ public class KeybindUIItem : MonoBehaviour
             }
             else
             {
-                KeyCode currentKey = KeybindManager.Instance.keys[actionName];
                 buttonText.text = FormatKeyName(currentKey);
                 buttonText.color = Color.white; 
             }

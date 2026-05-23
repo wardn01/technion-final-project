@@ -230,7 +230,7 @@ public class PlayerData : ScriptableObject
 
             if (QuickSlotManager.Instance != null)
             {
-                PlayerCombat pc = FindFirstObjectByType<PlayerCombat>();
+                PlayerCombat pc = FindAnyObjectByType<PlayerCombat>();
                 if (pc != null) pc.UnequipCurrentWeapon();
 
                 for (int i = 0; i < 4; i++)

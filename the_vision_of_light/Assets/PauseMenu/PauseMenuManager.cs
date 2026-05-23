@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class PauseMenuManager : MonoBehaviour
 {
-    public static PauseMenuManager Instance;
+    public static PauseMenuManager Instance { get; private set; }
 
     [Header("Menu Screens")]
     public GameObject pauseMenuUI;
@@ -25,8 +25,16 @@ public class PauseMenuManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
 
     private void Start()
@@ -40,7 +48,8 @@ public class PauseMenuManager : MonoBehaviour
 
     public void Pause()
     {
-        pauseMenuUI.SetActive(true);
+        if (pauseMenuUI != null)
+            pauseMenuUI.SetActive(true);
 
         if (settingsMenuUI != null)
             settingsMenuUI.SetActive(false);
@@ -54,7 +63,8 @@ public class PauseMenuManager : MonoBehaviour
         if (settingsMenuUI != null)
             settingsMenuUI.SetActive(false);
 
-        pauseMenuUI.SetActive(false);
+        if (pauseMenuUI != null)
+            pauseMenuUI.SetActive(false);
 
         Time.timeScale = 1f;
         isPaused = false;

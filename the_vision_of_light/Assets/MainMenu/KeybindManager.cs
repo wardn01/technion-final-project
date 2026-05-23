@@ -6,7 +6,7 @@ using System.Linq;
 
 public class KeybindManager : MonoBehaviour
 {
-    public static KeybindManager Instance;
+    public static KeybindManager Instance { get; private set; }
 
     [Header("Keybindings Dictionary")]
     public Dictionary<string, KeyCode> keys = new Dictionary<string, KeyCode>();
@@ -28,10 +28,18 @@ public class KeybindManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this; 
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        LoadKeys(); 
-        if (conflictPopup != null) conflictPopup.SetActive(false); 
+        LoadKeys();
+        if (conflictPopup != null) conflictPopup.SetActive(false);
         if (escapeWarningPopup != null) escapeWarningPopup.SetActive(false);
 
         if (confirmBtn != null) { confirmBtn.onClick.RemoveAllListeners(); confirmBtn.onClick.AddListener(ConfirmSwap); }
@@ -152,10 +160,18 @@ public class KeybindManager : MonoBehaviour
 
     private void ConfirmSwap()
     {
-        KeyCode oldKey = keys[actionToRebind]; 
-        ExecuteRebind(actionToRebind, newKeyToBind);
-        ExecuteRebind(conflictingAction, oldKey);
-        conflictPopup.SetActive(false);
+        if (keys.TryGetValue(actionToRebind, out KeyCode oldKey))
+        {
+            ExecuteRebind(actionToRebind, newKeyToBind);
+            ExecuteRebind(conflictingAction, oldKey);
+        }
+        else
+        {
+            ExecuteRebind(actionToRebind, newKeyToBind);
+        }
+
+        if (conflictPopup != null)
+            conflictPopup.SetActive(false);
     }
 
     public void CancelRebind()

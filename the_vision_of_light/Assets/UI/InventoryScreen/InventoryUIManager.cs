@@ -56,8 +56,15 @@ public class InventoryUIManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         grid = GetComponent<InventoryUI_Grid>();
         equipHandler = GetComponent<InventoryUI_EquipHandler>();

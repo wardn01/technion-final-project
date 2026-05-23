@@ -58,7 +58,15 @@ public class CharacterMenuController : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
 
     private void Start()
@@ -389,7 +397,7 @@ public class CharacterMenuController : MonoBehaviour
             ?.RefreshGrid();
 
         PlayerHealth pHealth =
-            FindFirstObjectByType<PlayerHealth>();
+            FindAnyObjectByType<PlayerHealth>();
 
         if (pHealth != null)
         {

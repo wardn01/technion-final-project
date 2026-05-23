@@ -274,15 +274,21 @@ public class PlayerCombat : MonoBehaviour
         KeyCode burstKey = KeyCode.Q;
         KeyCode skillKey = KeyCode.E;
 
-        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.ContainsKey("Burst")) {
-            burstKey = KeybindManager.Instance.keys["Burst"];
-        } else if (PlayerPrefs.HasKey("Key_Burst")) {
+        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.TryGetValue("Burst", out KeyCode burstKeyCode))
+        {
+            burstKey = burstKeyCode;
+        }
+        else if (PlayerPrefs.HasKey("Key_Burst"))
+        {
             burstKey = (KeyCode)PlayerPrefs.GetInt("Key_Burst");
         }
 
-        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.ContainsKey("Skill")) {
-            skillKey = KeybindManager.Instance.keys["Skill"];
-        } else if (PlayerPrefs.HasKey("Key_Skill")) {
+        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.TryGetValue("Skill", out KeyCode skillKeyCode))
+        {
+            skillKey = skillKeyCode;
+        }
+        else if (PlayerPrefs.HasKey("Key_Skill"))
+        {
             skillKey = (KeyCode)PlayerPrefs.GetInt("Key_Skill");
         }
 

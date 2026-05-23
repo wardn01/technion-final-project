@@ -6,12 +6,23 @@ using System.IO;
 
 public class UI_InputManager : MonoBehaviour
 {
-    public static UI_InputManager Instance;
+    public static UI_InputManager Instance { get; private set; }
+
+    private FullMapController fullMapController;
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
+    private void Start()
+    {
+        fullMapController = FindAnyObjectByType<FullMapController>();
     }
 
     private void Update()
@@ -29,9 +40,17 @@ public class UI_InputManager : MonoBehaviour
 
         if (KeybindManager.Instance != null)
         {
-            inventoryKey = Input.GetKeyDown(KeybindManager.Instance.keys["OpenInventory"]) || Input.GetKeyDown(KeyCode.Tab);
-            characterKey = Input.GetKeyDown(KeybindManager.Instance.keys["OpenCharacterScreen"]);
-            mapKey = Input.GetKeyDown(KeybindManager.Instance.keys["OpenMap"]);
+            var keys = KeybindManager.Instance.keys;
+            if (keys.TryGetValue("OpenInventory", out KeyCode openInventoryKey))
+                inventoryKey = Input.GetKeyDown(openInventoryKey) || Input.GetKeyDown(KeyCode.Tab);
+            else
+                inventoryKey = Input.GetKeyDown(KeyCode.Tab);
+
+            if (keys.TryGetValue("OpenCharacterScreen", out KeyCode openCharacterKey))
+                characterKey = Input.GetKeyDown(openCharacterKey);
+
+            if (keys.TryGetValue("OpenMap", out KeyCode openMapKey))
+                mapKey = Input.GetKeyDown(openMapKey);
         }
         else
         {
@@ -63,7 +82,10 @@ public class UI_InputManager : MonoBehaviour
             
             if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen)
             {
-                FindObjectOfType<FullMapController>()?.ToggleMap();
+                if (fullMapController == null)
+                    fullMapController = FindAnyObjectByType<FullMapController>();
+
+                fullMapController?.ToggleMap();
             }
         }
 
@@ -75,13 +97,15 @@ public class UI_InputManager : MonoBehaviour
         if (Player_InputManager.Instance != null)
         {
             bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
+            if (fullMapController == null)
+                fullMapController = FindAnyObjectByType<FullMapController>();
 
-            bool isAnyScreenOpen = IsShopOrDialogueOpen() || 
+            bool isAnyScreenOpen = IsShopOrDialogueOpen() ||
                                    (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
                                    (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf) ||
-                                   (FindObjectOfType<FullMapController>() != null && FindObjectOfType<FullMapController>().fullMapScreen.activeSelf) ||
+                                   (fullMapController != null && fullMapController.fullMapScreen.activeSelf) ||
                                    isPauseMenuOpen;
-                                   
+
             Player_InputManager.Instance.isInputLocked = isAnyScreenOpen;
         }
     }
@@ -122,10 +146,12 @@ public class UI_InputManager : MonoBehaviour
             closedSubScreen = true;
         }
 
-        FullMapController map = FindObjectOfType<FullMapController>();
-        if (map != null && map.fullMapScreen.activeSelf)
+        if (fullMapController == null)
+            fullMapController = FindAnyObjectByType<FullMapController>();
+
+        if (fullMapController != null && fullMapController.fullMapScreen != null && fullMapController.fullMapScreen.activeSelf)
         {
-            map.ToggleMap();
+            fullMapController.ToggleMap();
             closedSubScreen = true;
         }
 

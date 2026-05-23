@@ -7,7 +7,7 @@ using Unity.Cinemachine;
 
 public class DialogueManager : MonoBehaviour
 {
-    public static DialogueManager Instance;
+    public static DialogueManager Instance { get; private set; }
 
     [Header("UI Elements")]
     public GameObject dialoguePanel;
@@ -43,8 +43,15 @@ public class DialogueManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         sentences = new Queue<string>();
     }

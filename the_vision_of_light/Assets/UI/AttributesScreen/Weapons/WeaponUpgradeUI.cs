@@ -280,7 +280,7 @@ public class WeaponUpgradeUI : MonoBehaviour
         if (QuickSlotManager.Instance.IsItemEquipped(item))
         {
             QuickSlotManager.Instance.ClearItemFromAllSlots(item);
-            if (item.type == ItemType.Weapon) FindFirstObjectByType<PlayerCombat>()?.UnequipCurrentWeapon();
+            if (item.type == ItemType.Weapon) FindAnyObjectByType<PlayerCombat>()?.UnequipCurrentWeapon();
         }
         else
         {

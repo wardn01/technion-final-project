@@ -4,7 +4,7 @@ using System.Collections;
 
 public class NotificationManager : MonoBehaviour
 {
-    public static NotificationManager Instance;
+    public static NotificationManager Instance { get; private set; }
 
     [Header("UI References")]
     public TextMeshProUGUI warningText;
@@ -12,7 +12,15 @@ public class NotificationManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
 
     private void Start()

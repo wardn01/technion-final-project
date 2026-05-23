@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerMovementSound : MonoBehaviour
 {
@@ -21,7 +22,8 @@ public class PlayerMovementSound : MonoBehaviour
     public float jumpVolume = 0.1f;
     public float openGliderVolume = 0.7f;
     public float swimmingVolume = 0.4f;
-    public float idelSwimmingVolume = 0.1f;
+    [FormerlySerializedAs("idelSwimmingVolume")]
+    public float idleSwimmingVolume = 0.1f;
     public float landingVolume = 0.2f;
     public float glideWindVolume = 0.1f; 
     public float fallWindVolume = 0.3f;
@@ -146,8 +148,8 @@ public class PlayerMovementSound : MonoBehaviour
 
         audioSource.pitch = currentSpeed > 3f ? Random.Range(0.85f, 1.15f) : Random.Range(0.5f, 0.7f);
         
-        float volume = currentSpeed > 3f ? swimmingVolume : idelSwimmingVolume; 
-        
+        float volume = currentSpeed > 3f ? swimmingVolume : idleSwimmingVolume;
+
         audioSource.PlayOneShot(swimmingSounds[randomIndex], volume);
     }
 

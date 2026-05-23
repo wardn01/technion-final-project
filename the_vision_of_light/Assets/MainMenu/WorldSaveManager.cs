@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class WorldSaveManager : MonoBehaviour
 {
-    public static WorldSaveManager Instance;
+    public static WorldSaveManager Instance { get; private set; }
 
     [HideInInspector]
     public int currentSlot;
@@ -12,6 +12,7 @@ public class WorldSaveManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -20,6 +21,8 @@ public class WorldSaveManager : MonoBehaviour
         }
 
         currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
+        if (currentSlot <= 0)
+            currentSlot = 1;
 
         LoadWorldData();
     }

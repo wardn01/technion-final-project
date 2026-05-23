@@ -55,7 +55,15 @@ namespace MaykerStudio.Demo
 
         void Awake()
         {
-            Instance = this;
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
 
         void Start()

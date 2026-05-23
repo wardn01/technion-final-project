@@ -16,9 +16,9 @@ public class AutoUpdateKeyText : MonoBehaviour
     {
         KeyCode currentKey = KeyCode.None;
 
-        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.ContainsKey(actionName))
+        if (KeybindManager.Instance != null && KeybindManager.Instance.keys.TryGetValue(actionName, out KeyCode foundKey))
         {
-            currentKey = KeybindManager.Instance.keys[actionName];
+            currentKey = foundKey;
         }
         else if (PlayerPrefs.HasKey("Key_" + actionName))
         {

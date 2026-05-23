@@ -14,16 +14,19 @@ public class IdleRandomizer : MonoBehaviour
 
     void Update()
     {
+        if (anim == null)
+            return;
+
         timer -= Time.unscaledDeltaTime;
 
         if (timer <= 0f)
         {
             AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
-            if (stateInfo.IsName("Idel"))
+            if (stateInfo.IsName("Idle"))
             {
                 PlaySpecialAnimation();
             }
-            
+
             timer = specialIdleInterval;
         }
     }

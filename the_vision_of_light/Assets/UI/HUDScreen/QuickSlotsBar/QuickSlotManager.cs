@@ -41,11 +41,11 @@ public class QuickSlotManager : MonoBehaviour
 
     private void Start()
     {
-        playerHp = FindFirstObjectByType<PlayerHealth>();
+        playerHp = FindAnyObjectByType<PlayerHealth>();
         inventoryUI = InventoryUIManager.Instance;
 
         if (weaponUI == null)
-            weaponUI = FindFirstObjectByType<WeaponUpgradeUI>();
+            weaponUI = FindAnyObjectByType<WeaponUpgradeUI>();
 
         UpdateUI();
     }
@@ -73,12 +73,10 @@ public class QuickSlotManager : MonoBehaviour
                 if (cooldownTimers.ContainsKey(id) && cooldownTimers[id] > Time.time)
                 {
                     float remaining = cooldownTimers[id] - Time.time;
+                    float totalCooldown = cooldownTimers.TryGetValue("LastCooldownUsed", out float lastCooldown) && lastCooldown > 0f ? lastCooldown : 1f;
 
                     cooldownOverlays[i].gameObject.SetActive(true);
-
-                    float totalCooldown = cooldownTimers["LastCooldownUsed"];
                     cooldownOverlays[i].fillAmount = remaining / totalCooldown;
-
                     cooldownTexts[i].text = Mathf.CeilToInt(remaining).ToString();
                 }
                 else

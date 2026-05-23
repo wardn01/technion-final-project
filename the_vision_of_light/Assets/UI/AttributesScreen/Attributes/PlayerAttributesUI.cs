@@ -62,7 +62,7 @@ public class PlayerAttributesUI : MonoBehaviour
 
     private void SyncPlayerStats()
     {
-        PlayerHealth pHealth = FindFirstObjectByType<PlayerHealth>();
+        PlayerHealth pHealth = FindAnyObjectByType<PlayerHealth>();
         if (pHealth != null)
         {
             pHealth.UpdateStatsFromData(); 

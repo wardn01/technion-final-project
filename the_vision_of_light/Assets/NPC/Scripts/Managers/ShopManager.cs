@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class ShopManager : MonoBehaviour
 {
-    public static ShopManager Instance;
+    public static ShopManager Instance { get; private set; }
 
     [Header("UI References")]
     public GameObject shopPanel;
@@ -45,7 +45,15 @@ public class ShopManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         if (itemsListContainer != null)
         {
