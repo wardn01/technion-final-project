@@ -74,6 +74,7 @@ public class KeybindManager : MonoBehaviour
         keys.Add("OpenInventory", KeyCode.I);
         keys.Add("OpenCharacterScreen", KeyCode.C);
         keys.Add("OpenMap", KeyCode.M);
+        keys.Add("OpenQuests", KeyCode.J);
         keys.Add("OpenMenu", KeyCode.Escape); 
         keys.Add("Slot1", KeyCode.Alpha1);
         keys.Add("Slot2", KeyCode.Alpha2);

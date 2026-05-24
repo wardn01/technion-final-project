@@ -8,6 +8,7 @@ public class PauseMenuNavigation : MonoBehaviour
     public GameObject mapScreen;
     public GameObject inventoryScreen;
     public GameObject setupScreen;
+    public GameObject questScreen;
 
     [Header("Menu Buttons")]
     public Button mapBtn;
@@ -43,6 +44,11 @@ public class PauseMenuNavigation : MonoBehaviour
 
     public void OpenQuests()
     {
-        Debug.Log("Quest System is coming soon!");
+        if (pauseMenuScreen != null) pauseMenuScreen.SetActive(false);
+        if (mapScreen != null) mapScreen.SetActive(false);
+        if (inventoryScreen != null) inventoryScreen.SetActive(false);
+        if (setupScreen != null) setupScreen.SetActive(false);
+        
+        if (questScreen != null) questScreen.SetActive(true);
     }
 }

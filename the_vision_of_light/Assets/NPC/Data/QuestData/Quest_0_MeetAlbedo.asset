@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ca99df06d122fc4988fd9133f1303bb, type: 3}
+  m_Name: Quest_0_MeetAlbedo
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  stateId: 0
+  questTitle: The Waking Sorrow
+  questDescription: Xiao woke up to find his world in ruins. Talk to Albedo to learn
+    the fate of your fallen comrades and discover the truth behind the attack.
+  rewards:
+  - item: {fileID: 11400000, guid: ffd25aebb615105449eb8316ed8b0d77, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+    amount: 50

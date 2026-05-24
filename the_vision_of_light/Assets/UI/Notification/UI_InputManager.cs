@@ -9,6 +9,7 @@ public class UI_InputManager : MonoBehaviour
     public static UI_InputManager Instance { get; private set; }
 
     private FullMapController fullMapController;
+    private PauseMenuNavigation pauseNav;
 
     private void Awake()
     {
@@ -23,6 +24,7 @@ public class UI_InputManager : MonoBehaviour
     private void Start()
     {
         fullMapController = FindAnyObjectByType<FullMapController>();
+        pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
     }
 
     private void Update()
@@ -37,10 +39,12 @@ public class UI_InputManager : MonoBehaviour
         bool inventoryKey = false;
         bool characterKey = false;
         bool mapKey = false;
+        bool questKey = false;
 
         if (KeybindManager.Instance != null)
         {
             var keys = KeybindManager.Instance.keys;
+            
             if (keys.TryGetValue("OpenInventory", out KeyCode openInventoryKey))
                 inventoryKey = Input.GetKeyDown(openInventoryKey) || Input.GetKeyDown(KeyCode.Tab);
             else
@@ -51,17 +55,28 @@ public class UI_InputManager : MonoBehaviour
 
             if (keys.TryGetValue("OpenMap", out KeyCode openMapKey))
                 mapKey = Input.GetKeyDown(openMapKey);
+
+            if (keys.TryGetValue("OpenQuests", out KeyCode openQuestKey))
+                questKey = Input.GetKeyDown(openQuestKey);
         }
         else
         {
             inventoryKey = Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.Tab);
             characterKey = Input.GetKeyDown(KeyCode.C);
             mapKey = Input.GetKeyDown(KeyCode.M);
+            questKey = Input.GetKeyDown(KeyCode.J);
         }
+
+        if (pauseNav == null) pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
+
+        bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
+        bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
+        bool isMapOpen = fullMapController != null && fullMapController.fullMapScreen.activeSelf;
+        bool isQuestOpen = pauseNav != null && pauseNav.questScreen != null && pauseNav.questScreen.activeSelf;
 
         if (inventoryKey)
         {
-            if (!IsShopOrDialogueOpen() && CharacterMenuController.Instance != null && !CharacterMenuController.Instance.attributesScreen.activeSelf) 
+            if (!IsShopOrDialogueOpen() && !isCharOpen && !isMapOpen && !isQuestOpen) 
             {
                 if (InventoryUIManager.Instance != null) InventoryUIManager.Instance.ToggleInventory(); 
             }
@@ -69,7 +84,7 @@ public class UI_InputManager : MonoBehaviour
 
         if (characterKey)
         {
-            if (!IsShopOrDialogueOpen() && InventoryUIManager.Instance != null && !InventoryUIManager.Instance.inventoryWindow.activeSelf)
+            if (!IsShopOrDialogueOpen() && !isInvOpen && !isMapOpen && !isQuestOpen)
             {
                 if (CharacterMenuController.Instance != null) CharacterMenuController.Instance.ToggleMenu();
             }
@@ -77,15 +92,28 @@ public class UI_InputManager : MonoBehaviour
 
         if (mapKey)
         {
-            bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
-            bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
-            
-            if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen)
+            if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isQuestOpen)
             {
                 if (fullMapController == null)
                     fullMapController = FindAnyObjectByType<FullMapController>();
 
                 fullMapController?.ToggleMap();
+            }
+        }
+
+        if (questKey)
+        {
+            if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isMapOpen)
+            {
+                if (PauseMenuManager.Instance != null && !PauseMenuManager.Instance.isPaused)
+                {
+                    PauseMenuManager.Instance.Pause();
+                }
+                
+                if (pauseNav != null)
+                {
+                    pauseNav.OpenQuests();
+                }
             }
         }
 
@@ -99,11 +127,16 @@ public class UI_InputManager : MonoBehaviour
             bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
             if (fullMapController == null)
                 fullMapController = FindAnyObjectByType<FullMapController>();
+            if (pauseNav == null) 
+                pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
+
+            bool isQuestOpen = pauseNav != null && pauseNav.questScreen != null && pauseNav.questScreen.activeSelf;
 
             bool isAnyScreenOpen = IsShopOrDialogueOpen() ||
                                    (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
                                    (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf) ||
                                    (fullMapController != null && fullMapController.fullMapScreen.activeSelf) ||
+                                   isQuestOpen ||
                                    isPauseMenuOpen;
 
             Player_InputManager.Instance.isInputLocked = isAnyScreenOpen;
@@ -127,7 +160,6 @@ public class UI_InputManager : MonoBehaviour
 
         if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen)
         {
-            // تم تحديث هذا السطر ليستخدم الـ DialogueManager
             if (DialogueManager.Instance != null) DialogueManager.Instance.EndDialogue();
             return;
         }
@@ -152,6 +184,15 @@ public class UI_InputManager : MonoBehaviour
         if (fullMapController != null && fullMapController.fullMapScreen != null && fullMapController.fullMapScreen.activeSelf)
         {
             fullMapController.ToggleMap();
+            closedSubScreen = true;
+        }
+
+        if (pauseNav == null) 
+            pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
+            
+        if (pauseNav != null && pauseNav.questScreen != null && pauseNav.questScreen.activeSelf)
+        {
+            pauseNav.questScreen.SetActive(false);
             closedSubScreen = true;
         }
 

@@ -15,5 +15,5 @@ MonoBehaviour:
   npcName: Albedo
   npcIcon: {fileID: 0}
   welcomeDialogue:
-  - hello
+  - The wind feels colder today, Xiao. Be careful out there.
   itemsToSell: []

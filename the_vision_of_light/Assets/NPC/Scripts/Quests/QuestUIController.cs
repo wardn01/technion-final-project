@@ -1,0 +1,80 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class QuestUIController : MonoBehaviour
+{
+    [Header("Quest List UI")]
+    public Transform contentParent; 
+    public QuestButton questButtonPrefab; 
+    
+    [Header("Details View UI")]
+    public TextMeshProUGUI infoTitle;
+    public TextMeshProUGUI infoDesc;
+    
+    [Header("Rewards UI")]
+    public Transform rewardsContainer;
+    public GameObject rewardSlotPrefab;
+
+    private void OnEnable()
+    {
+        PopulateList();
+    }
+
+    public void PopulateList()
+    {
+        foreach (Transform child in contentParent) Destroy(child.gameObject);
+
+        if (QuestManager.Instance != null && QuestManager.Instance.allQuestLibrary != null)
+        {
+            int currentState = QuestManager.Instance.mainQuestState;
+
+            foreach (var quest in QuestManager.Instance.allQuestLibrary)
+            {
+                if (quest.stateId <= currentState)
+                {
+                    bool isActive = (quest.stateId == currentState); 
+                    QuestButton btn = Instantiate(questButtonPrefab, contentParent);
+                    btn.Setup(quest, isActive, ShowQuestDetails);
+                }
+            }
+        }
+    }
+
+    public void ShowQuestDetails(QuestData quest)
+    {
+        infoTitle.text = quest.questTitle;
+        
+        bool isActive = QuestManager.Instance != null && (quest.stateId == QuestManager.Instance.mainQuestState);
+        string statusText = isActive ? "<color=yellow>Status: In Progress</color>\n\n" : "<color=green>Status: Completed</color>\n\n";
+        infoDesc.text = statusText + quest.questDescription;
+        
+        foreach (Transform child in rewardsContainer) Destroy(child.gameObject);
+        if (quest.rewards != null && quest.rewards.Count > 0)
+        {
+            foreach (var reward in quest.rewards)
+            {
+                if (reward.item == null) continue;
+
+                GameObject slot = Instantiate(rewardSlotPrefab, rewardsContainer);
+                slot.SetActive(true);
+
+                Transform iconTr = slot.transform.Find("ItemIcon");
+                Transform amountTr = slot.transform.Find("ItemAmountText");
+
+                if (iconTr != null)
+                {
+                    Image img = iconTr.GetComponent<Image>();
+                    img.sprite = reward.item.itemIcon;
+                    img.color = Color.white;
+                }
+
+                if (amountTr != null)
+                {
+                    TextMeshProUGUI amountTxt = amountTr.GetComponent<TextMeshProUGUI>();
+                    amountTxt.text = reward.amount > 1 ? reward.amount.ToString() : ""; 
+                }
+            }
+        }
+    }
+}

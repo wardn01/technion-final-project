@@ -9,6 +9,8 @@ public class ShopManager : MonoBehaviour
 
     [Header("UI References")]
     public GameObject shopPanel;
+    public GameObject hudScreen;
+    public GameObject quickSlotsBar;
     public TextMeshProUGUI goldText;
     public Slider amountSlider;
     public TextMeshProUGUI amountText;
@@ -17,7 +19,6 @@ public class ShopManager : MonoBehaviour
 
     [Header("Dynamic Shop Generation")]
     public GameObject shopSlotPrefab; 
-    
     private List<GameObject> pooledSlots = new List<GameObject>(); 
 
     [Header("Dialogue UI (Shared)")]
@@ -31,7 +32,6 @@ public class ShopManager : MonoBehaviour
 
     [Header("Economy References")]
     public ItemData goldItemData; 
-    
     private ItemData selectedItem;
     private int currentAmount = 1;
 
@@ -45,10 +45,7 @@ public class ShopManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
+        if (Instance == null) Instance = this;
         else
         {
             Destroy(gameObject);
@@ -84,25 +81,23 @@ public class ShopManager : MonoBehaviour
     public void OpenShop(List<ItemData> itemsToSell)
     {
         shopPanel.SetActive(true);
+        
+        if (hudScreen != null) hudScreen.SetActive(false);
+        if (quickSlotsBar != null) quickSlotsBar.SetActive(false);
+
         UpdateGoldUI();
         
         if (amountSlider != null) amountSlider.value = 1;
         if (currentSelectedSlotImage != null) currentSelectedSlotImage.color = normalColor;
 
-        for (int i = 0; i < pooledSlots.Count; i++)
-        {
-            pooledSlots[i].SetActive(false);
-        }
+        for (int i = 0; i < pooledSlots.Count; i++) pooledSlots[i].SetActive(false);
 
         for (int i = 0; i < itemsToSell.Count; i++)
         {
             ItemData item = itemsToSell[i];
             GameObject slot;
 
-            if (i < pooledSlots.Count)
-            {
-                slot = pooledSlots[i];
-            }
+            if (i < pooledSlots.Count) slot = pooledSlots[i];
             else
             {
                 slot = Instantiate(shopSlotPrefab, itemsListContainer);
@@ -132,9 +127,7 @@ public class ShopManager : MonoBehaviour
         }
 
         if (itemsListContainer.GetComponent<LayoutGroup>() != null)
-        {
             LayoutRebuilder.ForceRebuildLayoutImmediate(itemsListContainer.GetComponent<RectTransform>());
-        }
 
         Canvas.ForceUpdateCanvases();
 
@@ -154,6 +147,14 @@ public class ShopManager : MonoBehaviour
         SetPlayerFreeze(false);
         currentShopkeeperAnim = null;
         currentNPC = null;
+
+        if (hudScreen != null) hudScreen.SetActive(true);
+        if (quickSlotsBar != null) quickSlotsBar.SetActive(true);
+        
+        if (DialogueManager.Instance != null && DialogueManager.Instance.isDialogueOpen)
+        {
+            DialogueManager.Instance.EndDialogue();
+        }
     }
 
     public void BackToDialogue()

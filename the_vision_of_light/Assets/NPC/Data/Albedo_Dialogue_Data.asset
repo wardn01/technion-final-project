@@ -14,5 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcName: Albedo
   dialogueLines:
-  - " GK EIJEABSKBKJ GBNOEGKGO JW W KNGW  A  GJ P[GP a \t P W; F P ;PRWSG ;"
-  - " GK EIJEABSKBKJ GBNOEGKGO JW W KNGW  A  GJ P[GP a \t P W; F P ;PRWSG ;"
+  - "Xiao... you\u2019ve finally opened your eyes."
+  - "Don\u2019t force yourself to move. You\u2019ve been through a nightmare."
+  - I have terrible news... your comrades, they didn't make it.
+  - We laid them to rest near the old windmill, by the edge of the village.
+  - The Shadow Entity took the Heartstone. The forest is falling into darkness.
+  - Go to the windmill... pay your respects. Then, we must talk about what comes
+    next.

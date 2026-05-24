@@ -11,6 +11,8 @@ public class DialogueManager : MonoBehaviour
 
     [Header("UI Elements")]
     public GameObject dialoguePanel;
+    public GameObject hudScreen;
+    public GameObject quickSlotsBar;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI dialogueText;
 
@@ -26,45 +28,32 @@ public class DialogueManager : MonoBehaviour
     public bool isDialogueOpen = false;
 
     private Queue<string> sentences;
-
     private bool isTyping = false;
     private bool isShopDialogue = false;
     private bool isPlayerTurnToSpeak = false;
-
     private string currentSentence = "";
-
     private ShopkeeperNPC currentShopNPC;
     private Animator currentStoryNPCAnim;
-
     private CinemachineCamera npcCamera;
     private CinemachineCamera playerCamera;
-
     private System.Action onDialogueEndCallback;
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
+        if (Instance == null) Instance = this;
         else
         {
             Destroy(gameObject);
             return;
         }
-
         sentences = new Queue<string>();
     }
 
     private void Start()
     {
         dialoguePanel.SetActive(false);
-
-        if (shopButton != null)
-            shopButton.GetComponent<Button>().onClick.AddListener(OpenShop);
-
-        if (leaveButton != null)
-            leaveButton.GetComponent<Button>().onClick.AddListener(EndDialogue);
+        if (shopButton != null) shopButton.GetComponent<Button>().onClick.AddListener(OpenShop);
+        if (leaveButton != null) leaveButton.GetComponent<Button>().onClick.AddListener(EndDialogue);
     }
 
     public void StartDialogue(
@@ -79,38 +68,28 @@ public class DialogueManager : MonoBehaviour
     {
         isDialogueOpen = true;
         isShopDialogue = isShop;
-
         currentShopNPC = shopNPC;
         currentStoryNPCAnim = storyAnim;
-
         npcCamera = camNPC;
         playerCamera = camPlayer;
-
         isPlayerTurnToSpeak = false;
         onDialogueEndCallback = onEnd;
 
-        if (UIManager.Instance != null)
-            UIManager.Instance.isDialogueOpen = true;
+        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = true;
+        if (ShopManager.Instance != null) ShopManager.Instance.SetPlayerFreeze(true);
 
-        if (ShopManager.Instance != null)
-            ShopManager.Instance.SetPlayerFreeze(true);
+        if (hudScreen != null) hudScreen.SetActive(false);
+        if (quickSlotsBar != null) quickSlotsBar.SetActive(false);
 
         dialoguePanel.SetActive(true);
         continueButton.SetActive(true);
-
-        if (shopButton != null)
-            shopButton.SetActive(false);
-
-        if (leaveButton != null)
-            leaveButton.SetActive(false);
+        if (shopButton != null) shopButton.SetActive(false);
+        if (leaveButton != null) leaveButton.SetActive(false);
 
         nameText.text = npcName;
-
         sentences.Clear();
 
-        foreach (string line in lines)
-            sentences.Enqueue(line);
-
+        foreach (string line in lines) sentences.Enqueue(line);
         DisplayNextSentence();
     }
 
@@ -119,13 +98,10 @@ public class DialogueManager : MonoBehaviour
         if (isTyping)
         {
             StopAllCoroutines();
-
             dialogueText.text = currentSentence;
             isTyping = false;
-
             CheckIfLastSentence();
             SetNPCTalkingState(false);
-
             return;
         }
 
@@ -147,12 +123,10 @@ public class DialogueManager : MonoBehaviour
                 npcCamera.Priority = 20;
                 playerCamera.Priority = 0;
             }
-
             isPlayerTurnToSpeak = !isPlayerTurnToSpeak;
         }
 
         currentSentence = sentences.Dequeue();
-
         StartCoroutine(TypeSentence(currentSentence));
     }
 
@@ -161,8 +135,7 @@ public class DialogueManager : MonoBehaviour
         isTyping = true;
         dialogueText.text = "";
 
-        if (!isPlayerTurnToSpeak)
-            SetNPCTalkingState(true);
+        if (!isPlayerTurnToSpeak) SetNPCTalkingState(true);
 
         foreach (char letter in sentence.ToCharArray())
         {
@@ -171,22 +144,16 @@ public class DialogueManager : MonoBehaviour
         }
 
         isTyping = false;
-
         CheckIfLastSentence();
         SetNPCTalkingState(false);
     }
 
     private void SetNPCTalkingState(bool isTalking)
     {
-        Animator anim = currentShopNPC != null
-            ? currentShopNPC.GetComponent<Animator>()
-            : currentStoryNPCAnim;
-
+        Animator anim = currentShopNPC != null ? currentShopNPC.GetComponent<Animator>() : currentStoryNPCAnim;
         if (anim != null)
         {
-            if (isTalking)
-                anim.SetInteger("TalkIndex", Random.Range(0, 3));
-
+            if (isTalking) anim.SetInteger("TalkIndex", Random.Range(0, 3));
             anim.SetBool("IsTalk", isTalking);
         }
     }
@@ -196,12 +163,8 @@ public class DialogueManager : MonoBehaviour
         if (sentences.Count == 0 && isShopDialogue)
         {
             continueButton.SetActive(false);
-
-            if (shopButton != null)
-                shopButton.SetActive(true);
-
-            if (leaveButton != null)
-                leaveButton.SetActive(true);
+            if (shopButton != null) shopButton.SetActive(true);
+            if (leaveButton != null) leaveButton.SetActive(true);
         }
     }
 
@@ -209,18 +172,13 @@ public class DialogueManager : MonoBehaviour
     {
         dialoguePanel.SetActive(true);
         continueButton.SetActive(false);
-
-        if (shopButton != null)
-            shopButton.SetActive(true);
-
-        if (leaveButton != null)
-            leaveButton.SetActive(true);
+        if (shopButton != null) shopButton.SetActive(true);
+        if (leaveButton != null) leaveButton.SetActive(true);
     }
 
     public void OpenShop()
     {
         dialoguePanel.SetActive(false);
-
         if (currentShopNPC != null && ShopManager.Instance != null)
             ShopManager.Instance.OpenShop(currentShopNPC.itemsToSell);
     }
@@ -229,23 +187,20 @@ public class DialogueManager : MonoBehaviour
     {
         SetNPCTalkingState(false);
 
-        if (npcCamera != null)
-            npcCamera.Priority = 0;
-
-        if (playerCamera != null)
-            playerCamera.Priority = 0;
+        if (npcCamera != null) npcCamera.Priority = 0;
+        if (playerCamera != null) playerCamera.Priority = 0;
 
         dialoguePanel.SetActive(false);
 
+        if (hudScreen != null) hudScreen.SetActive(true);
+        if (quickSlotsBar != null) quickSlotsBar.SetActive(true);
+
         isDialogueOpen = false;
         isShopDialogue = false;
-
         currentShopNPC = null;
         currentStoryNPCAnim = null;
 
-        if (UIManager.Instance != null)
-            UIManager.Instance.isDialogueOpen = false;
-
+        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = false;
         if (ShopManager.Instance != null && !ShopManager.Instance.shopPanel.activeSelf)
             ShopManager.Instance.SetPlayerFreeze(false);
 
