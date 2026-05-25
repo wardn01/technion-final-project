@@ -22,6 +22,18 @@ public class DialogueTrigger : MonoBehaviour
         public QuestData questData;
     }
 
+    private void Start()
+    {
+        if (QuestManager.Instance != null && QuestManager.Instance.mainQuestState >= 2)
+        {
+            if (outsideLocation != null)
+            {
+                transform.position = outsideLocation.position;
+                transform.rotation = outsideLocation.rotation;
+            }
+        }
+    }
+
     public void TriggerDialogue()
     {
         StoryNPC storyNPC = GetComponent<StoryNPC>();
@@ -95,11 +107,5 @@ public class DialogueTrigger : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.5f);
-
-        if (outsideLocation != null)
-        {
-            transform.position = outsideLocation.position;
-            transform.rotation = outsideLocation.rotation;
-        }
     }
 }

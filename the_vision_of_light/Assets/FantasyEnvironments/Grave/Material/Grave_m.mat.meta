@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 238d1cf1b765e43489ad162d5a06951e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 310864
+  packageName: Stylized Free Grave
+  packageVersion: 1.0
+  assetPath: Assets/Grave/Material/Grave_m.mat
+  uploadId: 732025

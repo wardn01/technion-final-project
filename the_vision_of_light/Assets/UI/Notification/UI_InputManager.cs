@@ -103,7 +103,22 @@ public class UI_InputManager : MonoBehaviour
 
         if (questKey)
         {
-            if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isMapOpen)
+            if (isQuestOpen)
+            {
+                if (pauseNav != null && pauseNav.questScreen != null)
+                {
+                    pauseNav.questScreen.SetActive(false);
+                }
+                
+                if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
+                {
+                    PauseMenuManager.Instance.Resume();
+                }
+
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isMapOpen)
             {
                 if (PauseMenuManager.Instance != null && !PauseMenuManager.Instance.isPaused)
                 {
@@ -114,12 +129,17 @@ public class UI_InputManager : MonoBehaviour
                 {
                     pauseNav.OpenQuests();
                 }
+
+                if (QuestUIController.Instance != null)
+                {
+                    QuestUIController.Instance.RefreshQuestUI();
+                }
+
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
             }
         }
-
-        UpdatePlayerInputLock();
     }
-
     private void UpdatePlayerInputLock()
     {
         if (Player_InputManager.Instance != null)

@@ -4,6 +4,8 @@ using TMPro;
 
 public class QuestUIController : MonoBehaviour
 {
+    public static QuestUIController Instance { get; private set; }
+
     [Header("Quest List UI")]
     public Transform contentParent; 
     public QuestButton questButtonPrefab; 
@@ -16,7 +18,18 @@ public class QuestUIController : MonoBehaviour
     public Transform rewardsContainer;
     public GameObject rewardSlotPrefab;
 
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
     private void OnEnable()
+    {
+        RefreshQuestUI();
+    }
+
+    public void RefreshQuestUI()
     {
         PopulateList();
     }
@@ -28,6 +41,7 @@ public class QuestUIController : MonoBehaviour
         if (QuestManager.Instance != null && QuestManager.Instance.allQuestLibrary != null)
         {
             int currentState = QuestManager.Instance.mainQuestState;
+            QuestData activeQuest = null;
 
             foreach (var quest in QuestManager.Instance.allQuestLibrary)
             {
@@ -36,7 +50,23 @@ public class QuestUIController : MonoBehaviour
                     bool isActive = (quest.stateId == currentState); 
                     QuestButton btn = Instantiate(questButtonPrefab, contentParent);
                     btn.Setup(quest, isActive, ShowQuestDetails);
+                    
+                    if (isActive) 
+                    {
+                        activeQuest = quest;
+                    }
                 }
+            }
+
+            if (activeQuest != null)
+            {
+                ShowQuestDetails(activeQuest);
+            }
+            else
+            {
+                infoTitle.text = "No Active Quests";
+                infoDesc.text = "";
+                foreach (Transform child in rewardsContainer) Destroy(child.gameObject);
             }
         }
     }
@@ -50,6 +80,7 @@ public class QuestUIController : MonoBehaviour
         infoDesc.text = statusText + quest.questDescription;
         
         foreach (Transform child in rewardsContainer) Destroy(child.gameObject);
+        
         if (quest.rewards != null && quest.rewards.Count > 0)
         {
             foreach (var reward in quest.rewards)
