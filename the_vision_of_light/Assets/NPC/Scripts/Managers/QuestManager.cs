@@ -7,6 +7,8 @@ public class QuestManager : MonoBehaviour
     public int mainQuestState = 0;
 
     public List<QuestData> allQuestLibrary; 
+    
+    public QuestData trackedQuest = null; 
 
     private void Awake()
     {

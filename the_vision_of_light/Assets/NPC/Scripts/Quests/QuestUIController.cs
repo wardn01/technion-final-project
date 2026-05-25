@@ -14,6 +14,10 @@ public class QuestUIController : MonoBehaviour
     public TextMeshProUGUI infoTitle;
     public TextMeshProUGUI infoDesc;
     
+    [Header("Location Tracking UI")]
+    public Button locationBtn; 
+    public TextMeshProUGUI locationBtnText; 
+
     [Header("Rewards UI")]
     public Transform rewardsContainer;
     public GameObject rewardSlotPrefab;
@@ -41,7 +45,7 @@ public class QuestUIController : MonoBehaviour
         if (QuestManager.Instance != null && QuestManager.Instance.allQuestLibrary != null)
         {
             int currentState = QuestManager.Instance.mainQuestState;
-            QuestData activeQuest = null;
+            QuestData activeQuest = null; 
 
             foreach (var quest in QuestManager.Instance.allQuestLibrary)
             {
@@ -51,22 +55,17 @@ public class QuestUIController : MonoBehaviour
                     QuestButton btn = Instantiate(questButtonPrefab, contentParent);
                     btn.Setup(quest, isActive, ShowQuestDetails);
                     
-                    if (isActive) 
-                    {
-                        activeQuest = quest;
-                    }
+                    if (isActive) activeQuest = quest;
                 }
             }
 
-            if (activeQuest != null)
-            {
-                ShowQuestDetails(activeQuest);
-            }
+            if (activeQuest != null) ShowQuestDetails(activeQuest);
             else
             {
                 infoTitle.text = "No Active Quests";
                 infoDesc.text = "";
                 foreach (Transform child in rewardsContainer) Destroy(child.gameObject);
+                if (locationBtn != null) locationBtn.gameObject.SetActive(false);
             }
         }
     }
@@ -78,6 +77,42 @@ public class QuestUIController : MonoBehaviour
         bool isActive = QuestManager.Instance != null && (quest.stateId == QuestManager.Instance.mainQuestState);
         string statusText = isActive ? "<color=yellow>Status: In Progress</color>\n\n" : "<color=green>Status: Completed</color>\n\n";
         infoDesc.text = statusText + quest.questDescription;
+        
+        if (locationBtn != null)
+        {
+            if (isActive)
+            {
+                locationBtn.gameObject.SetActive(true);
+                locationBtn.onClick.RemoveAllListeners();
+
+                bool isTracked = (QuestManager.Instance.trackedQuest == quest);
+                
+                if (locationBtnText != null)
+                {
+                    locationBtnText.text = isTracked ? "Tracking..." : "Location";
+                    locationBtnText.color = isTracked ? Color.yellow : Color.white;
+                }
+
+                locationBtn.onClick.AddListener(() => 
+                {
+                    if (QuestManager.Instance.trackedQuest == quest)
+                    {
+                        QuestManager.Instance.trackedQuest = null; 
+                    }
+                    else
+                    {
+                        QuestManager.Instance.trackedQuest = quest; 
+                    }
+                    
+                    if (QuestTrackerUI.Instance != null) QuestTrackerUI.Instance.UpdateTracker();
+                    ShowQuestDetails(quest);
+                });
+            }
+            else
+            {
+                locationBtn.gameObject.SetActive(false);
+            }
+        }
         
         foreach (Transform child in rewardsContainer) Destroy(child.gameObject);
         
