@@ -19,3 +19,5 @@ MonoBehaviour:
   rewards:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
     amount: 100
+  hasTargetLocation: 1
+  targetLocation: {x: 265, y: 10, z: 22}

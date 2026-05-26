@@ -102,6 +102,22 @@ public class QuestUIController : MonoBehaviour
                     else
                     {
                         QuestManager.Instance.trackedQuest = quest; 
+                        
+                        if (quest.hasTargetLocation && FullMapController.Instance != null)
+                        {
+                            var pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
+                            if (pauseNav != null && pauseNav.questScreen != null)
+                            {
+                                pauseNav.questScreen.SetActive(false);
+                            }
+
+                            if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
+                            {
+                                PauseMenuManager.Instance.Resume();
+                            }
+
+                            FullMapController.Instance.OpenMapToPosition(quest.targetLocation);
+                        }
                     }
                     
                     if (QuestTrackerUI.Instance != null) QuestTrackerUI.Instance.UpdateTracker();

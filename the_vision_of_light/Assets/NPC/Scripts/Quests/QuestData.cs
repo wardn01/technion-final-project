@@ -15,4 +15,6 @@ public class QuestData : ScriptableObject
     public string questTitle;
     [TextArea] public string questDescription;
     public List<QuestReward> rewards; 
+    public bool hasTargetLocation;
+    public Vector3 targetLocation;
 }
