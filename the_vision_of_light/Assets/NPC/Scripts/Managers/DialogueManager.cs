@@ -22,7 +22,7 @@ public class DialogueManager : MonoBehaviour
     public GameObject leaveButton;
 
     [Header("Settings")]
-    public float typingSpeed = 0.02f;
+    public float typingSpeed = 0.04f;
 
     [HideInInspector] 
     public bool isDialogueOpen = false;

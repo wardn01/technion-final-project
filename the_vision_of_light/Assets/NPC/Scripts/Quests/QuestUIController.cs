@@ -13,7 +13,8 @@ public class QuestUIController : MonoBehaviour
     [Header("Details View UI")]
     public TextMeshProUGUI infoTitle;
     public TextMeshProUGUI infoDesc;
-    
+    public TextMeshProUGUI distanceText;
+
     [Header("Location Tracking UI")]
     public Button locationBtn; 
     public TextMeshProUGUI locationBtnText; 
@@ -21,6 +22,11 @@ public class QuestUIController : MonoBehaviour
     [Header("Rewards UI")]
     public Transform rewardsContainer;
     public GameObject rewardSlotPrefab;
+
+    [Header("Player Reference")]
+    public Transform player;
+
+    private QuestData currentDisplayedQuest; 
 
     private void Awake()
     {
@@ -31,6 +37,20 @@ public class QuestUIController : MonoBehaviour
     private void OnEnable()
     {
         RefreshQuestUI();
+    }
+
+    private void Update()
+    {
+        if (currentDisplayedQuest != null && currentDisplayedQuest.hasTargetLocation && player != null && distanceText != null)
+        {
+            distanceText.gameObject.SetActive(true);
+            float dist = Vector3.Distance(player.position, currentDisplayedQuest.targetLocation);
+            distanceText.text = Mathf.RoundToInt(dist).ToString() + "m";
+        }
+        else if (distanceText != null)
+        {
+            distanceText.gameObject.SetActive(false);
+        }
     }
 
     public void RefreshQuestUI()
@@ -62,8 +82,10 @@ public class QuestUIController : MonoBehaviour
             if (activeQuest != null) ShowQuestDetails(activeQuest);
             else
             {
+                currentDisplayedQuest = null;
                 infoTitle.text = "No Active Quests";
                 infoDesc.text = "";
+                if (distanceText != null) distanceText.gameObject.SetActive(false);
                 foreach (Transform child in rewardsContainer) Destroy(child.gameObject);
                 if (locationBtn != null) locationBtn.gameObject.SetActive(false);
             }
@@ -72,10 +94,12 @@ public class QuestUIController : MonoBehaviour
 
     public void ShowQuestDetails(QuestData quest)
     {
+        currentDisplayedQuest = quest; 
         infoTitle.text = quest.questTitle;
         
         bool isActive = QuestManager.Instance != null && (quest.stateId == QuestManager.Instance.mainQuestState);
         string statusText = isActive ? "<color=yellow>Status: In Progress</color>\n\n" : "<color=green>Status: Completed</color>\n\n";
+        
         infoDesc.text = statusText + quest.questDescription;
         
         if (locationBtn != null)

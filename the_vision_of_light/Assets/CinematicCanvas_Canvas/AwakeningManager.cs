@@ -7,6 +7,7 @@ public class AwakeningManager : MonoBehaviour
 {
     [Header("UI Elements")]
     public Image blackScreen;
+    public GameObject mainCanvas; 
 
     [Header("Cinematic Elements")]
     public Animator cinematicAnimator;
@@ -44,6 +45,9 @@ public class AwakeningManager : MonoBehaviour
             if (ShopManager.Instance != null)
                 ShopManager.Instance.SetPlayerFreeze(false);
 
+            if (mainCanvas != null)
+                mainCanvas.SetActive(true); 
+
             return;
         }
 
@@ -64,6 +68,9 @@ public class AwakeningManager : MonoBehaviour
 
         if (ShopManager.Instance != null)
             ShopManager.Instance.SetPlayerFreeze(true);
+
+        if (mainCanvas != null)
+            mainCanvas.SetActive(false); 
 
         StartCoroutine(CinematicRoutine());
     }
@@ -129,6 +136,9 @@ public class AwakeningManager : MonoBehaviour
 
         if (ShopManager.Instance != null)
             ShopManager.Instance.SetPlayerFreeze(false);
+
+        if (mainCanvas != null)
+            mainCanvas.SetActive(true); 
     }
 
     private IEnumerator FadeAlpha(float startAlpha, float endAlpha, float duration)

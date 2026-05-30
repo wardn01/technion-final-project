@@ -21,3 +21,5 @@ MonoBehaviour:
     amount: 1
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
     amount: 50
+  hasTargetLocation: 0
+  targetLocation: {x: 0, y: 0, z: 0}

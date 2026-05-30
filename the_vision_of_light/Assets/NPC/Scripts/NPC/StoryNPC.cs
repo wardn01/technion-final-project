@@ -1,28 +1,20 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-using System.Collections.Generic;
 
 public class StoryNPC : MonoBehaviour
 {
     [Header("NPC Data")]
     public NPCData myData;
+    public bool isStaticNPC = false;
 
     [Header("Map Settings")]
-    public Transform mapIconObject;
+    public Transform mapIconObject; 
 
     [Header("Overhead UI")]
     public GameObject overheadUI;
     public GameObject npcNameTextObj;
     public TextMeshProUGUI overheadNameText;
-    public Image overheadIconImage;
-
-    [Header("Quest Marker")]
-    public GameObject questMarkerIcon;
-
-    [Header("Settings")]
-    public float iconVisibleDistance = 50f;
 
     [Header("Movement Settings")]
     public float stepDistance = 0.5f;
@@ -55,9 +47,6 @@ public class StoryNPC : MonoBehaviour
             if (overheadNameText != null)
                 overheadNameText.text = myData.npcName;
 
-            if (overheadIconImage != null && myData.npcIcon != null)
-                overheadIconImage.sprite = myData.npcIcon;
-
             SetupMapIcon();
         }
     }
@@ -77,35 +66,15 @@ public class StoryNPC : MonoBehaviour
 
     private void Update()
     {
-        bool isShopOpen = ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf;
         bool isDialogueOpen = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
-        bool isMenuOpen = isShopOpen || isDialogueOpen;
+        bool isMenuOpen = isDialogueOpen;
 
-        bool hasActiveQuest = false;
-
-        if (questTrigger != null && QuestManager.Instance != null)
+        if (overheadUI != null)
         {
-            hasActiveQuest = questTrigger.dialogueStates.Exists(
-                x => x.stateId == QuestManager.Instance.mainQuestState
-            );
-        }
-
-        if (playerTransform != null && overheadUI != null)
-        {
-            float distance = Vector3.Distance(transform.position, playerTransform.position);
-
-            if (distance <= iconVisibleDistance && !isMenuOpen)
+            if (isPlayerInRange && !isMenuOpen)
             {
                 overheadUI.SetActive(true);
-
-                if (npcNameTextObj != null)
-                    npcNameTextObj.SetActive(isPlayerInRange);
-
-                if (questMarkerIcon != null)
-                    questMarkerIcon.SetActive(hasActiveQuest);
-
-                if (overheadIconImage != null)
-                    overheadIconImage.gameObject.SetActive(!hasActiveQuest);
+                if (npcNameTextObj != null) npcNameTextObj.SetActive(true);
             }
             else
             {
@@ -113,38 +82,66 @@ public class StoryNPC : MonoBehaviour
             }
         }
 
-        if (isPlayerInRange && myData != null && !isMenuOpen && !isBusy)
+        if (isPlayerInRange && myData != null && !isBusy)
         {
-            if (ShopManager.Instance != null)
-                ShopManager.Instance.ShowInteractPrompt(myData.npcName);
+            if (!isMenuOpen)
+            {
+                if (ShopManager.Instance != null)
+                    ShopManager.Instance.ShowInteractPrompt(myData.npcName);
 
-            if (Input.GetKeyDown(KeyCode.F) && Time.timeScale != 0f)
+                if (Input.GetKeyDown(KeyCode.F) && Time.timeScale != 0f)
+                {
+                    if (ShopManager.Instance != null)
+                        ShopManager.Instance.HideInteractPrompt();
+
+                    if (isStaticNPC)
+                    {
+                        FaceEachOtherInstantly();
+                        if (questTrigger != null) questTrigger.TriggerDialogue();
+                    }
+                    else
+                    {
+                        if (!hasStoodUp)
+                        {
+                            StartCoroutine(InteractionSequence());
+                        }
+                        else 
+                        {
+                            FaceEachOtherInstantly();
+                            if (questTrigger != null) questTrigger.TriggerDialogue();
+                        }
+                    }
+                }
+            }
+            else
             {
                 if (ShopManager.Instance != null)
                     ShopManager.Instance.HideInteractPrompt();
-
-                if (!hasStoodUp)
-                    StartCoroutine(InteractionSequence());
-                else if (questTrigger != null)
-                    questTrigger.TriggerDialogue();
             }
         }
-        else if (!isPlayerInRange && ShopManager.Instance != null)
-        {
-            ShopManager.Instance.HideInteractPrompt();
-        }
+    }
+
+    private void FaceEachOtherInstantly()
+    {
+        if (playerTransform == null) return;
+
+        Vector3 npcDir = playerTransform.position - transform.position;
+        npcDir.y = 0;
+        if (npcDir != Vector3.zero) transform.rotation = Quaternion.LookRotation(npcDir);
+
+        Vector3 playerDir = transform.position - playerTransform.position;
+        playerDir.y = 0;
+        if (playerDir != Vector3.zero) playerTransform.rotation = Quaternion.LookRotation(playerDir);
     }
 
     private IEnumerator InteractionSequence()
     {
         isBusy = true;
 
-        if (ShopManager.Instance != null)
-            ShopManager.Instance.SetPlayerFreeze(true);
-
         if (myAnimator != null)
         {
             myAnimator.SetTrigger("StandUp");
+            myAnimator.SetBool("IsStanding", true);
             myAnimator.SetInteger("TalkIndex", Random.Range(0, 3));
             myAnimator.SetBool("IsTalk", true);
         }
@@ -171,50 +168,41 @@ public class StoryNPC : MonoBehaviour
     {
         Animator playerAnim = playerTransform.GetComponentInChildren<Animator>();
 
-        if (myAnimator != null)
-            myAnimator.applyRootMotion = false;
-
-        if (playerAnim != null)
-            playerAnim.applyRootMotion = false;
+        if (myAnimator != null) myAnimator.applyRootMotion = false;
+        if (playerAnim != null) playerAnim.applyRootMotion = false;
 
         Vector3 npcDir = playerTransform.position - transform.position;
         npcDir.y = 0;
-
         Quaternion npcRot = Quaternion.LookRotation(npcDir == Vector3.zero ? transform.forward : npcDir);
 
         Vector3 playerDir = transform.position - playerTransform.position;
         playerDir.y = 0;
-
         Quaternion playerRot = Quaternion.LookRotation(playerDir == Vector3.zero ? playerTransform.forward : playerDir);
 
         Quaternion npcStart = transform.rotation;
         Quaternion playerStart = playerTransform.rotation;
 
         float t = 0f;
-
         while (t < 1f)
         {
             t += Time.deltaTime;
-
             transform.rotation = Quaternion.Slerp(npcStart, npcRot, t);
-
             if (playerTransform != null)
                 playerTransform.rotation = Quaternion.Slerp(playerStart, playerRot, t);
-
             yield return null;
         }
 
         transform.rotation = npcRot;
-
-        if (playerTransform != null)
-            playerTransform.rotation = playerRot;
+        if (playerTransform != null) playerTransform.rotation = playerRot;
     }
 
     private IEnumerator StepForwardRoutine()
     {
+        if (myAnimator != null) 
+            myAnimator.SetBool("IsWalking", true);
+
         Vector3 start = transform.position;
         Vector3 end = start + transform.forward * stepDistance;
-
         float t = 0f;
 
         while (t < stepDuration)
@@ -225,6 +213,9 @@ public class StoryNPC : MonoBehaviour
         }
 
         transform.position = end;
+
+        if (myAnimator != null) 
+            myAnimator.SetBool("IsWalking", false);
     }
 
     private void OnTriggerEnter(Collider other)

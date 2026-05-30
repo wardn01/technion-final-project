@@ -74,16 +74,15 @@ public class ShopkeeperNPC : MonoBehaviour
 
         if (isPlayerInRange && myData != null)
         {
-            bool isGrounded = ShopManager.Instance.playerAnimator != null && ShopManager.Instance.playerAnimator.GetBool("IsGrounded");
-            bool showPrompts = !isMenuOpen && isGrounded;
-
-            if (showPrompts)
+            if (!isMenuOpen)
             {
                 ShopManager.Instance.ShowInteractPrompt(myData.npcName);
 
                 if (Input.GetKeyDown(KeyCode.F) && Time.timeScale != 0f)
                 {
                     ShopManager.Instance.HideInteractPrompt();
+                    
+                    FaceEachOtherInstantly();
                     
                     ShopManager.Instance.currentNPC = this;
                     ShopManager.Instance.currentShopkeeperAnim = GetComponent<Animator>();
@@ -106,11 +105,19 @@ public class ShopkeeperNPC : MonoBehaviour
                 }
             }
             else
-                {
-                    if (!isPlayerInRange)
-                        ShopManager.Instance.HideInteractPrompt();
-                }
+            {
+                if (ShopManager.Instance != null) ShopManager.Instance.HideInteractPrompt();
+            }
         }
+    }
+
+    private void FaceEachOtherInstantly()
+    {
+        if (playerTransform == null) return;
+
+        Vector3 playerDir = transform.position - playerTransform.position;
+        playerDir.y = 0;
+        if (playerDir != Vector3.zero) playerTransform.rotation = Quaternion.LookRotation(playerDir);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -123,12 +130,15 @@ public class ShopkeeperNPC : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = false;
-            ShopManager.Instance.HideInteractPrompt();
-            
-            if (ShopManager.Instance.currentNPC == this)
+
+            if (ShopManager.Instance != null)
             {
-                if (DialogueManager.Instance != null) DialogueManager.Instance.EndDialogue();
-                ShopManager.Instance.CloseShop();
+                ShopManager.Instance.HideInteractPrompt();
+                if (ShopManager.Instance.currentNPC == this)
+                {
+                    if (DialogueManager.Instance != null) DialogueManager.Instance.EndDialogue();
+                    ShopManager.Instance.CloseShop();
+                }
             }
         }
     }
