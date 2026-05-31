@@ -13,28 +13,28 @@ MonoBehaviour:
   m_Name: BearData
   m_EditorClassIdentifier: Assembly-CSharp::BearStats
   enemyName: Bear
-  baseMaxHealth: 100
-  baseAttack: 15
-  baseDefense: 5
+  baseMaxHealth: 120
+  baseAttack: 16
+  baseDefense: 6
   hpScale: 6
   atkScale: 1.2
   defScale: 0.6
   walkSpeed: 3
-  runSpeed: 5
+  runSpeed: 6
   chaseRange: 20
-  rotationSpeed: 10
+  rotationSpeed: 8
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    minAmount: 40
-    maxAmount: 70
+    minAmount: 30
+    maxAmount: 50
     dropChance: 100
   - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
     minAmount: 1
-    maxAmount: 2
-    dropChance: 30
-  xpReward: 25
-  animalDamage: 150
-  attackRange: 2.5
-  attackCooldown: 2.5
+    maxAmount: 3
+    dropChance: 70
+  xpReward: 40
+  animalDamage: 100
+  attackRange: 2
+  attackCooldown: 3
   sleepDuration: 10
   walkDuration: 30

@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyName: Goblin
   baseMaxHealth: 80
   baseAttack: 12
-  baseDefense: 5
+  baseDefense: 4
   hpScale: 4
   atkScale: 1
   defScale: 0.5
@@ -25,20 +25,20 @@ MonoBehaviour:
   rotationSpeed: 10
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    minAmount: 10
-    maxAmount: 30
+    minAmount: 12
+    maxAmount: 25
     dropChance: 100
   - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
     minAmount: 1
     maxAmount: 3
-    dropChance: 50
-  xpReward: 20
+    dropChance: 60
+  xpReward: 25
   normalDamage: 120
-  normalAttackRange: 1.2
+  normalAttackRange: 1.4
   normalAttackCooldown: 2.2
   maxLeashDistance: 25
   rangedAttackRange: 12
   meleeChargeRange: 7
   projectileSpeed: 15
   rangedDamage: 80
-  rangedAttackCooldown: 2.5
+  rangedAttackCooldown: 2.8

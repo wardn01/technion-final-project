@@ -15,9 +15,11 @@ MonoBehaviour:
   npcName: Albedo
   dialogueLines:
   - "Xiao... you\u2019ve finally opened your eyes."
-  - "Don\u2019t force yourself to move. You\u2019ve been through a nightmare."
-  - I have terrible news... your comrades, they didn't make it.
-  - We laid them to rest near the old windmill, by the edge of the village.
-  - The Shadow Entity took the Heartstone. The forest is falling into darkness.
-  - Go to the windmill... pay your respects. Then, we must talk about what comes
-    next.
+  - Take it easy. You've survived a nightmare, but the waking world is no kinder.
+  - I carry a heavy burden... Your comrades fought bravely, but they didn't make
+    it.
+  - We laid them to rest on the quiet hill at the far end of the village.
+  - The Shadow Entity has stolen the Heartstone. The encroaching darkness is already
+    taking root.
+  - Go to the hill. Pay your final respects. When you are ready, return to me...
+    we have much to discuss.

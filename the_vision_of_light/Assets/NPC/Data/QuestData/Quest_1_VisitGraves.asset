@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   stateId: 1
   questTitle: The Final Farewell
-  questDescription: Visit the graves of your fallen comrades near the old windmill
-    at the edge of the village to pay your last respects.
+  questDescription: Visit the graves of your fallen comrades on the hill at the edge
+    of the village to pay your last respects.
   rewards:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    amount: 100
+    amount: 50
   hasTargetLocation: 1
   targetLocation: {x: 265, y: 10, z: 22}

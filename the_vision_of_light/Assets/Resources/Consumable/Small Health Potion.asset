@@ -17,8 +17,8 @@ MonoBehaviour:
   itemIcon: {fileID: 21300000, guid: 46401d478ed33c24183a4c0944bc48fb, type: 3}
   value: 20
   type: 1
-  instantHeal: 50
-  tickHealAmount: 0
-  tickInterval: 0
-  totalTicks: 0
+  instantHeal: 30
+  tickHealAmount: 5
+  tickInterval: 1
+  totalTicks: 4
   cooldownTime: 5

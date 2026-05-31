@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   stateId: 0
   questTitle: The Waking Sorrow
-  questDescription: Xiao woke up to find his world in ruins. Talk to Albedo to learn
-    the fate of your fallen comrades and discover the truth behind the attack.
+  questDescription: Xiao has awakened from a nightmare only to find a grim reality.
+    Speak with Albedo, then visit the graves on the hill at the edge of the village
+    to honor your fallen comrades.
   rewards:
-  - item: {fileID: 11400000, guid: ffd25aebb615105449eb8316ed8b0d77, type: 2}
-    amount: 1
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    amount: 50
+    amount: 20
+  - item: {fileID: 11400000, guid: 810f70194f580d9498de997fa380619a, type: 2}
+    amount: 1
   hasTargetLocation: 0
   targetLocation: {x: 0, y: 0, z: 0}

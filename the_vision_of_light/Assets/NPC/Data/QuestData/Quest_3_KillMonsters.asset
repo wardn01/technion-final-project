@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   stateId: 3
   questTitle: Return to Albedo
-  questDescription: Return to Albedo and tell him you visited the graves.
-  rewards: []
+  questDescription: Head to the beach and use your reclaimed Wind Sword to defeat
+    the monsters before they advance on the village.
+  rewards:
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+    amount: 100
   hasTargetLocation: 1
   targetLocation: {x: 243, y: 0, z: 62}

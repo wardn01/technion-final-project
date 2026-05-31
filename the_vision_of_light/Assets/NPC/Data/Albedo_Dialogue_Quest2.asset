@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcName: Albedo
   dialogueLines:
-  - Ah, you are back! Thank you for paying your respects at the graves.
-  - However, we have a new problem. Monsters have been spotted near the sea where
-    we usually fish
-  - Please, go and clear them out before someone gets hurt!
+  - Ah, you have returned. Thank you for honoring our fallen comrades.
+  - While you were resting, I searched the grounds where the Shadow Entity attacked
+    us.
+  - I found this in the wreckage... your Wind Sword. You dropped it when you fell
+    in battle.
+  - Take it back, Xiao. You will need it immediately. Monsters have swarmed the beach,
+    and we need your strength to clear them out!

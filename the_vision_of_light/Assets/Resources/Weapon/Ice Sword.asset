@@ -39,9 +39,31 @@ MonoBehaviour:
   upgradeLevels:
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 200
+    - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
       amount: 10
-    damageBoost: 10
+    damageBoost: 12
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 20
-    damageBoost: 10
+      amount: 400
+    - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+      amount: 15
+    - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      amount: 8
+    damageBoost: 18
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 800
+    - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      amount: 12
+    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      amount: 8
+    damageBoost: 25
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 1500
+    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      amount: 15
+    - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+      amount: 8
+    damageBoost: 35
