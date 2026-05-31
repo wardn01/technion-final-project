@@ -168,6 +168,12 @@ public abstract class EnemyBase : MonoBehaviour
         DropLoot();
         GiveXP();
 
+        QuestMonster questEnemy = GetComponent<QuestMonster>();
+        if (questEnemy != null)
+        {
+            questEnemy.OnMonsterDeath();
+        }
+
         Destroy(gameObject, 5f);
     }
 

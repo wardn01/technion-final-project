@@ -47,10 +47,12 @@ public class DialogueTrigger : MonoBehaviour
             if (entry != null && entry.dialogue != null)
             {
                 System.Action onDialogueComplete = null;
+                bool isQuest = false;
 
                 if (entry.questData != null)
                 {
                     onDialogueComplete = () => StartCoroutine(CompleteQuestRoutine(entry.questData));
+                    isQuest = true; 
                 }
                 else if (currentState == 2)
                 {
@@ -58,11 +60,19 @@ public class DialogueTrigger : MonoBehaviour
                         QuestManager.Instance.mainQuestState = 3;
                         QuestManager.Instance.SaveQuestProgress();
                     };
+                    isQuest = true; 
                 }
 
                 DialogueManager.Instance.StartDialogue(
-                    entry.dialogue.npcName, entry.dialogue.dialogueLines, false, null,
-                    npcAnim, npcFocusCamera, playerFocusCamera, onDialogueComplete
+                    entry.dialogue.npcName, 
+                    entry.dialogue.dialogueLines, 
+                    false, 
+                    null,
+                    npcAnim, 
+                    npcFocusCamera, 
+                    playerFocusCamera, 
+                    onDialogueComplete,
+                    isQuest 
                 );
                 return;
             }
@@ -71,8 +81,15 @@ public class DialogueTrigger : MonoBehaviour
         if (storyNPC != null && storyNPC.myData != null)
         {
             DialogueManager.Instance.StartDialogue(
-                storyNPC.myData.npcName, storyNPC.myData.welcomeDialogue, false, null,
-                npcAnim, null, null, null
+                storyNPC.myData.npcName, 
+                storyNPC.myData.welcomeDialogue, 
+                false, 
+                null,
+                npcAnim, 
+                null, 
+                null, 
+                null, 
+                false
             );
             return;
         }
@@ -81,8 +98,15 @@ public class DialogueTrigger : MonoBehaviour
         if (shopNPC != null && shopNPC.myData != null)
         {
             DialogueManager.Instance.StartDialogue(
-                shopNPC.myData.npcName, shopNPC.myData.welcomeDialogue, true, shopNPC,
-                null, null, null
+                shopNPC.myData.npcName, 
+                shopNPC.myData.welcomeDialogue, 
+                true, 
+                shopNPC,
+                null, 
+                null, 
+                null, 
+                null, 
+                false
             );
         }
     }

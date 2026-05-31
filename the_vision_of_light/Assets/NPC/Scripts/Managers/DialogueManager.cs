@@ -20,6 +20,8 @@ public class DialogueManager : MonoBehaviour
     public GameObject continueButton;
     public GameObject shopButton;
     public GameObject leaveButton;
+    public GameObject acceptButton; 
+    public GameObject declineButton;
 
     [Header("Settings")]
     public float typingSpeed = 0.04f;
@@ -30,6 +32,7 @@ public class DialogueManager : MonoBehaviour
     private Queue<string> sentences;
     private bool isTyping = false;
     private bool isShopDialogue = false;
+    private bool isQuestOfferDialogue = false; 
     private bool isPlayerTurnToSpeak = false;
     private string currentSentence = "";
     private ShopkeeperNPC currentShopNPC;
@@ -54,6 +57,9 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.SetActive(false);
         if (shopButton != null) shopButton.GetComponent<Button>().onClick.AddListener(OpenShop);
         if (leaveButton != null) leaveButton.GetComponent<Button>().onClick.AddListener(EndDialogue);
+        
+        if (acceptButton != null) acceptButton.GetComponent<Button>().onClick.AddListener(AcceptQuest);
+        if (declineButton != null) declineButton.GetComponent<Button>().onClick.AddListener(DeclineQuest);
     }
 
     public void StartDialogue(
@@ -64,10 +70,12 @@ public class DialogueManager : MonoBehaviour
         Animator storyAnim = null,
         CinemachineCamera camNPC = null,
         CinemachineCamera camPlayer = null,
-        System.Action onEnd = null)
+        System.Action onEnd = null,
+        bool isQuest = false) 
     {
         isDialogueOpen = true;
         isShopDialogue = isShop;
+        isQuestOfferDialogue = isQuest;
         currentShopNPC = shopNPC;
         currentStoryNPCAnim = storyAnim;
         npcCamera = camNPC;
@@ -85,6 +93,8 @@ public class DialogueManager : MonoBehaviour
         continueButton.SetActive(true);
         if (shopButton != null) shopButton.SetActive(false);
         if (leaveButton != null) leaveButton.SetActive(false);
+        if (acceptButton != null) acceptButton.SetActive(false);
+        if (declineButton != null) declineButton.SetActive(false);
 
         nameText.text = npcName;
         sentences.Clear();
@@ -160,11 +170,24 @@ public class DialogueManager : MonoBehaviour
 
     private void CheckIfLastSentence()
     {
-        if (sentences.Count == 0 && isShopDialogue)
+        if (sentences.Count == 0)
         {
             continueButton.SetActive(false);
-            if (shopButton != null) shopButton.SetActive(true);
-            if (leaveButton != null) leaveButton.SetActive(true);
+
+            if (isShopDialogue)
+            {
+                if (shopButton != null) shopButton.SetActive(true);
+                if (leaveButton != null) leaveButton.SetActive(true);
+            }
+            else if (isQuestOfferDialogue) 
+            {
+                if (acceptButton != null) acceptButton.SetActive(true);
+                if (declineButton != null) declineButton.SetActive(true);
+            }
+            else
+            {
+                if (leaveButton != null) leaveButton.SetActive(true);
+            }
         }
     }
 
@@ -183,6 +206,17 @@ public class DialogueManager : MonoBehaviour
             ShopManager.Instance.OpenShop(currentShopNPC.itemsToSell);
     }
 
+    public void AcceptQuest()
+    {
+        EndDialogue(); 
+    }
+
+    public void DeclineQuest()
+    {
+        onDialogueEndCallback = null; 
+        EndDialogue();
+    }
+
     public void EndDialogue()
     {
         SetNPCTalkingState(false);
@@ -197,6 +231,7 @@ public class DialogueManager : MonoBehaviour
 
         isDialogueOpen = false;
         isShopDialogue = false;
+        isQuestOfferDialogue = false;
         currentShopNPC = null;
         currentStoryNPCAnim = null;
 
