@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Small Health Potion
   m_EditorClassIdentifier: Assembly-CSharp::ConsumableItemData
   itemName: Small Health Potion
-  description: A basic potion for minor injuries. Instantly restores 50 Health.
+  description: A basic potion for minor injuries. Instantly restores 20 Health.
   itemIcon: {fileID: 21300000, guid: 46401d478ed33c24183a4c0944bc48fb, type: 3}
   value: 20
   type: 1

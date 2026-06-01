@@ -19,7 +19,7 @@ MonoBehaviour:
     at the beach.
   rewards:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    amount: 50
+    amount: 20
   - item: {fileID: 11400000, guid: ffd25aebb615105449eb8316ed8b0d77, type: 2}
     amount: 1
   - item: {fileID: 11400000, guid: 810f70194f580d9498de997fa380619a, type: 2}

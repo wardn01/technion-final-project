@@ -25,10 +25,8 @@ public class QuickSlotManager : MonoBehaviour
     public TextMeshProUGUI[] cooldownTexts = new TextMeshProUGUI[4];
 
     private int selectedSlotIndex = -1;
-
     private PlayerHealth playerHp;
     private InventoryUIManager inventoryUI;
-
     private Dictionary<string, float> cooldownTimers = new Dictionary<string, float>();
 
     private void Awake()
@@ -196,6 +194,12 @@ public class QuickSlotManager : MonoBehaviour
         if (item == null)
             return;
 
+        if (playerHp == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) playerHp = p.GetComponent<PlayerHealth>();
+        }
+
         if (item is WeaponItemData weapon)
         {
             if (playerCombat != null && playerCombat.IsSafeToEquip())
@@ -217,27 +221,39 @@ public class QuickSlotManager : MonoBehaviour
 
             if (amount > 0)
             {
-                if (playerHp != null && playerHp.currentHealth < playerHp.maxHealth)
+                if (playerHp != null)
                 {
-                    playerHp.HealPlayer(
-                        cons.instantHeal,
-                        cons.tickHealAmount,
-                        cons.tickInterval,
-                        cons.totalTicks
-                    );
+                    float currentMaxHp = playerHp.playerData != null ? playerHp.playerData.GetTotalMaxHealth() : playerHp.maxHealth;
 
-                    cooldownTimers[id] = Time.time + cons.cooldownTime;
-                    cooldownTimers["LastCooldownUsed"] = cons.cooldownTime;
-
-                    InventoryManager.Instance.RemoveItem(item, 1);
-
-                    if (InventoryManager.Instance.GetItemAmount(item) <= 0)
+                    if (playerHp.currentHealth < currentMaxHp)
                     {
-                        ClearItemFromAllSlots(item);
-                    }
+                        playerHp.HealPlayer(
+                            cons.instantHeal,
+                            cons.tickHealAmount,
+                            cons.tickInterval,
+                            cons.totalTicks
+                        );
 
-                    UpdateUI();
-                    inventoryUI?.RefreshUI();
+                        cooldownTimers[id] = Time.time + cons.cooldownTime;
+                        cooldownTimers["LastCooldownUsed"] = cons.cooldownTime;
+
+                        InventoryManager.Instance.RemoveItem(item, 1);
+
+                        if (InventoryManager.Instance.GetItemAmount(item) <= 0)
+                        {
+                            ClearItemFromAllSlots(item);
+                        }
+
+                        UpdateUI();
+                        inventoryUI?.RefreshUI();
+                    }
+                    else
+                    {
+                        if (NotificationManager.Instance != null)
+                        {
+                            NotificationManager.Instance.ShowWarning("Your health is already full!");
+                        }
+                    }
                 }
             }
             else
