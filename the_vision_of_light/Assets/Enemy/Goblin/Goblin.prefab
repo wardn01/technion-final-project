@@ -115,6 +115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: babcee247bc5c9e41b27d87024e011ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Goblin
+  playerData: {fileID: 11400000, guid: b5d270fc67575f148861a06db0a29448, type: 2}
   stats: {fileID: 11400000, guid: 2962d3bb5774ee54dbb2dafb1061cc4c, type: 2}
   enemyLevel: 1
   currentMaxHealth: 0

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class TeleportPoint : MonoBehaviour
 {
@@ -21,18 +22,14 @@ public class TeleportPoint : MonoBehaviour
     public SpriteRenderer minimapIcon;
 
     [Header("Interaction UI")]
-    public GameObject interactPrompt;
-
-    [TextArea]
-    public string interactMessage = "Open Teleport [F]";
+    public GameObject promptContainer; 
+    public TextMeshProUGUI promptTextUI;
+    public string promptText = "Open Teleport [F]";
 
     private bool isPlayerNear = false;
 
     void Start()
     {
-        if (interactPrompt != null)
-            interactPrompt.SetActive(false);
-
         if (isUnlocked && portalController != null)
             portalController.TogglePortal(true);
 
@@ -41,9 +38,32 @@ public class TeleportPoint : MonoBehaviour
 
     void Update()
     {
-        if (isPlayerNear && !isUnlocked && Input.GetKeyDown(KeyCode.F))
+        bool isMenuOpen = (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf) || 
+                          (UIManager.Instance != null && UIManager.Instance.isDialogueOpen);
+
+        if (isPlayerNear && !isUnlocked)
         {
-            UnlockPoint();
+            bool shouldShow = !isMenuOpen && Time.timeScale != 0f;
+
+            if (shouldShow)
+            {
+                if (promptContainer != null && !promptContainer.activeSelf) promptContainer.SetActive(true);
+                
+                if (promptTextUI != null)
+                {
+                    if (!promptTextUI.gameObject.activeSelf) promptTextUI.gameObject.SetActive(true);
+                    promptTextUI.text = promptText;
+                }
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    UnlockPoint();
+                }
+            }
+            else
+            {
+                if (promptContainer != null && promptContainer.activeSelf) promptContainer.SetActive(false);
+            }
         }
     }
 
@@ -56,8 +76,8 @@ public class TeleportPoint : MonoBehaviour
 
         UpdateMapIcons();
 
-        if (interactPrompt != null)
-            interactPrompt.SetActive(false);
+        if (promptContainer != null)
+            promptContainer.SetActive(false);
 
         Debug.Log("Teleport Point Unlocked");
     }
@@ -96,34 +116,15 @@ public class TeleportPoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player"))
-            return;
-
+        if (!other.CompareTag("Player")) return;
         isPlayerNear = true;
-
-        if (isUnlocked)
-            return;
-
-        if (interactPrompt != null)
-        {
-            TMPro.TextMeshProUGUI text =
-                interactPrompt.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-
-            if (text != null)
-                text.text = interactMessage;
-
-            interactPrompt.SetActive(true);
-        }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("Player"))
-            return;
-
+        if (!other.CompareTag("Player")) return;
         isPlayerNear = false;
-
-        if (interactPrompt != null)
-            interactPrompt.SetActive(false);
+        
+        if (promptContainer != null) promptContainer.SetActive(false);
     }
 }

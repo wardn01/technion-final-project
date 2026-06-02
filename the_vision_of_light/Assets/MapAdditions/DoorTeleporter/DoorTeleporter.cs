@@ -7,8 +7,9 @@ public class DoorTeleporter : MonoBehaviour
     public Transform targetLocation;
 
     [Header("UI Settings")]
+    public GameObject promptContainer; 
     public TextMeshProUGUI promptTextUI;
-    public string promptText = "Enter House [F]";
+    public string promptText = "Enter House";
 
     private bool isPlayerNear = false;
     private GameObject playerObj;
@@ -26,22 +27,34 @@ public class DoorTeleporter : MonoBehaviour
 
         if (activeDoor == this)
         {
-            if (promptTextUI != null)
-            {
-                bool shouldShow = isPlayerNear && !isMenuOpen && Time.timeScale != 0f;
-                
-                if (promptTextUI.gameObject.activeSelf != shouldShow)
-                    promptTextUI.gameObject.SetActive(shouldShow);
+            bool shouldShow = isPlayerNear && !isMenuOpen && Time.timeScale != 0f;
 
-                if (shouldShow)
+            if (shouldShow)
+            {
+                if (promptContainer != null && !promptContainer.activeSelf)
+                {
+                    promptContainer.SetActive(true);
+                }
+
+                if (promptTextUI != null)
+                {
+                    if (!promptTextUI.gameObject.activeSelf) 
+                    {
+                        promptTextUI.gameObject.SetActive(true);
+                    }
                     promptTextUI.text = promptText;
-            }
+                }
 
-            if (isPlayerNear && playerObj != null && !isMenuOpen)
-            {
-                if (Input.GetKeyDown(KeyCode.F))
+                if (playerObj != null && Input.GetKeyDown(KeyCode.F))
                 {
                     TeleportPlayer();
+                }
+            }
+            else
+            {
+                if (promptContainer != null && promptContainer.activeSelf)
+                {
+                    promptContainer.SetActive(false);
                 }
             }
         }
@@ -60,7 +73,7 @@ public class DoorTeleporter : MonoBehaviour
         if (cc != null) cc.enabled = true;
         if (agent != null) agent.enabled = true;
         
-        if (promptTextUI != null) promptTextUI.gameObject.SetActive(false);
+        if (promptContainer != null) promptContainer.SetActive(false);
         
         isPlayerNear = false;
         playerObj = null;
@@ -85,7 +98,7 @@ public class DoorTeleporter : MonoBehaviour
             
             if (activeDoor == this)
             {
-                if (promptTextUI != null) promptTextUI.gameObject.SetActive(false);
+                if (promptContainer != null) promptContainer.SetActive(false);
                 activeDoor = null;
             }
             playerObj = null;

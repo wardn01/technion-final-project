@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class ChallengeStone : MonoBehaviour
 {
@@ -20,10 +21,29 @@ public class ChallengeStone : MonoBehaviour
         public float delayBetweenSpawns = 1f; 
     }
 
+    [System.Serializable]
+    public class QuestChallenge
+    {
+        public string challengeName = "Quest Trial";
+        public int targetQuestState = 6;
+        public int nextQuestState = 7;
+        public Wave[] waves;
+    }
+
     [Header("Challenge Settings")]
-    public Wave[] waves;                  
     public KeyCode interactionKey = KeyCode.F; 
-    public float interactionRange = 4f;    
+    
+    [Header("UI Settings")]
+    public GameObject promptContainer; 
+    public TextMeshProUGUI promptTextUI;
+    public string promptText = "Start Trial";
+
+    [Header("Quest Integration (Add Quests Here)")]
+    public QuestChallenge[] questChallenges; 
+    
+    [Header("Default Training (If no quest is active)")]
+    public bool allowDefaultTraining = true;
+    public Wave[] defaultWaves;
 
     [Header("Visual Pack Integration")]
     public Rift_Controller riftVisualController; 
@@ -34,8 +54,11 @@ public class ChallengeStone : MonoBehaviour
     [SerializeField] private bool challengeActive = false;
     [SerializeField] private bool isSpawning = false;
     
+    private Wave[] activeWaves;
+    private QuestChallenge activeQuestChallenge = null;
     private List<EnemyBase> aliveEnemies = new List<EnemyBase>();
     private Transform player;
+    private bool isPlayerNear = false;
 
     void Start()
     {
@@ -50,16 +73,36 @@ public class ChallengeStone : MonoBehaviour
 
     void Update()
     {
-        if (player == null || waves.Length == 0) return;
+        if (player == null) return;
+
+        bool isMenuOpen = (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf) || 
+                          (UIManager.Instance != null && UIManager.Instance.isDialogueOpen);
 
         if (!challengeActive)
         {
-            float dist = Vector3.Distance(transform.position, player.position);
-            if (dist <= interactionRange)
+            if (isPlayerNear)
             {
-                if (Input.GetKeyDown(interactionKey))
+                bool shouldShow = !isMenuOpen && Time.timeScale != 0f;
+
+                if (shouldShow)
                 {
-                    StartChallenge();
+                    if (promptContainer != null && !promptContainer.activeSelf) promptContainer.SetActive(true);
+                    
+                    if (promptTextUI != null)
+                    {
+                        if (!promptTextUI.gameObject.activeSelf) promptTextUI.gameObject.SetActive(true);
+                        promptTextUI.text = promptText;
+                    }
+
+                    if (Input.GetKeyDown(interactionKey))
+                    {
+                        if (promptContainer != null) promptContainer.SetActive(false);
+                        TryStartChallenge();
+                    }
+                }
+                else
+                {
+                    if (promptContainer != null && promptContainer.activeSelf) promptContainer.SetActive(false);
                 }
             }
             return;
@@ -73,9 +116,8 @@ public class ChallengeStone : MonoBehaviour
             {
                 currentWaveIndex++; 
 
-                if (currentWaveIndex < waves.Length)
+                if (activeWaves != null && currentWaveIndex < activeWaves.Length)
                 {
-                    Debug.Log($"[Challenge] Wave {currentWaveIndex} cleared! Starting next...");
                     StartCoroutine(SpawnWaveRoutine());
                 }
                 else
@@ -86,24 +128,59 @@ public class ChallengeStone : MonoBehaviour
         }
     }
 
-    void StartChallenge()
+    private void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("Player")) isPlayerNear = true;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerNear = false;
+            if (promptContainer != null) promptContainer.SetActive(false);
+        }
+    }
+
+    void TryStartChallenge()
+    {
+        activeQuestChallenge = null;
+        activeWaves = null;
+
+        if (QuestManager.Instance != null)
+        {
+            int currentState = QuestManager.Instance.mainQuestState;
+            foreach (var qc in questChallenges)
+            {
+                if (qc.targetQuestState == currentState)
+                {
+                    activeQuestChallenge = qc;
+                    activeWaves = qc.waves;
+                    break;
+                }
+            }
+        }
+
+        if (activeWaves == null || activeWaves.Length == 0)
+        {
+            if (allowDefaultTraining && defaultWaves != null && defaultWaves.Length > 0)
+            {
+                activeWaves = defaultWaves;
+            }
+            else return; 
+        }
+
         challengeActive = true;
         currentWaveIndex = 0;
         
-        if (riftVisualController != null)
-        {
-            riftVisualController.F_ToggleRift(true);
-            Debug.Log("[Challenge] Rift Opened!");
-        }
-
+        if (riftVisualController != null) riftVisualController.F_ToggleRift(true);
         StartCoroutine(SpawnWaveRoutine());
     }
 
     IEnumerator SpawnWaveRoutine()
     {
         isSpawning = true;
-        Wave currentWave = waves[currentWaveIndex];
+        Wave currentWave = activeWaves[currentWaveIndex];
         
         foreach (var info in currentWave.enemiesToSpawn)
         {
@@ -113,14 +190,11 @@ public class ChallengeStone : MonoBehaviour
             {
                 Transform sp = null;
                 if (info.spawnPoints != null && info.spawnPoints.Length > 0)
-                {
                     sp = info.spawnPoints[Random.Range(0, info.spawnPoints.Length)];
-                }
                 
                 if (sp == null) sp = transform; 
 
                 Vector3 safeSpawnPosition = sp.position + (Vector3.up * 2f);
-
                 GameObject enemyObj = Instantiate(info.enemyPrefab, safeSpawnPosition, sp.rotation);
                 
                 EnemyBase eScript = enemyObj.GetComponent<EnemyBase>();
@@ -135,19 +209,15 @@ public class ChallengeStone : MonoBehaviour
     void FinishChallenge()
     {
         challengeActive = false;
-        
-        if (riftVisualController != null)
-        {
-            riftVisualController.F_ToggleRift(false);
-            Debug.Log("[Challenge] Rift Closed.");
-        }
-        
-        Debug.Log("🎉 Challenge Completed!");
-    }
+        if (riftVisualController != null) riftVisualController.F_ToggleRift(false);
 
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, interactionRange);
+        if (activeQuestChallenge != null && QuestManager.Instance != null)
+        {
+            QuestManager.Instance.mainQuestState = activeQuestChallenge.nextQuestState;
+            QuestManager.Instance.SaveQuestProgress();
+        }
+
+        activeQuestChallenge = null;
+        activeWaves = null;
     }
 }
