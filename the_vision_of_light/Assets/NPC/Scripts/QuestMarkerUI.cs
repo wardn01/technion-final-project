@@ -5,17 +5,22 @@ public class QuestMarkerUI : MonoBehaviour
     [Header("Quest Settings")]
     public QuestData[] relatedQuests;
     
+    [Header("Camera Settings")]
+    public Camera targetCamera;
+
     [Header("Visuals (2D Image)")]
     public SpriteRenderer markerSprite;
     public float bobSpeed = 4f; 
     public float bobHeight = 0.2f; 
 
     private Vector3 startPos;
-    private Camera mainCam;
 
     private void Start()
     {
-        mainCam = Camera.main; 
+        if (targetCamera == null)
+        {
+            targetCamera = Camera.main; 
+        }
         
         if (markerSprite == null)
         {
@@ -25,7 +30,7 @@ public class QuestMarkerUI : MonoBehaviour
         startPos = transform.localPosition; 
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (QuestManager.Instance == null || markerSprite == null || relatedQuests == null || relatedQuests.Length == 0) return;
 
@@ -49,10 +54,9 @@ public class QuestMarkerUI : MonoBehaviour
             float newY = startPos.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
             transform.localPosition = new Vector3(startPos.x, newY, startPos.z);
             
-            if (mainCam != null)
+            if (targetCamera != null)
             {
-                transform.LookAt(transform.position + mainCam.transform.rotation * Vector3.forward,
-                                 mainCam.transform.rotation * Vector3.up);
+                transform.forward = targetCamera.transform.forward;
             }
         }
     }
