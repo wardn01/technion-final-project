@@ -144,7 +144,6 @@ public class QuestUIController : MonoBehaviour
                         }
                     }
                     
-                    if (QuestTrackerUI.Instance != null) QuestTrackerUI.Instance.UpdateTracker();
                     ShowQuestDetails(quest);
                 });
             }

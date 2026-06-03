@@ -1,18 +1,29 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public class QuestTrackerUI : MonoBehaviour
 {
     public static QuestTrackerUI Instance { get; private set; }
 
     [Header("UI References")]
-    public GameObject trackerPanel;
+    public RectTransform trackerPanelRect; 
     public TextMeshProUGUI questTitleText;
     public TextMeshProUGUI questDescText;
     public TextMeshProUGUI distanceText;
 
+    [Header("Animation Settings")]
+    public float slideSpeed = 1500f;
+    public float slideOffset = 800f; 
+
     [Header("World References")]
     public Transform player;
+
+    private QuestData currentDisplayedQuest = null;
+    private bool isTransitioning = false;
+    
+    private Vector2 visiblePosition;
+    private Vector2 hiddenLeft;
 
     private void Awake()
     {
@@ -20,49 +31,80 @@ public class QuestTrackerUI : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    private void Update()
+    private void Start()
     {
-        UpdateTracker();
+        if (trackerPanelRect != null)
+        {
+            visiblePosition = trackerPanelRect.anchoredPosition;
+            hiddenLeft = new Vector2(visiblePosition.x - slideOffset, visiblePosition.y);
+            
+            trackerPanelRect.anchoredPosition = hiddenLeft;
+            trackerPanelRect.gameObject.SetActive(false);
+        }
     }
 
-    public void UpdateTracker()
+    private void Update()
     {
-        if (QuestManager.Instance == null || QuestManager.Instance.trackedQuest == null)
+        if (isTransitioning) return; 
+
+        QuestData actualQuest = QuestManager.Instance != null ? QuestManager.Instance.trackedQuest : null;
+
+        if (actualQuest != null && actualQuest.stateId < QuestManager.Instance.mainQuestState)
         {
-            trackerPanel.SetActive(false);
-            return;
+            actualQuest = null;
         }
 
-        if (QuestManager.Instance.trackedQuest.stateId < QuestManager.Instance.mainQuestState)
+        if (actualQuest != currentDisplayedQuest)
         {
-            QuestManager.Instance.trackedQuest = null; 
-            trackerPanel.SetActive(false); 
-            return;
+            StartCoroutine(TransitionQuest(actualQuest));
+        }
+        else if (actualQuest != null)
+        {
+            UpdateQuestTexts(actualQuest);
+        }
+    }
+
+    IEnumerator TransitionQuest(QuestData newQuest)
+    {
+        isTransitioning = true;
+
+        if (currentDisplayedQuest != null && trackerPanelRect.gameObject.activeSelf)
+        {
+            yield return StartCoroutine(SlideUI(trackerPanelRect, hiddenLeft, true));
         }
 
-        trackerPanel.SetActive(true);
-        questTitleText.text = QuestManager.Instance.trackedQuest.questTitle;
+        yield return new WaitForSeconds(0.4f);
 
-        string desc = QuestManager.Instance.trackedQuest.questDescription;
+        currentDisplayedQuest = newQuest;
+
+        if (newQuest != null)
+        {
+            UpdateQuestTexts(newQuest); 
+            trackerPanelRect.anchoredPosition = hiddenLeft;
+            yield return StartCoroutine(SlideUI(trackerPanelRect, visiblePosition, false));
+        }
+
+        isTransitioning = false;
+    }
+
+    void UpdateQuestTexts(QuestData quest)
+    {
+        if (quest == null) return;
+
+        questTitleText.text = quest.questTitle;
+        string desc = quest.questDescription;
         string[] words = desc.Split(' ');
         
-        if (words.Length > 7)
-        {
-            questDescText.text = string.Join(" ", words, 0, 7) + " ...";
-        }
-        else
-        {
-            questDescText.text = desc;
-        }
+        if (words.Length > 7) questDescText.text = string.Join(" ", words, 0, 7) + " ...";
+        else questDescText.text = desc;
 
         if (distanceText != null)
         {
-            if (QuestManager.Instance.trackedQuest.hasTargetLocation && player != null)
+            if (quest.hasTargetLocation && player != null)
             {
-                distanceText.gameObject.SetActive(true);
+                if (!distanceText.gameObject.activeSelf) distanceText.gameObject.SetActive(true);
                 
-                float distance = Vector3.Distance(player.position, QuestManager.Instance.trackedQuest.targetLocation);
-                
+                float distance = Vector3.Distance(player.position, quest.targetLocation);
                 distanceText.text = Mathf.RoundToInt(distance).ToString() + "m";
                 
                 if (distance < 15f) distanceText.color = Color.green;
@@ -70,8 +112,23 @@ public class QuestTrackerUI : MonoBehaviour
             }
             else
             {
-                distanceText.gameObject.SetActive(false);
+                if (distanceText.gameObject.activeSelf) distanceText.gameObject.SetActive(false);
             }
         }
+    }
+
+    IEnumerator SlideUI(RectTransform rect, Vector2 targetPos, bool hideAtEnd)
+    {
+        if (rect == null) yield break;
+        if (!hideAtEnd) rect.gameObject.SetActive(true);
+
+        while (Vector2.Distance(rect.anchoredPosition, targetPos) > 0.5f)
+        {
+            rect.anchoredPosition = Vector2.MoveTowards(rect.anchoredPosition, targetPos, slideSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        rect.anchoredPosition = targetPos;
+        if (hideAtEnd) rect.gameObject.SetActive(false);
     }
 }

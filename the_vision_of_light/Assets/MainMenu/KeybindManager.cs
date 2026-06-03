@@ -75,7 +75,9 @@ public class KeybindManager : MonoBehaviour
         keys.Add("OpenCharacterScreen", KeyCode.C);
         keys.Add("OpenMap", KeyCode.M);
         keys.Add("OpenQuests", KeyCode.J);
+        
         keys.Add("OpenMenu", KeyCode.Escape); 
+        keys.Add("Interact", KeyCode.F);
         keys.Add("Slot1", KeyCode.Alpha1);
         keys.Add("Slot2", KeyCode.Alpha2);
         keys.Add("Slot3", KeyCode.Alpha3);
@@ -84,7 +86,7 @@ public class KeybindManager : MonoBehaviour
 
     public void StartRebinding(string actionName)
     {
-        if (actionName == "OpenMenu")
+        if (actionName == "OpenMenu" || actionName == "Interact" || actionName.StartsWith("Slot"))
         {
             ShowEscapeWarning();
             return;
@@ -150,6 +152,17 @@ public class KeybindManager : MonoBehaviour
             conflictingAction = keys.FirstOrDefault(x => x.Value == newKeyToBind).Key;
             if (conflictingAction == actionToRebind) return; 
 
+            if (conflictingAction == "Interact" || conflictingAction.StartsWith("Slot") || conflictingAction == "OpenMenu")
+            {
+                conflictText.text = $"The key [{newKeyToBind}] is reserved for [{conflictingAction}] and cannot be swapped.";
+                
+                if (confirmBtn != null) confirmBtn.gameObject.SetActive(false); 
+                
+                conflictPopup.SetActive(true);
+                return;
+            }
+
+            if (confirmBtn != null) confirmBtn.gameObject.SetActive(true);
             conflictText.text = $"The key [{newKeyToBind}] is already used for [{conflictingAction}].\nDo you want to swap them?";
             conflictPopup.SetActive(true);
         }
