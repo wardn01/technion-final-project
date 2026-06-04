@@ -112,6 +112,7 @@ public class DialogueManager : MonoBehaviour
             isTyping = false;
             CheckIfLastSentence();
             SetNPCTalkingState(false);
+                        
             return;
         }
 
