@@ -14446,7 +14446,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fcfd97938ddb174cbe8f2fb0c2358b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeybindUIItem
-  actionName: OpenMap
+  actionName: OpenQuests
   isLocked: 0
   actionNameText: {fileID: 977792754819629173}
   buttonText: {fileID: 971424503039742180}

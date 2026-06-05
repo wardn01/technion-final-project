@@ -129,15 +129,14 @@ public class QuestUIController : MonoBehaviour
                         
                         if (quest.hasTargetLocation && FullMapController.Instance != null)
                         {
-                            var pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
-                            if (pauseNav != null && pauseNav.questScreen != null)
+                            if (PauseMenuManager.Instance != null)
                             {
-                                pauseNav.questScreen.SetActive(false);
-                            }
-
-                            if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
-                            {
-                                PauseMenuManager.Instance.Resume();
+                                PauseMenuManager.Instance.CloseAllSubScreens();
+                                
+                                if (PauseMenuManager.Instance.isPaused)
+                                {
+                                    PauseMenuManager.Instance.Resume();
+                                }
                             }
 
                             FullMapController.Instance.OpenMapToPosition(quest.targetLocation);

@@ -9,7 +9,6 @@ public class UI_InputManager : MonoBehaviour
     public static UI_InputManager Instance { get; private set; }
 
     private FullMapController fullMapController;
-    private PauseMenuNavigation pauseNav;
 
     private void Awake()
     {
@@ -24,7 +23,6 @@ public class UI_InputManager : MonoBehaviour
     private void Start()
     {
         fullMapController = FindAnyObjectByType<FullMapController>();
-        pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
     }
 
     private void Update()
@@ -67,12 +65,10 @@ public class UI_InputManager : MonoBehaviour
             questKey = Input.GetKeyDown(KeyCode.J);
         }
 
-        if (pauseNav == null) pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
-
         bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
         bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
         bool isMapOpen = fullMapController != null && fullMapController.fullMapScreen.activeSelf;
-        bool isQuestOpen = pauseNav != null && pauseNav.questScreen != null && pauseNav.questScreen.activeSelf;
+        bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
 
         if (inventoryKey)
         {
@@ -105,41 +101,27 @@ public class UI_InputManager : MonoBehaviour
         {
             if (isQuestOpen)
             {
-                if (pauseNav != null && pauseNav.questScreen != null)
-                {
-                    pauseNav.questScreen.SetActive(false);
-                }
-                
-                if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
-                {
+                if (PauseMenuManager.Instance != null)
                     PauseMenuManager.Instance.Resume();
-                }
-
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
             }
             else if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isMapOpen)
             {
-                if (PauseMenuManager.Instance != null && !PauseMenuManager.Instance.isPaused)
+                if (PauseMenuManager.Instance != null)
                 {
-                    PauseMenuManager.Instance.Pause();
-                }
-                
-                if (pauseNav != null)
-                {
-                    pauseNav.OpenQuests();
+                    if (!PauseMenuManager.Instance.isPaused)
+                    {
+                        PauseMenuManager.Instance.Pause();
+                        PauseMenuManager.Instance.openedFromHotkey = true; 
+                    }
+                    PauseMenuManager.Instance.OpenQuests();
                 }
 
                 if (QuestUIController.Instance != null)
-                {
                     QuestUIController.Instance.RefreshQuestUI();
-                }
-
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
             }
         }
     }
+
     private void UpdatePlayerInputLock()
     {
         if (Player_InputManager.Instance != null)
@@ -147,10 +129,8 @@ public class UI_InputManager : MonoBehaviour
             bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
             if (fullMapController == null)
                 fullMapController = FindAnyObjectByType<FullMapController>();
-            if (pauseNav == null) 
-                pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
 
-            bool isQuestOpen = pauseNav != null && pauseNav.questScreen != null && pauseNav.questScreen.activeSelf;
+            bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
 
             bool isAnyScreenOpen = IsShopOrDialogueOpen() ||
                                    (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
@@ -184,18 +164,22 @@ public class UI_InputManager : MonoBehaviour
             return;
         }
 
-        bool closedSubScreen = false;
+        if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
+        {
+            PauseMenuManager.Instance.HandleBackButton();
+            return;
+        }
 
         if (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf)
         {
             InventoryUIManager.Instance.ToggleInventory();
-            closedSubScreen = true;
+            return;
         }
 
         if (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf)
         {
             CharacterMenuController.Instance.ToggleMenu();
-            closedSubScreen = true;
+            return;
         }
 
         if (fullMapController == null)
@@ -204,43 +188,12 @@ public class UI_InputManager : MonoBehaviour
         if (fullMapController != null && fullMapController.fullMapScreen != null && fullMapController.fullMapScreen.activeSelf)
         {
             fullMapController.ToggleMap();
-            closedSubScreen = true;
-        }
-
-        if (pauseNav == null) 
-            pauseNav = FindAnyObjectByType<PauseMenuNavigation>();
-            
-        if (pauseNav != null && pauseNav.questScreen != null && pauseNav.questScreen.activeSelf)
-        {
-            pauseNav.questScreen.SetActive(false);
-            closedSubScreen = true;
-        }
-
-        if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.settingsMenuUI != null && PauseMenuManager.Instance.settingsMenuUI.activeSelf)
-        {
-            PauseMenuManager.Instance.CloseSettings();
-            closedSubScreen = true;
-        }
-
-        if (closedSubScreen)
-        {
-            if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
-            {
-                PauseMenuManager.Instance.Resume();
-            }
             return;
         }
 
         if (PauseMenuManager.Instance != null)
         {
-            if (PauseMenuManager.Instance.isPaused)
-            {
-                PauseMenuManager.Instance.Resume();
-            }
-            else
-            {
-                PauseMenuManager.Instance.Pause();
-            }
+            PauseMenuManager.Instance.Pause();
         }
     }
 }

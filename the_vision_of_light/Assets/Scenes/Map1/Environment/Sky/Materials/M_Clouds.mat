@@ -112,7 +112,7 @@ Material:
     - _Panning_Speed: 1
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Strength: 2
+    - _Strength: 0.1
     - _Vertical_Offset: 0.42
     - _Vertical_Squash: 2.27
     - _Vertical_Stretch: 1.68

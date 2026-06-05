@@ -10,6 +10,7 @@ using TMPro;
 public class SceneLoaderManager : MonoBehaviour
 {
     #region Singleton
+    /// <summary>The singleton instance of the SceneLoaderManager.</summary>
     public static SceneLoaderManager Instance { get; private set; }
     #endregion
 
@@ -22,12 +23,18 @@ public class SceneLoaderManager : MonoBehaviour
     #endregion
 
     #region Unity Lifecycle
+    /// <summary>
+    /// Initializes the singleton instance and prevents duplicates.
+    /// </summary>
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
+    /// <summary>
+    /// Hides the loading screen panel when the scene starts.
+    /// </summary>
     private void Start()
     {
         if (loadingScreenPanel != null)
@@ -37,8 +44,9 @@ public class SceneLoaderManager : MonoBehaviour
 
     #region Scene Loading
     /// <summary>
-    /// Activates the loading screen UI and begins loading the target scene asynchronously.
+    /// Activates the loading screen UI, resets progress visualizers, and begins loading the target scene asynchronously.
     /// </summary>
+    /// <param name="sceneName">The exact name of the scene to load.</param>
     public void LoadWorldScene(string sceneName)
     {
         loadingScreenPanel.SetActive(true);
@@ -53,7 +61,7 @@ public class SceneLoaderManager : MonoBehaviour
 
     #region Coroutines
     /// <summary>
-    /// Handles the background loading operation and smoothly updates the visual progress bar.
+    /// Handles the background loading operation and smoothly interpolates the visual progress bar to match the actual load progress.
     /// </summary>
     private IEnumerator LoadSceneAsyncCoroutine(string sceneName)
     {
@@ -84,7 +92,7 @@ public class SceneLoaderManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Animates the loading text with appending dots.
+    /// Animates the loading text with appending dots to indicate an ongoing process.
     /// </summary>
     private IEnumerator AnimateLoadingTextCoroutine()
     {
