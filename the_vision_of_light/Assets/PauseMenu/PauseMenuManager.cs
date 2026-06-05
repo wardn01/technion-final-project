@@ -129,7 +129,15 @@ public class PauseMenuManager : MonoBehaviour
     {
         SaveGameSilently();
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");
+        
+        if (SceneLoaderManager.Instance != null)
+        {
+            SceneLoaderManager.Instance.LoadWorldScene("MainMenu");
+        }
+        else
+        {
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 
     private void LoadPlayerData()

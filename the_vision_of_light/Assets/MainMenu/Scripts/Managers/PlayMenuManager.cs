@@ -304,13 +304,21 @@ public class PlayMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets the selected slot and loads the game scene.
+    /// Sets the selected slot and loads the game scene via the Loading Screen.
     /// </summary>
     public void LoadWorld(int slotIndex)
     {
         PlayerPrefs.SetInt("SelectedSlot", slotIndex);
         PlayerPrefs.Save();
-        SceneManager.LoadScene("World");
+        
+        if (SceneLoaderManager.Instance != null)
+        {
+            SceneLoaderManager.Instance.LoadWorldScene("World");
+        }
+        else
+        {
+            SceneManager.LoadScene("World");
+        }
     }
     #endregion
 
