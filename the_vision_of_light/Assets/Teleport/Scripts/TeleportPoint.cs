@@ -2,11 +2,23 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Manages a specific teleport node in the game world. 
+/// Handles player proximity detection, state persistence (locked/unlocked), 
+/// and updating visual indicators on the world map.
+/// </summary>
 public class TeleportPoint : MonoBehaviour
 {
+    #region Save Data & Settings
+    [Header("Save Data")]
+    /// <summary>A unique numeric identifier used to save the unlocked state of this teleport point.</summary>
+    public int teleportID;
+
     [Header("Teleport Point Settings")]
     public bool isUnlocked = false;
+    #endregion
 
+    #region References
     [Header("Player Landing Point")]
     public Transform spawnLocation;
 
@@ -25,19 +37,29 @@ public class TeleportPoint : MonoBehaviour
     public GameObject promptContainer; 
     public TextMeshProUGUI promptTextUI;
     public string promptText = "Open Teleport [F]";
+    #endregion
 
     private bool isPlayerNear = false;
 
-    void Start()
+    #region Unity Lifecycle
+    private void Start()
     {
+        // Load saved state using the numeric ID from PlayerPrefs
+        if (PlayerPrefs.GetInt("UnlockedTP_" + teleportID, 0) == 1)
+        {
+            isUnlocked = true;
+        }
+
+        // Activate visuals if already unlocked
         if (isUnlocked && portalController != null)
             portalController.TogglePortal(true);
 
         UpdateMapIcons();
     }
 
-    void Update()
+    private void Update()
     {
+        // Prevent interaction if UI menus are open or game is paused
         bool isMenuOpen = (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf) || 
                           (UIManager.Instance != null && UIManager.Instance.isDialogueOpen);
 
@@ -55,6 +77,7 @@ public class TeleportPoint : MonoBehaviour
                     promptTextUI.text = promptText;
                 }
 
+                // Handle interaction input
                 if (Input.GetKeyDown(KeyCode.F))
                 {
                     UnlockPoint();
@@ -66,11 +89,22 @@ public class TeleportPoint : MonoBehaviour
             }
         }
     }
+    #endregion
 
-    void UnlockPoint()
+    #region Logic
+    /// <summary>
+    /// Unlocks the teleport point, activates the portal controller, 
+    /// updates UI, and persists the state to disk.
+    /// </summary>
+    private void UnlockPoint()
     {
         isUnlocked = true;
 
+        // Save the unlocked state
+        PlayerPrefs.SetInt("UnlockedTP_" + teleportID, 1);
+        PlayerPrefs.Save();
+
+        // Trigger the portal visual/audio sequence
         if (portalController != null)
             portalController.TogglePortal(true);
 
@@ -79,38 +113,25 @@ public class TeleportPoint : MonoBehaviour
         if (promptContainer != null)
             promptContainer.SetActive(false);
 
-        Debug.Log("Teleport Point Unlocked");
+        Debug.Log($"Teleport Point [{teleportID}] successfully unlocked.");
     }
 
-    void UpdateMapIcons()
+    /// <summary>
+    /// Updates the map and minimap icons based on the current unlocked state.
+    /// </summary>
+    private void UpdateMapIcons()
     {
-        if (isUnlocked)
-        {
-            if (mapIcon != null && unlockedIcon != null)
-            {
-                mapIcon.sprite = unlockedIcon;
-                mapIcon.color = Color.white;
-            }
+        Sprite targetSprite = isUnlocked ? unlockedIcon : lockedIcon;
 
-            if (minimapIcon != null && unlockedIcon != null)
-            {
-                minimapIcon.sprite = unlockedIcon;
-                minimapIcon.color = Color.white;
-            }
+        if (mapIcon != null && targetSprite != null) 
+        { 
+            mapIcon.sprite = targetSprite; 
+            mapIcon.color = Color.white; 
         }
-        else
-        {
-            if (mapIcon != null && lockedIcon != null)
-            {
-                mapIcon.sprite = lockedIcon;
-                mapIcon.color = Color.white;
-            }
-
-            if (minimapIcon != null && lockedIcon != null)
-            {
-                minimapIcon.sprite = lockedIcon;
-                minimapIcon.color = Color.white;
-            }
+        if (minimapIcon != null && targetSprite != null) 
+        { 
+            minimapIcon.sprite = targetSprite; 
+            minimapIcon.color = Color.white; 
         }
     }
 
@@ -127,4 +148,5 @@ public class TeleportPoint : MonoBehaviour
         
         if (promptContainer != null) promptContainer.SetActive(false);
     }
+    #endregion
 }

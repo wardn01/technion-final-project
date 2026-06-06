@@ -1,15 +1,18 @@
 using UnityEngine;
 
+/// <summary>
+/// Handles the logic for the full screen map, including player centering, quest markers, and scaling.
+/// </summary>
 public class FullMapController : MonoBehaviour
 {
+    #region Singleton
     public static FullMapController Instance { get; private set; }
+    #endregion
 
+    #region References & Settings
     [Header("Full Map UI")]
     public GameObject fullMapScreen; 
     public RectTransform mapContent;
-
-    [Header("UI Elements to Hide")] 
-    public GameObject[] uiElementsToHide;
 
     [Header("Player Settings")]
     public Transform player;
@@ -17,90 +20,58 @@ public class FullMapController : MonoBehaviour
     public float worldSize = 1000f; 
     public float startZoom = 1.5f;
 
-    [Header("Map Sounds")]
-    public AudioClip teleportClickSound;
-    public float teleportClickVolume = 0.3f;
-    private AudioSource uiAudioSource;
-
     [Header("Quest Marker Settings")]
     public GameObject questMarkerPrefab;
     private GameObject currentMarker;
+    #endregion
 
     private bool wasMapOpen = false; 
 
+    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
-    void Start()
+    private void Start()
     {
         if (fullMapCamera != null)
         {
             fullMapCamera.gameObject.SetActive(false);
         }
-        uiAudioSource = gameObject.AddComponent<AudioSource>();
-        uiAudioSource.spatialBlend = 0f;
-        uiAudioSource.playOnAwake = false;
     }
 
-    void Update()
+    private void Update()
     {
+        if (fullMapScreen == null) return;
+
         bool isMapOpen = fullMapScreen.activeSelf;
-
-        if (wasMapOpen && !isMapOpen)
+        
+        // Detect if map was just opened
+        if (!wasMapOpen && isMapOpen)
         {
-            ToggleUIElements(true);
-        }
-        wasMapOpen = isMapOpen;
-    }
-
-    public void ToggleMap()
-    {
-        if (Time.timeScale == 0f && !fullMapScreen.activeSelf) return;
-
-        bool isOpen = fullMapScreen.activeSelf;
-        fullMapScreen.SetActive(!isOpen);
-
-        if (!isOpen) 
-        {
-            Time.timeScale = 0f;
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            fullMapCamera.gameObject.SetActive(true); 
-            ToggleUIElements(false);
             CenterMapOnPlayer(); 
             UpdateMapMarkers();
         }
-        else 
-        {
-            Time.timeScale = 1f;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-            fullMapCamera.gameObject.SetActive(false); 
-            ToggleUIElements(true);
-        }
-    }
 
-    private void ToggleUIElements(bool show)
+        wasMapOpen = isMapOpen;
+    }
+    #endregion
+
+    #region Map Logic (Centering & Markers)
+    public void CenterMapOnPlayer()
     {
-        foreach (GameObject element in uiElementsToHide)
-        {
-            if (element != null)
-            {
-                element.SetActive(show);
-            }
-        }
+        if (player != null) CenterMapOnPosition(player.position);
     }
 
-    void CenterMapOnPlayer()
-    {
-        CenterMapOnPosition(player.position);
-    }
-
+    /// <summary>
+    /// Calculates the correct anchored position to center the map UI on a specific world coordinate.
+    /// </summary>
     public void CenterMapOnPosition(Vector3 worldPosition)
     {
+        if (mapContent == null || fullMapCamera == null) return;
+
         mapContent.localScale = Vector3.one * startZoom;
         float mapSize = mapContent.rect.width; 
         float ratio = mapSize / worldSize;
@@ -114,13 +85,17 @@ public class FullMapController : MonoBehaviour
 
     public void OpenMapToPosition(Vector3 worldPosition)
     {
-        if (!fullMapScreen.activeSelf)
+        if (PauseMenuManager.Instance != null && !fullMapScreen.activeSelf)
         {
-            ToggleMap();
+            PauseMenuManager.Instance.OpenMap();
         }
+        
         CenterMapOnPosition(worldPosition);
     }
 
+    /// <summary>
+    /// Instantiates and positions the quest marker on the map based on the active tracked quest.
+    /// </summary>
     public void UpdateMapMarkers()
     {
         if (currentMarker != null) Destroy(currentMarker);
@@ -144,12 +119,5 @@ public class FullMapController : MonoBehaviour
             }
         }
     }
-
-    public void PlayTeleportSound()
-    {
-        if (teleportClickSound != null && uiAudioSource != null)
-        {
-            uiAudioSource.PlayOneShot(teleportClickSound, teleportClickVolume);
-        }
-    }
+    #endregion
 }

@@ -4,12 +4,16 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 
+/// <summary>
+/// Centralized input manager for handling UI hotkeys (Inventory, Map, Quests) and managing the Escape key logic safely.
+/// </summary>
 public class UI_InputManager : MonoBehaviour
 {
+    #region Singleton
     public static UI_InputManager Instance { get; private set; }
+    #endregion
 
-    private FullMapController fullMapController;
-
+    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -18,11 +22,6 @@ public class UI_InputManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-    }
-
-    private void Start()
-    {
-        fullMapController = FindAnyObjectByType<FullMapController>();
     }
 
     private void Update()
@@ -34,6 +33,14 @@ public class UI_InputManager : MonoBehaviour
             return; 
         }
 
+        HandleHotkeys();
+        UpdatePlayerInputLock();
+    }
+    #endregion
+
+    #region Hotkey Logic
+    private void HandleHotkeys()
+    {
         bool inventoryKey = false;
         bool characterKey = false;
         bool mapKey = false;
@@ -67,7 +74,9 @@ public class UI_InputManager : MonoBehaviour
 
         bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
         bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
-        bool isMapOpen = fullMapController != null && fullMapController.fullMapScreen.activeSelf;
+        
+        // Updated to check map and quest states directly from the PauseMenuManager
+        bool isMapOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.mapScreen != null && PauseMenuManager.Instance.mapScreen.activeSelf;
         bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
 
         if (inventoryKey)
@@ -88,12 +97,22 @@ public class UI_InputManager : MonoBehaviour
 
         if (mapKey)
         {
-            if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isQuestOpen)
+            if (isMapOpen)
             {
-                if (fullMapController == null)
-                    fullMapController = FindAnyObjectByType<FullMapController>();
-
-                fullMapController?.ToggleMap();
+                if (PauseMenuManager.Instance != null)
+                    PauseMenuManager.Instance.Resume();
+            }
+            else if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isQuestOpen)
+            {
+                if (PauseMenuManager.Instance != null)
+                {
+                    if (!PauseMenuManager.Instance.isPaused)
+                    {
+                        PauseMenuManager.Instance.Pause();
+                        PauseMenuManager.Instance.openedFromHotkey = true; 
+                    }
+                    PauseMenuManager.Instance.OpenMap();
+                }
             }
         }
 
@@ -121,21 +140,21 @@ public class UI_InputManager : MonoBehaviour
             }
         }
     }
+    #endregion
 
+    #region State Checks & Locks
     private void UpdatePlayerInputLock()
     {
         if (Player_InputManager.Instance != null)
         {
             bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
-            if (fullMapController == null)
-                fullMapController = FindAnyObjectByType<FullMapController>();
-
+            bool isMapOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.mapScreen != null && PauseMenuManager.Instance.mapScreen.activeSelf;
             bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
 
             bool isAnyScreenOpen = IsShopOrDialogueOpen() ||
                                    (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
                                    (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf) ||
-                                   (fullMapController != null && fullMapController.fullMapScreen.activeSelf) ||
+                                   isMapOpen ||
                                    isQuestOpen ||
                                    isPauseMenuOpen;
 
@@ -149,7 +168,9 @@ public class UI_InputManager : MonoBehaviour
         bool isDialogue = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
         return isShop || isDialogue;
     }
+    #endregion
 
+    #region Escape Key Logic
     private void HandleEscapeKey()
     {
         if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
@@ -164,6 +185,7 @@ public class UI_InputManager : MonoBehaviour
             return;
         }
 
+        // The PauseMenuManager is now fully responsible for closing its own sub-screens (Map, Quests, etc.)
         if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
         {
             PauseMenuManager.Instance.HandleBackButton();
@@ -182,18 +204,10 @@ public class UI_InputManager : MonoBehaviour
             return;
         }
 
-        if (fullMapController == null)
-            fullMapController = FindAnyObjectByType<FullMapController>();
-
-        if (fullMapController != null && fullMapController.fullMapScreen != null && fullMapController.fullMapScreen.activeSelf)
-        {
-            fullMapController.ToggleMap();
-            return;
-        }
-
         if (PauseMenuManager.Instance != null)
         {
             PauseMenuManager.Instance.Pause();
         }
     }
+    #endregion
 }

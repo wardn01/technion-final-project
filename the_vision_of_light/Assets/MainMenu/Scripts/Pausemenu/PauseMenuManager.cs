@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// The core manager for the in-game pause menu. Handles time scaling, cursor locking, 
-/// sub-screen navigation (map, inventory, quests, etc.), and the save/load data pipeline.
+/// sub-screen navigation (map, inventory, quests, etc.), HUD toggling, and the save/load data pipeline.
 /// </summary>
 public class PauseMenuManager : MonoBehaviour
 {
@@ -24,6 +24,10 @@ public class PauseMenuManager : MonoBehaviour
     public GameObject setupScreen;
     public GameObject questScreen;
     public GameObject playerStatsScreen;
+
+    [Header("HUD Elements (Hidden when paused)")]
+    /// <summary>Drag UI elements here that should disappear when any menu opens (e.g. Health Bar, Quick Slots).</summary>
+    public GameObject[] hudElementsToHide;
 
     [Header("Cameras")]
     /// <summary>The top-down camera used specifically for the full map view.</summary>
@@ -77,7 +81,7 @@ public class PauseMenuManager : MonoBehaviour
     }
     #endregion
 
-    #region Pause Mechanics
+    #region Pause Mechanics & HUD
     /// <summary>
     /// Intelligently handles the back/escape action. Closes settings or sub-screens first before unpausing the game.
     /// </summary>
@@ -109,7 +113,7 @@ public class PauseMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Freezes the game time, unlocks the cursor, and displays the main pause panel.
+    /// Freezes the game time, unlocks the cursor, hides HUD elements, and displays the main pause panel.
     /// </summary>
     public void Pause()
     {
@@ -119,6 +123,8 @@ public class PauseMenuManager : MonoBehaviour
         if (pauseMainPanel != null) pauseMainPanel.SetActive(true);
         if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
 
+        ToggleHUDElements(false);
+
         Time.timeScale = 0f;
         isPaused = true;
 
@@ -127,7 +133,7 @@ public class PauseMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Restores normal game time, locks the cursor, and hides all pause UI elements.
+    /// Restores normal game time, locks the cursor, restores HUD elements, and hides all pause UI elements.
     /// </summary>
     public void Resume()
     {
@@ -135,12 +141,25 @@ public class PauseMenuManager : MonoBehaviour
         if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
         if (pauseMainPanel != null) pauseMainPanel.SetActive(false);
 
+        ToggleHUDElements(true);
+
         Time.timeScale = 1f;
         isPaused = false;
         openedFromHotkey = false;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    /// <summary>
+    /// Hides or shows gameplay UI elements like health bars and action prompts based on the menu state.
+    /// </summary>
+    private void ToggleHUDElements(bool show)
+    {
+        foreach (GameObject element in hudElementsToHide)
+        {
+            if (element != null) element.SetActive(show);
+        }
     }
     #endregion
 
