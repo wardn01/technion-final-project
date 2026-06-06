@@ -199,6 +199,9 @@ public class PauseMenuManager : MonoBehaviour
     {
         OpenSubScreen(mapScreen);
         if (fullMapCamera != null) fullMapCamera.SetActive(true);
+
+        if (FullMapController.Instance != null) 
+            FullMapController.Instance.RefreshMapUI();
     }
 
     public void OpenInventory() => OpenSubScreen(inventoryScreen);
