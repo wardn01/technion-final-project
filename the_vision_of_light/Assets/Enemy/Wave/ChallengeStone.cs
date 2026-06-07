@@ -26,6 +26,8 @@ public class ChallengeStone : MonoBehaviour
     {
         public string challengeName = "Quest Trial";
         public int targetQuestState = 6;
+        /// <summary>-1 = match state only (legacy). Set to 0+ to require a specific quest step.</summary>
+        public int targetQuestStep = -1;
         public int nextQuestState = 7;
         public Wave[] waves;
     }
@@ -150,9 +152,13 @@ public class ChallengeStone : MonoBehaviour
         if (QuestManager.Instance != null)
         {
             int currentState = QuestManager.Instance.mainQuestState;
+            int currentStep = QuestManager.Instance.questStepIndex;
             foreach (var qc in questChallenges)
             {
-                if (qc.targetQuestState == currentState)
+                bool stateMatches = qc.targetQuestState == currentState;
+                bool stepMatches = qc.targetQuestStep < 0 || qc.targetQuestStep == currentStep;
+
+                if (stateMatches && stepMatches)
                 {
                     activeQuestChallenge = qc;
                     activeWaves = qc.waves;
@@ -213,8 +219,10 @@ public class ChallengeStone : MonoBehaviour
 
         if (activeQuestChallenge != null && QuestManager.Instance != null)
         {
-            QuestManager.Instance.mainQuestState = activeQuestChallenge.nextQuestState;
-            QuestManager.Instance.SaveQuestProgress();
+            if (activeQuestChallenge.nextQuestState > QuestManager.Instance.mainQuestState)
+                QuestManager.Instance.AdvanceToState(activeQuestChallenge.nextQuestState);
+            else
+                QuestManager.Instance.CompleteCurrentQuest();
         }
 
         activeQuestChallenge = null;

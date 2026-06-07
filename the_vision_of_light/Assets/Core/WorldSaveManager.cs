@@ -19,6 +19,12 @@ public class WorldSaveManager : MonoBehaviour
     public PlayerData activePlayerData;
     #endregion
 
+    #region Pending Quest Load
+    private bool hasPendingQuestProgress;
+    private int pendingQuestState;
+    private int pendingQuestStep;
+    #endregion
+
     #region Unity Lifecycle
     /// <summary>
     /// Initializes the Singleton, persists it across scenes, and loads the selected slot's data.
@@ -58,32 +64,62 @@ public class WorldSaveManager : MonoBehaviour
 
         if (data != null)
         {
-            // Restore Quest Progress
-            if (QuestManager.Instance != null)
-            {
-                QuestManager.Instance.mainQuestState = data.mainQuestState;
-            }
+            ApplyQuestProgress(data.mainQuestState, data.questStepIndex);
 
             // Restore Player Data
             if (activePlayerData != null && !string.IsNullOrEmpty(data.playerDataJson))
             {
+                // Ascension phases are inspector-authored config, not runtime state. The saved JSON
+                // is produced from a blank PlayerData whose phases array is empty, so cache the
+                // configured phases and restore them after the overwrite to avoid wiping them.
+                AscensionPhase[] configuredPhases = activePlayerData.ascensionPhases;
+
                 JsonUtility.FromJsonOverwrite(data.playerDataJson, activePlayerData);
+
+                activePlayerData.ascensionPhases = configuredPhases;
+
                 activePlayerData.RestoreAfterLoad(); 
             }
         }
         else
         {
-            // Initialize Default Values for a New Game
-            if (QuestManager.Instance != null)
-            {
-                QuestManager.Instance.mainQuestState = 0;
-            }
+            ApplyQuestProgress(0, 0);
 
             if (activePlayerData != null)
             {
                 activePlayerData.ResetToDefault();
             }
         }
+    }
+
+    /// <summary>
+    /// Applies saved quest progress immediately, or stores it until <see cref="QuestManager"/> is ready.
+    /// </summary>
+    private void ApplyQuestProgress(int state, int step)
+    {
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.mainQuestState = state;
+            QuestManager.Instance.questStepIndex = step;
+            hasPendingQuestProgress = false;
+            return;
+        }
+
+        pendingQuestState = state;
+        pendingQuestStep = step;
+        hasPendingQuestProgress = true;
+    }
+
+    /// <summary>
+    /// Called by <see cref="QuestManager"/> on startup when quest data was loaded before it existed.
+    /// </summary>
+    public void ApplyPendingQuestProgress()
+    {
+        if (!hasPendingQuestProgress || QuestManager.Instance == null) return;
+
+        QuestManager.Instance.mainQuestState = pendingQuestState;
+        QuestManager.Instance.questStepIndex = pendingQuestStep;
+        hasPendingQuestProgress = false;
     }
 
     /// <summary>

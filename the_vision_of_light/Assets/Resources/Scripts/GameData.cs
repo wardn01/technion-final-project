@@ -18,5 +18,6 @@ public class GameData
     
     public string playerDataJson;
 
-    public int mainQuestState; 
+    public int mainQuestState;
+    public int questStepIndex;
 }

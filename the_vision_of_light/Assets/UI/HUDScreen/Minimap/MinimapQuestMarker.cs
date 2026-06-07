@@ -11,7 +11,7 @@ public class MinimapQuestMarker : MonoBehaviour
 
     private void Update()
     {
-        if (QuestManager.Instance == null || QuestManager.Instance.trackedQuest == null || !QuestManager.Instance.trackedQuest.hasTargetLocation)
+        if (QuestManager.Instance == null || !QuestManager.Instance.CurrentObjectiveHasTarget())
         {
             markerIcon.gameObject.SetActive(false);
             return;
@@ -19,7 +19,7 @@ public class MinimapQuestMarker : MonoBehaviour
 
         markerIcon.gameObject.SetActive(true);
 
-        Vector3 targetPos = QuestManager.Instance.trackedQuest.targetLocation;
+        Vector3 targetPos = QuestManager.Instance.GetCurrentObjectiveTarget();
 
         if (minimapCamera != null)
         {

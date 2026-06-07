@@ -225,7 +225,11 @@ public class PauseMenuManager : MonoBehaviour
         }
     }
 
-    public void OpenQuests() => OpenSubScreen(questScreen, false);
+    public void OpenQuests()
+    {
+        OpenSubScreen(questScreen, false);
+        QuestUIController.Instance?.RefreshQuestUI();
+    }
     public void OpenPlayerStats() => OpenSubScreen(playerStatsScreen, false);
     public void OpenSettings() => settingsMenuUI?.SetActive(true);
     public void CloseSettings() => settingsMenuUI?.SetActive(false);
@@ -259,7 +263,10 @@ public class PauseMenuManager : MonoBehaviour
         }
 
         if (QuestManager.Instance != null)
+        {
             data.mainQuestState = QuestManager.Instance.mainQuestState;
+            data.questStepIndex = QuestManager.Instance.questStepIndex;
+        }
 
         SaveManager.SaveGame(currentSlot, data);
     }

@@ -110,25 +110,22 @@ public class FullMapController : MonoBehaviour
     {
         if (currentMarker != null) Destroy(currentMarker);
 
-        if (QuestManager.Instance != null && QuestManager.Instance.trackedQuest != null)
+        if (QuestManager.Instance != null
+            && QuestManager.Instance.trackedQuest != null
+            && QuestManager.Instance.CurrentObjectiveHasTarget())
         {
-            QuestData tracked = QuestManager.Instance.trackedQuest;
-            
-            if (tracked.hasTargetLocation)
-            {
-                currentMarker = Instantiate(questMarkerPrefab, mapContent);
-                
-                float mapSize = mapContent.rect.width;
-                float ratio = mapSize / worldSize;
-                
-                RectTransform rt = currentMarker.GetComponent<RectTransform>();
-                
-                // Convert world space target to map UI space
-                rt.anchoredPosition = new Vector2(
-                    (tracked.targetLocation.x - fullMapCamera.position.x) * ratio,
-                    (tracked.targetLocation.z - fullMapCamera.position.z) * ratio
-                );
-            }
+            Vector3 targetPos = QuestManager.Instance.GetCurrentObjectiveTarget();
+
+            currentMarker = Instantiate(questMarkerPrefab, mapContent);
+
+            float mapSize = mapContent.rect.width;
+            float ratio = mapSize / worldSize;
+
+            RectTransform rt = currentMarker.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(
+                (targetPos.x - fullMapCamera.position.x) * ratio,
+                (targetPos.z - fullMapCamera.position.z) * ratio
+            );
         }
     }
     #endregion
