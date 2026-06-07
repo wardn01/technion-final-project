@@ -13,44 +13,18 @@ MonoBehaviour:
   m_Name: Player Data
   m_EditorClassIdentifier: Assembly-CSharp::PlayerData
   currentActiveLoadout: 0
-  currentLevel: 1
-  currentXP: 0
-  xpToNextLevel: 400
+  currentLevel: 3
+  currentXP: 45
+  xpToNextLevel: 300
   maxLevelCap: 10
   absoluteMaxLevel: 100
   ascensionPhases:
-  - newLevelCap: 20
+  - newLevelCap: 0
     requiredItems:
-    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 100
-    - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
-      amount: 5
-  - newLevelCap: 30
-    requiredItems:
-    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 250
-    - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
-      amount: 10
-    - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
-      amount: 5
-  - newLevelCap: 40
-    requiredItems:
-    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 500
-    - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
-      amount: 10
-    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
-      amount: 5
-  - newLevelCap: 50
-    requiredItems:
-    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 1000
-    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
-      amount: 10
-    - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
-      amount: 5
+    - item: {fileID: 11400000, guid: 6db0936be6dca264faf2afda425b34b1, type: 2}
+      amount: 1
   currentAscensionIndex: 0
-  availableStatPoints: 1
+  availableStatPoints: 3
   investedHPPoints: 0
   investedAtkPoints: 0
   investedDefPoints: 0
@@ -72,13 +46,13 @@ MonoBehaviour:
     stmPoints: 0
     hotbarSlots:
     - {fileID: 11400000, guid: ffd25aebb615105449eb8316ed8b0d77, type: 2}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: 810f70194f580d9498de997fa380619a, type: 2}
+    - {fileID: 11400000, guid: f3c73b8ee4ffd4744beaf893e84ff0fd, type: 2}
     - {fileID: 0}
     savedHotbarItemNames:
     - Wind Sword
-    - 
-    - 
+    - Small Health Potion
+    - Carrot
     - 
   - isSaved: 0
     hpPoints: 0

@@ -2,26 +2,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
-using System.IO;
 
-/// <summary>
-/// Centralized input manager for handling UI hotkeys (Inventory, Map, Quests) and managing the Escape key logic safely.
-/// </summary>
 public class UI_InputManager : MonoBehaviour
 {
-    #region Singleton
     public static UI_InputManager Instance { get; private set; }
-    #endregion
 
-    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        else { Destroy(gameObject); return; }
     }
 
     private void Update()
@@ -30,15 +19,13 @@ public class UI_InputManager : MonoBehaviour
         {
             HandleEscapeKey();
             UpdatePlayerInputLock();
-            return; 
+            return;
         }
 
         HandleHotkeys();
         UpdatePlayerInputLock();
     }
-    #endregion
 
-    #region Hotkey Logic
     private void HandleHotkeys()
     {
         bool inventoryKey = false;
@@ -49,7 +36,6 @@ public class UI_InputManager : MonoBehaviour
         if (KeybindManager.Instance != null)
         {
             var keys = KeybindManager.Instance.keys;
-            
             if (keys.TryGetValue("OpenInventory", out KeyCode openInventoryKey))
                 inventoryKey = Input.GetKeyDown(openInventoryKey) || Input.GetKeyDown(KeyCode.Tab);
             else
@@ -74,24 +60,46 @@ public class UI_InputManager : MonoBehaviour
 
         bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
         bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
-        
-        // Updated to check map and quest states directly from the PauseMenuManager
         bool isMapOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.mapScreen != null && PauseMenuManager.Instance.mapScreen.activeSelf;
         bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
 
         if (inventoryKey)
         {
-            if (!IsShopOrDialogueOpen() && !isCharOpen && !isMapOpen && !isQuestOpen) 
+            if (isInvOpen)
             {
-                if (InventoryUIManager.Instance != null) InventoryUIManager.Instance.ToggleInventory(); 
+                PauseMenuManager.Instance?.Resume();
+            }
+            else if (!IsShopOrDialogueOpen() && !isCharOpen && !isMapOpen && !isQuestOpen)
+            {
+                if (PauseMenuManager.Instance != null)
+                {
+                    if (!PauseMenuManager.Instance.isPaused)
+                    {
+                        PauseMenuManager.Instance.Pause();
+                        PauseMenuManager.Instance.openedFromHotkey = true;
+                    }
+                    PauseMenuManager.Instance.OpenInventory();
+                }
             }
         }
 
         if (characterKey)
         {
-            if (!IsShopOrDialogueOpen() && !isInvOpen && !isMapOpen && !isQuestOpen)
+            if (isCharOpen)
             {
-                if (CharacterMenuController.Instance != null) CharacterMenuController.Instance.ToggleMenu();
+                PauseMenuManager.Instance?.Resume();
+            }
+            else if (!IsShopOrDialogueOpen() && !isInvOpen && !isMapOpen && !isQuestOpen)
+            {
+                if (PauseMenuManager.Instance != null)
+                {
+                    if (!PauseMenuManager.Instance.isPaused)
+                    {
+                        PauseMenuManager.Instance.Pause();
+                        PauseMenuManager.Instance.openedFromHotkey = true;
+                    }
+                    PauseMenuManager.Instance.OpenSetup();
+                }
             }
         }
 
@@ -99,8 +107,7 @@ public class UI_InputManager : MonoBehaviour
         {
             if (isMapOpen)
             {
-                if (PauseMenuManager.Instance != null)
-                    PauseMenuManager.Instance.Resume();
+                PauseMenuManager.Instance?.Resume();
             }
             else if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isQuestOpen)
             {
@@ -109,7 +116,7 @@ public class UI_InputManager : MonoBehaviour
                     if (!PauseMenuManager.Instance.isPaused)
                     {
                         PauseMenuManager.Instance.Pause();
-                        PauseMenuManager.Instance.openedFromHotkey = true; 
+                        PauseMenuManager.Instance.openedFromHotkey = true;
                     }
                     PauseMenuManager.Instance.OpenMap();
                 }
@@ -120,8 +127,7 @@ public class UI_InputManager : MonoBehaviour
         {
             if (isQuestOpen)
             {
-                if (PauseMenuManager.Instance != null)
-                    PauseMenuManager.Instance.Resume();
+                PauseMenuManager.Instance?.Resume();
             }
             else if (!IsShopOrDialogueOpen() && !isInvOpen && !isCharOpen && !isMapOpen)
             {
@@ -130,35 +136,26 @@ public class UI_InputManager : MonoBehaviour
                     if (!PauseMenuManager.Instance.isPaused)
                     {
                         PauseMenuManager.Instance.Pause();
-                        PauseMenuManager.Instance.openedFromHotkey = true; 
+                        PauseMenuManager.Instance.openedFromHotkey = true;
                     }
                     PauseMenuManager.Instance.OpenQuests();
                 }
-
-                if (QuestUIController.Instance != null)
-                    QuestUIController.Instance.RefreshQuestUI();
+                QuestUIController.Instance?.RefreshQuestUI();
             }
         }
     }
-    #endregion
 
-    #region State Checks & Locks
     private void UpdatePlayerInputLock()
     {
         if (Player_InputManager.Instance != null)
         {
             bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
+            bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
+            bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
             bool isMapOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.mapScreen != null && PauseMenuManager.Instance.mapScreen.activeSelf;
             bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
 
-            bool isAnyScreenOpen = IsShopOrDialogueOpen() ||
-                                   (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf) ||
-                                   (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf) ||
-                                   isMapOpen ||
-                                   isQuestOpen ||
-                                   isPauseMenuOpen;
-
-            Player_InputManager.Instance.isInputLocked = isAnyScreenOpen;
+            Player_InputManager.Instance.isInputLocked = IsShopOrDialogueOpen() || isInvOpen || isCharOpen || isMapOpen || isQuestOpen || isPauseMenuOpen;
         }
     }
 
@@ -168,46 +165,18 @@ public class UI_InputManager : MonoBehaviour
         bool isDialogue = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
         return isShop || isDialogue;
     }
-    #endregion
 
-    #region Escape Key Logic
     private void HandleEscapeKey()
     {
-        if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
-        {
-            ShopManager.Instance.BackToDialogue();
-            return; 
-        }
+        if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf) { ShopManager.Instance.BackToDialogue(); return; }
+        if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen) { DialogueManager.Instance?.EndDialogue(); return; }
 
-        if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen)
-        {
-            if (DialogueManager.Instance != null) DialogueManager.Instance.EndDialogue();
-            return;
-        }
-
-        // The PauseMenuManager is now fully responsible for closing its own sub-screens (Map, Quests, etc.)
         if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
         {
             PauseMenuManager.Instance.HandleBackButton();
             return;
         }
 
-        if (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf)
-        {
-            InventoryUIManager.Instance.ToggleInventory();
-            return;
-        }
-
-        if (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf)
-        {
-            CharacterMenuController.Instance.ToggleMenu();
-            return;
-        }
-
-        if (PauseMenuManager.Instance != null)
-        {
-            PauseMenuManager.Instance.Pause();
-        }
+        PauseMenuManager.Instance?.Pause();
     }
-    #endregion
 }

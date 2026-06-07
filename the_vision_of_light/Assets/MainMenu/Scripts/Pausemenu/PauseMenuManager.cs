@@ -3,22 +3,15 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-/// <summary>
-/// The core manager for the in-game pause menu. Handles time scaling, cursor locking, 
-/// sub-screen navigation (map, inventory, quests, etc.), HUD toggling, and the save/load data pipeline.
-/// </summary>
 public class PauseMenuManager : MonoBehaviour
 {
-    #region Singleton
     public static PauseMenuManager Instance { get; private set; }
-    #endregion
 
-    #region UI & Camera References
     [Header("Main UI Panels")]
     public GameObject pauseMainPanel;
     public GameObject settingsMenuUI;
 
-    [Header("Sub Screens (Right Side)")]
+    [Header("Sub Screens")]
     public GameObject mapScreen;
     public GameObject inventoryScreen;
     public GameObject setupScreen;
@@ -26,34 +19,26 @@ public class PauseMenuManager : MonoBehaviour
     public GameObject playerStatsScreen;
 
     [Header("HUD Elements (Hidden when paused)")]
-    /// <summary>Drag UI elements here that should disappear when any menu opens (e.g. Health Bar, Quick Slots).</summary>
     public GameObject[] hudElementsToHide;
 
+    [Header("Quick Slots Reference")]
+    public GameObject quickSlotBar;
+
     [Header("Cameras")]
-    /// <summary>The top-down camera used specifically for the full map view.</summary>
-    public GameObject fullMapCamera; 
+    public GameObject fullMapCamera;
 
     [Header("UI Buttons")]
     public Button backBtn;
-    #endregion
 
-    #region Player & Data References
     [Header("Player & Data")]
     public Transform playerTransform;
     public PlayerData playerProfile;
-    #endregion
 
-    #region State Variables
     [HideInInspector] public bool isPaused;
     [HideInInspector] public bool openedFromHotkey = false;
-    
-    private GameObject currentActiveSubScreen = null;
-    #endregion
 
-    #region Unity Lifecycle
-    /// <summary>
-    /// Initializes the singleton instance and ensures it persists across scenes if necessary.
-    /// </summary>
+    private GameObject currentActiveSubScreen = null;
+
     private void Awake()
     {
         if (Instance == null)
@@ -68,9 +53,6 @@ public class PauseMenuManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Binds the back button listener, resumes the game to ensure a clean state, and loads the player's saved data.
-    /// </summary>
     private void Start()
     {
         if (backBtn != null)
@@ -79,12 +61,7 @@ public class PauseMenuManager : MonoBehaviour
         Resume();
         LoadPlayerData();
     }
-    #endregion
 
-    #region Pause Mechanics & HUD
-    /// <summary>
-    /// Intelligently handles the back/escape action. Closes settings or sub-screens first before unpausing the game.
-    /// </summary>
     public void HandleBackButton()
     {
         if (settingsMenuUI != null && settingsMenuUI.activeSelf)
@@ -96,15 +73,20 @@ public class PauseMenuManager : MonoBehaviour
         if (currentActiveSubScreen != null)
         {
             CloseAllSubScreens();
-            
+
             if (openedFromHotkey)
             {
-                Resume(); 
+                Resume();
+            }
+            else if (isPaused && pauseMainPanel != null)
+            {
+                pauseMainPanel.SetActive(true);
             }
             else
             {
-                if (pauseMainPanel != null) pauseMainPanel.SetActive(true);
+                Resume();
             }
+            
             return;
         }
 
@@ -112,9 +94,6 @@ public class PauseMenuManager : MonoBehaviour
         else Pause();
     }
 
-    /// <summary>
-    /// Freezes the game time, unlocks the cursor, hides HUD elements, and displays the main pause panel.
-    /// </summary>
     public void Pause()
     {
         CloseAllSubScreens();
@@ -124,6 +103,7 @@ public class PauseMenuManager : MonoBehaviour
         if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
 
         ToggleHUDElements(false);
+        SetQuickSlots(false);
 
         Time.timeScale = 0f;
         isPaused = true;
@@ -132,16 +112,15 @@ public class PauseMenuManager : MonoBehaviour
         Cursor.visible = true;
     }
 
-    /// <summary>
-    /// Restores normal game time, locks the cursor, restores HUD elements, and hides all pause UI elements.
-    /// </summary>
     public void Resume()
     {
         CloseAllSubScreens();
+
         if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
         if (pauseMainPanel != null) pauseMainPanel.SetActive(false);
 
         ToggleHUDElements(true);
+        SetQuickSlots(true);
 
         Time.timeScale = 1f;
         isPaused = false;
@@ -151,84 +130,110 @@ public class PauseMenuManager : MonoBehaviour
         Cursor.visible = false;
     }
 
-    /// <summary>
-    /// Hides or shows gameplay UI elements like health bars and action prompts based on the menu state.
-    /// </summary>
     private void ToggleHUDElements(bool show)
     {
         foreach (GameObject element in hudElementsToHide)
-        {
             if (element != null) element.SetActive(show);
-        }
     }
-    #endregion
 
-    #region Sub-Screen Navigation
-    /// <summary>
-    /// Opens a specific sub-screen while ensuring the main pause panel is hidden to prevent UI overlap.
-    /// </summary>
-    /// <param name="screenToOpen">The GameObject of the UI panel to display.</param>
-    private void OpenSubScreen(GameObject screenToOpen)
+    private void SetQuickSlots(bool show)
+    {
+        if (quickSlotBar != null)
+            quickSlotBar.SetActive(show);
+    }
+
+    private void OpenSubScreen(GameObject screenToOpen, bool keepQuickSlots)
     {
         CloseAllSubScreens();
         if (screenToOpen != null)
         {
-            if (pauseMainPanel != null) pauseMainPanel.SetActive(false); 
+            if (pauseMainPanel != null) pauseMainPanel.SetActive(false);
             screenToOpen.SetActive(true);
             currentActiveSubScreen = screenToOpen;
+
+            ToggleHUDElements(false);
+            SetQuickSlots(keepQuickSlots);
+            
+            Time.timeScale = 0f;
+            isPaused = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
     }
 
-    /// <summary>
-    /// Closes all active sub-screens and deactivates associated elements like the map camera.
-    /// </summary>
     public void CloseAllSubScreens()
     {
         if (mapScreen != null) mapScreen.SetActive(false);
-        if (inventoryScreen != null) inventoryScreen.SetActive(false);
-        if (setupScreen != null) setupScreen.SetActive(false);
         if (questScreen != null) questScreen.SetActive(false);
         if (playerStatsScreen != null) playerStatsScreen.SetActive(false);
-        
-        if (fullMapCamera != null) fullMapCamera.SetActive(false); 
+        if (fullMapCamera != null) fullMapCamera.SetActive(false);
+
+        if (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf)
+            InventoryUIManager.Instance.ToggleInventory();
+
+        if (CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf)
+            CharacterMenuController.Instance.ToggleMenu();
 
         currentActiveSubScreen = null;
     }
 
-    public void OpenMap() 
+    public void OpenMap()
     {
-        OpenSubScreen(mapScreen);
+        OpenSubScreen(mapScreen, false);
         if (fullMapCamera != null) fullMapCamera.SetActive(true);
-
-        if (FullMapController.Instance != null) 
-            FullMapController.Instance.RefreshMapUI();
+        if (FullMapController.Instance != null) FullMapController.Instance.RefreshMapUI();
     }
 
-    public void OpenInventory() => OpenSubScreen(inventoryScreen);
-    public void OpenSetup() => OpenSubScreen(setupScreen);
-    public void OpenQuests() => OpenSubScreen(questScreen);
-    public void OpenPlayerStats() => OpenSubScreen(playerStatsScreen);
-
-    public void OpenSettings()
+    public void OpenInventory()
     {
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(true);
+        CloseAllSubScreens();
+        if (pauseMainPanel != null) pauseMainPanel.SetActive(false);
+
+        if (InventoryUIManager.Instance != null)
+        {
+            if (!InventoryUIManager.Instance.inventoryWindow.activeSelf)
+                InventoryUIManager.Instance.ToggleInventory();
+
+            currentActiveSubScreen = InventoryUIManager.Instance.inventoryWindow;
+            ToggleHUDElements(false);
+            SetQuickSlots(true);
+            
+            Time.timeScale = 0f;
+            isPaused = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
-    public void CloseSettings()
+    public void OpenSetup()
     {
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(false);
-    }
-    #endregion
+        CloseAllSubScreens();
+        if (pauseMainPanel != null) pauseMainPanel.SetActive(false);
 
-    #region Data Management (Save/Load)
-    /// <summary>
-    /// Gathers all current world state, player position, inventory, and quest data, saving it to the active slot.
-    /// </summary>
+        if (CharacterMenuController.Instance != null)
+        {
+            if (!CharacterMenuController.Instance.attributesScreen.activeSelf)
+                CharacterMenuController.Instance.ToggleMenu();
+
+            currentActiveSubScreen = CharacterMenuController.Instance.attributesScreen;
+            ToggleHUDElements(false);
+
+            Time.timeScale = 0f;
+            isPaused = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    public void OpenQuests() => OpenSubScreen(questScreen, false);
+    public void OpenPlayerStats() => OpenSubScreen(playerStatsScreen, false);
+    public void OpenSettings() => settingsMenuUI?.SetActive(true);
+    public void CloseSettings() => settingsMenuUI?.SetActive(false);
+
     public void SaveGameSilently()
     {
         int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
-        GameData data = SaveManager.LoadGame(currentSlot);
-        if (data == null) data = new GameData();
+        GameData data = SaveManager.LoadGame(currentSlot) ?? new GameData();
 
         data.worldName = PlayerPrefs.GetString("Slot_" + currentSlot + "_Name", "World " + currentSlot);
         data.currentTime = DayNightCycle.Instance != null ? DayNightCycle.Instance.currentTime : 12f;
@@ -244,9 +249,7 @@ public class PauseMenuManager : MonoBehaviour
         {
             data.inventoryItems.Clear();
             foreach (var kvp in InventoryManager.Instance.GetInventory())
-            {
                 data.inventoryItems.Add(new SavedItem { itemName = kvp.Key.name, amount = kvp.Value });
-            }
         }
 
         if (playerProfile != null)
@@ -261,34 +264,22 @@ public class PauseMenuManager : MonoBehaviour
         SaveManager.SaveGame(currentSlot, data);
     }
 
-    /// <summary>
-    /// Executes a silent save and safely transitions the player back to the Main Menu via the loading screen.
-    /// </summary>
     public void SaveAndExit()
     {
         SaveGameSilently();
         Time.timeScale = 1f;
-        
         if (SceneLoaderManager.Instance != null) SceneLoaderManager.Instance.LoadWorldScene("MainMenu");
         else SceneManager.LoadScene("MainMenu");
     }
 
-    /// <summary>
-    /// Loads saved data from the current slot, safely restoring player transform, time of day, inventory, and profile stats.
-    /// </summary>
     private void LoadPlayerData()
     {
         int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
         GameData data = SaveManager.LoadGame(currentSlot);
 
-        if (playerProfile != null) playerProfile.ResetToDefault();
-        if (InventoryManager.Instance != null) InventoryManager.Instance.ClearInventory();
-
-        if (QuickSlotManager.Instance != null)
-        {
-            for (int i = 0; i < 4; i++) QuickSlotManager.Instance.slots[i] = null;
-            QuickSlotManager.Instance.UpdateUI();
-        }
+        playerProfile?.ResetToDefault();
+        InventoryManager.Instance?.ClearInventory();
+        QuickSlotManager.Instance?.ResetSelection();
 
         if (data != null)
         {
@@ -306,29 +297,28 @@ public class PauseMenuManager : MonoBehaviour
             {
                 ItemData[] allItems = Resources.LoadAll<ItemData>("");
                 foreach (SavedItem savedItem in data.inventoryItems)
-                {
                     foreach (ItemData item in allItems)
-                    {
                         if (item.name == savedItem.itemName)
                         {
                             InventoryManager.Instance.AddItem(item, savedItem.amount);
                             break;
                         }
-                    }
-                }
             }
 
             if (playerProfile != null && !string.IsNullOrEmpty(data.playerDataJson))
             {
+                // Ascension phases are inspector-authored config, not runtime state. Saves are
+                // generated from a blank PlayerData instance whose JSON carries an empty phases
+                // array, so we cache the configured phases and restore them after the overwrite.
+                AscensionPhase[] configuredPhases = playerProfile.ascensionPhases;
+
                 JsonUtility.FromJsonOverwrite(data.playerDataJson, playerProfile);
+
+                playerProfile.ascensionPhases = configuredPhases;
+
                 playerProfile.RestoreAfterLoad();
                 playerProfile.LoadBuild(playerProfile.currentActiveLoadout);
             }
         }
-        else
-        {
-            if (InventoryManager.Instance != null) InventoryManager.Instance.ApplyStartingItems();
-        }
     }
-    #endregion
 }
