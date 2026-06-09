@@ -13,12 +13,18 @@ public class InventoryUI_Grid : MonoBehaviour
 {
     #region Pooling
 
+    private class PooledSlot
+    {
+        public GameObject Object;
+        public bool IsWeaponSlot;
+    }
+
     /// <summary>
     /// A persistent cache of instantiated UI slot objects.
     /// Reusing these objects instead of destroying/instantiating them 
     /// significantly improves UI frame-rate stability.
     /// </summary>
-    private List<GameObject> pool = new List<GameObject>();
+    private readonly List<PooledSlot> pool = new List<PooledSlot>();
 
     #endregion
 
@@ -33,7 +39,8 @@ public class InventoryUI_Grid : MonoBehaviour
     /// <param name="goldItem">Data reference to the gold currency item.</param>
     /// <param name="goldText">TMP text element for displaying gold count.</param>
     /// <param name="parent">The transform serving as the layout parent for the grid.</param>
-    /// <param name="prefab">The slot prefab to instantiate if pool size is insufficient.</param>
+    /// <param name="defaultPrefab">Prefab used for materials, consumables, and mixed tabs.</param>
+    /// <param name="weaponPrefab">Optional dedicated weapon slot prefab. Falls back to defaultPrefab when null.</param>
     /// <param name="selected">Reference to the currently highlighted item (by-reference).</param>
     /// <param name="onSlotClickAction">Event to trigger when an item slot is clicked.</param>
     /// <param name="ui">Reference to the InventoryUIManager for detail panel updates.</param>
@@ -42,18 +49,17 @@ public class InventoryUI_Grid : MonoBehaviour
         ItemData goldItem,
         TextMeshProUGUI goldText,
         Transform parent,
-        GameObject prefab,
+        GameObject defaultPrefab,
+        GameObject weaponPrefab,
         ref ItemData selected,
         Action<ItemData> onSlotClickAction,
         InventoryUIManager ui)
     {
         var inv = InventoryManager.Instance.GetInventory();
 
-        // Update top-bar gold display
         if (goldItem != null && goldText != null)
             goldText.text = InventoryManager.Instance.GetItemAmount(goldItem).ToString();
 
-        // Filter inventory collection using LINQ for readability and performance
         var filteredItems = inv.Where(kvp =>
             kvp.Key != goldItem &&
             IsMatchFilter(kvp.Key.type, filter)
@@ -71,38 +77,54 @@ public class InventoryUI_Grid : MonoBehaviour
             if (first == null) first = item;
             if (selected == item && amount > 0) isSelectedValid = true;
 
-            GameObject slot;
-
-            // Retrieve from pool or instantiate new slot
-            if (index < pool.Count)
-            {
-                slot = pool[index];
-                slot.SetActive(true);
-            }
-            else
-            {
-                slot = Instantiate(prefab, parent);
-                pool.Add(slot);
-            }
-
-            // Assign data to the slot UI component
-            slot.GetComponent<InventorySlotUI>()
-                .Setup(item, amount, onSlotClickAction);
+            GameObject slot = AcquireSlot(index, item, parent, defaultPrefab, weaponPrefab);
+            slot.GetComponent<InventorySlotUI>()?.Setup(item, amount, onSlotClickAction);
 
             index++;
         }
 
-        // Hide slots that are not needed in this filter state
         for (int i = index; i < pool.Count; i++)
-            pool[i].SetActive(false);
+            pool[i].Object.SetActive(false);
 
-        // Synchronize the detail panel state
         if (isSelectedValid)
             ui.DisplayItemDetails(selected, ui.isItemClickedFromGrid);
         else if (first != null)
             ui.DisplayItemDetails(first, false);
         else
             ui.ShowEmptyCategoryDetails();
+    }
+
+    /// <summary>
+    /// Returns a pooled slot of the correct prefab type for the given item.
+    /// Recreates the slot when the required prefab type changes (e.g. All tab mix).
+    /// </summary>
+    private GameObject AcquireSlot(int index, ItemData item, Transform parent, GameObject defaultPrefab, GameObject weaponPrefab)
+    {
+        bool useWeaponSlot = item.type == ItemType.Weapon && weaponPrefab != null;
+        GameObject prefab = useWeaponSlot ? weaponPrefab : defaultPrefab;
+
+        while (pool.Count <= index)
+            pool.Add(null);
+
+        PooledSlot entry = pool[index];
+
+        if (entry != null && entry.IsWeaponSlot == useWeaponSlot)
+        {
+            entry.Object.SetActive(true);
+            return entry.Object;
+        }
+
+        if (entry?.Object != null)
+            Destroy(entry.Object);
+
+        GameObject slot = Instantiate(prefab, parent);
+        pool[index] = new PooledSlot
+        {
+            Object = slot,
+            IsWeaponSlot = useWeaponSlot
+        };
+
+        return slot;
     }
 
     #endregion

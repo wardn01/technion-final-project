@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c2323e1d3ccc546995906328ab3c14, type: 3}
+  m_Name: Fire Sword
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponItemData
+  itemName: Fire sword
+  description: 'A blade tempered in molten core. Each swing leaves embers in its wake,
+    and its wielder commands both a blazing rush and orbiting flames.
+
+    <b><color=#8E44AD>[E]</color></b> Fire Slash: Lunges forward with a searing
+    arc that burns enemies over time.
+
+    <b><color=#8E44AD>[Q]</color></b> Inferno Burst: Launches a fire wave ahead
+    while three fireballs orbit behind you, homing onto nearby foes.'
+  itemIcon: {fileID: 21300000, guid: 5299b13e7207b2341b39d4682b248e8e, type: 3}
+  value: 1000
+  type: 2
+  weaponElement: 3
+  weaponModelPrefab: {fileID: 2831044802675985272, guid: 765c0021b3014634f9d345c2f260b3c7, type: 3}
+  animatorOverride: {fileID: 22100000, guid: 1952610285f62a24484b2d7ae672104f, type: 2}
+  weaponBaseAttack: 10
+  normalAttackDamage: 120
+  skillEDamage: 250
+  skillQDamage: 80
+  skillQStrikeDamage: 120
+  skillEPrefab: {fileID: 6111486948785554852, guid: ac154935536184743b9cb58ec9cd2ceb, type: 3}
+  skillQPrefab: {fileID: 8172946501837462910, guid: c8f1a2b34d5e6f708192a3b4c5d6e7f8, type: 3}
+  skillQStrikePrefab: {fileID: 5099431166652583641, guid: e1caae398e5c7aa4f8ecd4c02c9373ff, type: 3}
+  skillECooldown: 0
+  requiredE_For_Q: 0
+  upgradeLevels:
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 150
+    - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+      amount: 8
+    damageBoost: 10
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 300
+    - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+      amount: 12
+    - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      amount: 5
+    damageBoost: 15
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 600
+    - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      amount: 10
+    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      amount: 5
+    damageBoost: 20
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 1200
+    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      amount: 12
+    - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+      amount: 5
+    damageBoost: 25

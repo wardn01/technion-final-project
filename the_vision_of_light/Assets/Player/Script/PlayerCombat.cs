@@ -16,11 +16,24 @@ public class PlayerCombat : MonoBehaviour
     public WeaponItemData activeWeaponData;
 
     private GameObject currentWeaponModel;
+    private FireSwordQOrbitSystem activeFireQSystem;
 
     [Header("Player Hand & Spawn Points")]
     public Transform weaponHandPosition;
     public Transform eSpawnPoint;
     public Transform qSpawnPoint;
+
+    private Transform defaultESpawnPoint;
+    private Transform defaultQSpawnPoint;
+
+    private readonly Dictionary<WeaponItemData.WeaponElement, ElementSpawnPoints> spawnPointsByElement =
+        new Dictionary<WeaponItemData.WeaponElement, ElementSpawnPoints>();
+
+    private struct ElementSpawnPoints
+    {
+        public Transform e;
+        public Transform q;
+    }
 
     [Header("Input Buffer Settings")]
     public float bufferDuration = 0.1f;
@@ -50,6 +63,13 @@ public class PlayerCombat : MonoBehaviour
 
     private Dictionary<WeaponItemData, WeaponState> weaponStates =
         new Dictionary<WeaponItemData, WeaponState>();
+
+    private void Awake()
+    {
+        defaultESpawnPoint = eSpawnPoint;
+        defaultQSpawnPoint = qSpawnPoint;
+        CacheElementSpawnPoints();
+    }
 
     private void Start()
     {
@@ -104,6 +124,8 @@ public class PlayerCombat : MonoBehaviour
     {
         if (newWeaponData == null) return;
 
+        ClearFireQOrbs();
+
         if (currentWeaponModel != null)
         {
             Destroy(currentWeaponModel);
@@ -125,10 +147,69 @@ public class PlayerCombat : MonoBehaviour
             currentWeaponModel = Instantiate(activeWeaponData.weaponModelPrefab, weaponHandPosition);
             currentWeaponModel.SetActive(inCombatStance);
         }
+
+        ApplySpawnPointsForWeapon(activeWeaponData);
+    }
+
+    private void CacheElementSpawnPoints()
+    {
+        RegisterElementSpawnPoints(WeaponItemData.WeaponElement.Wind, "Wind_E_SpawnPoint", "Wind_Q_SpawnPoint");
+        RegisterElementSpawnPoints(WeaponItemData.WeaponElement.Ice, "Ice_E_SpawnPoint", "Ice_Q_SpawnPoint");
+        RegisterElementSpawnPoints(WeaponItemData.WeaponElement.Fire, "Fire_E_SpawnPoint", "Fire_Q_SpawnPoint");
+
+        if (!spawnPointsByElement.ContainsKey(WeaponItemData.WeaponElement.Wind))
+        {
+            RegisterElementSpawnPoints(WeaponItemData.WeaponElement.Wind, "E_SpawnPoint", "Q_SpawnPoint");
+        }
+    }
+
+    private void RegisterElementSpawnPoints(
+        WeaponItemData.WeaponElement element,
+        string ePointName,
+        string qPointName)
+    {
+        Transform ePoint = FindPlayerSpawnPoint(ePointName);
+        Transform qPoint = FindPlayerSpawnPoint(qPointName);
+
+        if (ePoint == null && qPoint == null) return;
+
+        spawnPointsByElement[element] = new ElementSpawnPoints { e = ePoint, q = qPoint };
+    }
+
+    private Transform FindPlayerSpawnPoint(string pointName)
+    {
+        Transform searchRoot = transform;
+        while (searchRoot.parent != null && searchRoot.name != "Player")
+        {
+            searchRoot = searchRoot.parent;
+        }
+
+        foreach (Transform child in searchRoot.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == pointName) return child;
+        }
+
+        return null;
+    }
+
+    private void ApplySpawnPointsForWeapon(WeaponItemData weapon)
+    {
+        if (weapon == null
+            || !spawnPointsByElement.TryGetValue(weapon.weaponElement, out ElementSpawnPoints points))
+        {
+            eSpawnPoint = defaultESpawnPoint;
+            qSpawnPoint = defaultQSpawnPoint;
+            return;
+        }
+
+        eSpawnPoint = points.e != null ? points.e : defaultESpawnPoint;
+        qSpawnPoint = points.q != null ? points.q : defaultQSpawnPoint;
     }
 
     public void UnequipCurrentWeapon()
     {
+        ClearFireQOrbs();
+
         if (currentWeaponModel != null)
         {
             Destroy(currentWeaponModel);
@@ -388,7 +469,7 @@ public class PlayerCombat : MonoBehaviour
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
 
-        bool isAlwaysMovingSkill = stateInfo.IsName("Skill_Q") || stateInfo.IsName("Rolling");
+        bool isAlwaysMovingSkill = stateInfo.IsName("Skill_Q") || stateInfo.IsName("Skill_E") || stateInfo.IsName("Rolling");
         bool isNormalAttack = stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3");
 
         if (isAlwaysMovingSkill || isNormalAttack)
@@ -482,33 +563,104 @@ public class PlayerCombat : MonoBehaviour
             {
                 iceScript.SetDamage(finalDamage);
             }
+
+            FireSkillEDamage fireScript = skill.GetComponent<FireSkillEDamage>();
+            if (fireScript != null)
+            {
+                fireScript.SetDamage(finalDamage);
+            }
         }
     }
 
     public void OnSkillQ()
     {
-        if (activeWeaponData != null && activeWeaponData.skillQPrefab != null && qSpawnPoint != null)
+        if (activeWeaponData == null) return;
+
+        float playerBaseAttack = playerData != null ? playerData.GetTotalAttack() : 0f;
+        int weaponBoost = GetWeaponUpgradeBoost(activeWeaponData);
+        float totalAttack = playerBaseAttack + activeWeaponData.weaponBaseAttack + weaponBoost;
+        float finalDamage = totalAttack * (activeWeaponData.skillQDamage / 100f);
+
+        if (activeWeaponData.weaponElement == WeaponItemData.WeaponElement.Fire)
         {
-            GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
+            int boomPercent = activeWeaponData.skillQStrikeDamage > 0
+                ? activeWeaponData.skillQStrikeDamage
+                : activeWeaponData.skillQDamage;
 
-            float playerBaseAttack = playerData != null ? playerData.GetTotalAttack() : 0f;
-            int weaponBoost = GetWeaponUpgradeBoost(activeWeaponData);
-            float totalAttack = playerBaseAttack + activeWeaponData.weaponBaseAttack + weaponBoost;
-            float finalDamage = totalAttack * (activeWeaponData.skillQDamage / 100f);
-
-            IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
-            if (iceScript != null)
-            {
-                skill.transform.parent = qSpawnPoint;
-                iceScript.SetDamage(finalDamage);
-            }
-
-            WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
-            if (windScript != null)
-            {
-                windScript.SetDamage(finalDamage);
-            }
+            float boomDamage = CalculateSkillDamage(boomPercent);
+            float orbDamage = CalculateSkillDamage(activeWeaponData.skillQDamage);
+            HandleFireSkillQ(boomDamage, orbDamage);
+            return;
         }
+
+        if (activeWeaponData.skillQPrefab == null || qSpawnPoint == null) return;
+
+        GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
+
+        IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
+        if (iceScript != null)
+        {
+            skill.transform.parent = qSpawnPoint;
+            iceScript.SetDamage(finalDamage);
+        }
+
+        WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
+        if (windScript != null)
+        {
+            windScript.SetDamage(finalDamage);
+        }
+    }
+
+    private float CalculateSkillDamage(int damagePercent)
+    {
+        if (activeWeaponData == null) return 0f;
+
+        float playerBaseAttack = playerData != null ? playerData.GetTotalAttack() : 0f;
+        int weaponBoost = GetWeaponUpgradeBoost(activeWeaponData);
+        float totalAttack = playerBaseAttack + activeWeaponData.weaponBaseAttack + weaponBoost;
+        return totalAttack * (damagePercent / 100f);
+    }
+
+    private void HandleFireSkillQ(float boomDamage, float orbDamage)
+    {
+        SpawnFireSkillQBoom(boomDamage);
+
+        if (activeFireQSystem != null)
+        {
+            activeFireQSystem.RefreshOrbs(orbDamage);
+            return;
+        }
+
+        if (activeWeaponData.skillQPrefab == null) return;
+
+        GameObject skill = Instantiate(activeWeaponData.skillQPrefab, transform.position, Quaternion.identity);
+        FireSwordQOrbitSystem fireOrbit = skill.GetComponent<FireSwordQOrbitSystem>();
+        if (fireOrbit == null) return;
+
+        activeFireQSystem = fireOrbit;
+        fireOrbit.Initialize(transform, orbDamage, enemyLayer);
+    }
+
+    private void SpawnFireSkillQBoom(float finalDamage)
+    {
+        if (activeWeaponData.skillQStrikePrefab == null || qSpawnPoint == null) return;
+
+        GameObject boom = Instantiate(
+            activeWeaponData.skillQStrikePrefab,
+            qSpawnPoint.position,
+            qSpawnPoint.rotation);
+
+        FireSkillQBoom boomScript = boom.GetComponent<FireSkillQBoom>();
+        if (boomScript != null)
+            boomScript.SetDamage(finalDamage);
+    }
+
+    private void ClearFireQOrbs()
+    {
+        if (activeFireQSystem == null) return;
+
+        activeFireQSystem.Cleanup();
+        activeFireQSystem = null;
     }
 
     public void PlayNormalAttackSound()
@@ -521,18 +673,10 @@ public class PlayerCombat : MonoBehaviour
 
     public void PlaySkillESound()
     {
-        if (currentWeaponModel != null)
-        {
-            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillESound();
-        }
     }
 
     public void PlaySkillQSound()
     {
-        if (currentWeaponModel != null)
-        {
-            currentWeaponModel.GetComponent<WeaponCombatSounds>()?.PlaySkillQSound();
-        }
     }
 
     public void PlayRollSound()

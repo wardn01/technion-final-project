@@ -22,7 +22,7 @@ MonoBehaviour:
     <b><color=#8E44AD>[Q]</color></b>
     Cyclone''s Wrath: Summons a raging tornado that sweeps enemies away with continuous
     damage.'
-  itemIcon: {fileID: 1877259014, guid: ee387c99489c72a44813d44397ca885a, type: 3}
+  itemIcon: {fileID: 21300000, guid: a4d68260860162a4582d032550f2e4c7, type: 3}
   value: 1000
   type: 2
   weaponElement: 1

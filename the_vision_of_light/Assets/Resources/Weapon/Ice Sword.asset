@@ -22,17 +22,17 @@ MonoBehaviour:
     <b><color=#8E44AD>[Q]</color></b>
     Winter''s Domain: Creates a freezing aura that continuously damages and slows
     enemies inside it.'
-  itemIcon: {fileID: 1877259014, guid: ee387c99489c72a44813d44397ca885a, type: 3}
+  itemIcon: {fileID: 21300000, guid: 3ae77a515b0f1604581157a0d05bb5c7, type: 3}
   value: 1000
   type: 2
   weaponElement: 2
-  weaponModelPrefab: {fileID: 6573923370113695857, guid: 17b1897eab9aee5459c5911fb0b6b371, type: 3}
+  weaponModelPrefab: {fileID: 6868977283113561872, guid: f52543a48a1535344861fcc84764d6d8, type: 3}
   animatorOverride: {fileID: 22100000, guid: 02913bc2bc38fbc409a46a02800be412, type: 2}
   weaponBaseAttack: 15
   normalAttackDamage: 130
   skillEDamage: 200
   skillQDamage: 90
-  skillEPrefab: {fileID: 3020920808754819069, guid: b7c15b9580fb48148aa4a6a8f25b4adf, type: 3}
+  skillEPrefab: {fileID: 6111486948785554852, guid: 3538ca8d117bb5744ad2c43fab7e6242, type: 3}
   skillQPrefab: {fileID: 9177886612219991525, guid: 75a99ff903dda504da3d88d728523dbe, type: 3}
   skillECooldown: 10
   requiredE_For_Q: 2

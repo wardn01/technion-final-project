@@ -15,6 +15,7 @@ public class EnemyStatusEffects : MonoBehaviour
     private bool isFrozen;
     private float freezeEndTime;
     private Coroutine knockbackRoutine;
+    private Coroutine burnRoutine;
 
     private void Awake()
     {
@@ -104,6 +105,25 @@ public class EnemyStatusEffects : MonoBehaviour
         }
     }
 
+    /// <summary>Applies fire DoT. Refreshes duration if the enemy is already burning.</summary>
+    public void ApplyBurn(float duration, float damagePerTick, float tickInterval = 0.5f)
+    {
+        if (enemyBase != null && enemyBase.IsDead) return;
+        if (damagePerTick <= 0f || duration <= 0f) return;
+
+        if (burnRoutine != null) StopCoroutine(burnRoutine);
+        burnRoutine = StartCoroutine(BurnRoutine(duration, damagePerTick, tickInterval));
+    }
+
+    public void RemoveBurn()
+    {
+        if (burnRoutine != null)
+        {
+            StopCoroutine(burnRoutine);
+            burnRoutine = null;
+        }
+    }
+
     public void ApplyKnockback(Vector3 direction, float distance, float duration)
     {
         if (enemyBase != null && enemyBase.IsDead) return;
@@ -116,6 +136,21 @@ public class EnemyStatusEffects : MonoBehaviour
         }
         
         knockbackRoutine = StartCoroutine(KnockbackRoutine(direction, distance, duration));
+    }
+
+    private IEnumerator BurnRoutine(float duration, float damagePerTick, float tickInterval)
+    {
+        float endTime = Time.time + duration;
+
+        while (Time.time < endTime)
+        {
+            if (enemyBase != null && enemyBase.IsDead) yield break;
+
+            enemyBase.TakeDamage(damagePerTick);
+            yield return new WaitForSeconds(tickInterval);
+        }
+
+        burnRoutine = null;
     }
 
     private IEnumerator KnockbackRoutine(Vector3 direction, float distance, float duration)
@@ -186,6 +221,8 @@ public class EnemyStatusEffects : MonoBehaviour
             StopCoroutine(knockbackRoutine);
             knockbackRoutine = null;
         }
+
+        RemoveBurn();
 
         aiPauseCount = 0;
         movementLockCount = 0;

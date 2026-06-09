@@ -44,16 +44,22 @@ public class WeaponUpgradeUI : MonoBehaviour
     public Transform slotsParent;
     public GameObject loadoutSlotPrefab;
 
+    [Tooltip("Optional dedicated slot prefab for weapons. Leave empty to reuse loadoutSlotPrefab.")]
+    public GameObject weaponLoadoutSlotPrefab;
+
     [Header("Slot Highlight Colors")]
     public Color selectedSlotColor = Color.white;
     public Color unselectedSlotColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
-    [Header("Right Panel - Details")]
+    [Header("Right Panel - Details General")]
     public Image detailIcon;
     public TextMeshProUGUI detailNameText;
+    public TextMeshProUGUI detailDescriptionText;
+
+    [Header("Right Panel - Details Weapon Only")]
+    public Image weaponDetailsIconImage;
     public TextMeshProUGUI detailLevelText;
     public TextMeshProUGUI detailStatsText;
-    public TextMeshProUGUI detailDescriptionText;
 
     [Header("Right Panel - Ascend Group")]
     public GameObject ascendGroupPanel;
@@ -68,8 +74,14 @@ public class WeaponUpgradeUI : MonoBehaviour
 
     #region State Variables
 
+    private class PooledSlot
+    {
+        public GameObject Object;
+        public bool IsWeaponSlot;
+    }
+
     private Image currentSelectedSlotImage;
-    private List<GameObject> pool = new List<GameObject>();
+    private readonly List<PooledSlot> pool = new List<PooledSlot>();
     private ItemData currentlySelectedItem;
     private bool showingWeapons = true;
 
@@ -150,25 +162,14 @@ public class WeaponUpgradeUI : MonoBehaviour
             if (firstValidItem == null) firstValidItem = item;
             if (currentlySelectedItem == item && amount > 0) isSelectedStillValid = true;
 
-            GameObject slot;
-            if (index < pool.Count) 
-            { 
-                slot = pool[index]; 
-                slot.SetActive(true); 
-            }
-            else 
-            { 
-                slot = Instantiate(loadoutSlotPrefab, slotsParent); 
-                pool.Add(slot); 
-            }
-
+            GameObject slot = AcquireSlot(index, item);
             slot.GetComponent<InventorySlotUI>()?.Setup(item, amount, HandleSlotClick);
-            
+
             index++;
         }
 
-        for (int i = index; i < pool.Count; i++) 
-            pool[i].SetActive(false);
+        for (int i = index; i < pool.Count; i++)
+            pool[i].Object.SetActive(false);
 
         if (topGoldText != null && goldCoinData != null)
             topGoldText.text = InventoryManager.Instance.GetItemAmount(goldCoinData).ToString("N0");
@@ -184,6 +185,38 @@ public class WeaponUpgradeUI : MonoBehaviour
     private void HandleSlotClick(ItemData clickedItem)
     {
         DisplayItemDetails(clickedItem, true);
+    }
+
+    /// <summary>
+    /// Returns a pooled slot using the weapon prefab for weapons when configured.
+    /// </summary>
+    private GameObject AcquireSlot(int index, ItemData item)
+    {
+        bool useWeaponSlot = item.type == ItemType.Weapon && weaponLoadoutSlotPrefab != null;
+        GameObject prefab = useWeaponSlot ? weaponLoadoutSlotPrefab : loadoutSlotPrefab;
+
+        while (pool.Count <= index)
+            pool.Add(null);
+
+        PooledSlot entry = pool[index];
+
+        if (entry != null && entry.IsWeaponSlot == useWeaponSlot)
+        {
+            entry.Object.SetActive(true);
+            return entry.Object;
+        }
+
+        if (entry?.Object != null)
+            Destroy(entry.Object);
+
+        GameObject slot = Instantiate(prefab, slotsParent);
+        pool[index] = new PooledSlot
+        {
+            Object = slot,
+            IsWeaponSlot = useWeaponSlot
+        };
+
+        return slot;
     }
 
     #endregion
@@ -208,12 +241,12 @@ public class WeaponUpgradeUI : MonoBehaviour
             InventoryUIManager.Instance.isItemClickedFromGrid = fromUserClick;
         }
 
-        if (detailIcon != null)
-        {
-            detailIcon.sprite = item.itemIcon;
-            detailIcon.color = Color.white;
-        }
-        if (detailNameText != null) detailNameText.text = item.itemName;
+        if (detailNameText != null)
+            detailNameText.text = item.itemName;
+
+        bool isWeapon = item.type == ItemType.Weapon;
+        ShowGeneralDetails(isWeapon, item);
+        ShowWeaponDetails(isWeapon, item);
 
         if (equipBtn != null)
         {
@@ -223,66 +256,113 @@ public class WeaponUpgradeUI : MonoBehaviour
         }
         if (equipBtnText != null)
             equipBtnText.text = (QuickSlotManager.Instance != null && QuickSlotManager.Instance.IsItemEquipped(item)) ? "Remove" : "Equip";
+    }
 
-        if (item is WeaponItemData weapon)
+    /// <summary>
+    /// Shows the standard icon and description used for consumables in the loadout panel.
+    /// </summary>
+    private void ShowGeneralDetails(bool isWeapon, ItemData item)
+    {
+        if (detailIcon != null)
         {
-            ascendGroupPanel.SetActive(true);
-            detailLevelText.gameObject.SetActive(true);
-            detailStatsText.gameObject.SetActive(true);
-            if (detailDescriptionText != null) detailDescriptionText.gameObject.SetActive(false);
+            detailIcon.gameObject.SetActive(!isWeapon && item != null);
 
-            int currentLvl = playerData.GetWeaponLevel(weapon.itemName);
-            bool hasNextUpgrade = weapon.upgradeLevels != null && currentLvl <= weapon.upgradeLevels.Length;
-
-            if (hasNextUpgrade)
+            if (!isWeapon && item != null)
             {
-                WeaponUpgradeLevel upgradeData = weapon.upgradeLevels[currentLvl - 1];
+                detailIcon.sprite = item.itemIcon;
+                detailIcon.color = Color.white;
+            }
+        }
+
+        if (detailDescriptionText != null)
+        {
+            bool showDescription = !isWeapon && item != null;
+            detailDescriptionText.gameObject.SetActive(showDescription);
+
+            if (showDescription)
+                detailDescriptionText.text = item.description;
+        }
+    }
+
+    /// <summary>
+    /// Shows the dedicated weapon preview, level, upgrade stats, and ascension panel.
+    /// </summary>
+    private void ShowWeaponDetails(bool isWeapon, ItemData item)
+    {
+        if (weaponDetailsIconImage != null)
+        {
+            weaponDetailsIconImage.gameObject.SetActive(isWeapon);
+
+            if (isWeapon)
+            {
+                weaponDetailsIconImage.sprite = item.itemIcon;
+                weaponDetailsIconImage.color = Color.white;
+            }
+        }
+
+        if (detailLevelText != null)
+            detailLevelText.gameObject.SetActive(isWeapon);
+
+        if (detailStatsText != null)
+            detailStatsText.gameObject.SetActive(isWeapon);
+
+        if (ascendGroupPanel != null)
+            ascendGroupPanel.SetActive(isWeapon);
+
+        if (!isWeapon || item is not WeaponItemData weapon)
+            return;
+
+        int currentLvl = playerData.GetWeaponLevel(weapon.itemName);
+        bool hasNextUpgrade = weapon.upgradeLevels != null && currentLvl <= weapon.upgradeLevels.Length;
+
+        if (hasNextUpgrade)
+        {
+            WeaponUpgradeLevel upgradeData = weapon.upgradeLevels[currentLvl - 1];
+
+            if (detailLevelText != null)
                 detailLevelText.text = "Level " + currentLvl;
 
-                int currentDamage = weapon.weaponBaseAttack + GetTotalBoostUntil(weapon, currentLvl - 1);
-                int nextDamage = currentDamage + upgradeData.damageBoost;
+            int currentDamage = weapon.weaponBaseAttack + GetTotalBoostUntil(weapon, currentLvl - 1);
+            int nextDamage = currentDamage + upgradeData.damageBoost;
+
+            if (detailStatsText != null)
                 detailStatsText.text = $"Damage: {currentDamage} -> <color=#00FF00>{nextDamage}</color>";
 
-                bool isAscensionLocked = currentLvl > playerData.currentAscensionIndex;
+            bool isAscensionLocked = currentLvl > playerData.currentAscensionIndex;
 
-                SetupUpgradeUI(upgradeData);
+            SetupUpgradeUI(upgradeData);
 
-                if (ascendBtn != null)
-                {
-                    ascendBtn.onClick.RemoveAllListeners();
-                    ascendBtn.onClick.AddListener(() =>
-                    {
-                        if (isAscensionLocked)
-                        {
-                            if (NotificationManager.Instance != null)
-                                NotificationManager.Instance.ShowWarning($"Requires Ascension {currentLvl} to unlock!");
-                        }
-                        else
-                        {
-                            UpgradeWeapon(weapon, upgradeData);
-                        }
-                    });
-                }
-            }
-            else
+            if (ascendBtn != null)
             {
-                detailLevelText.text = $"Level {currentLvl} (MAX)";
-                int finalDamage = weapon.weaponBaseAttack + GetTotalBoostUntil(weapon, currentLvl - 1);
-                detailStatsText.text = $"Damage: {finalDamage}";
-                ClearMaterialSlots();
-                if (ascendBtn != null) ascendBtn.interactable = false;
+                ascendBtn.onClick.RemoveAllListeners();
+                ascendBtn.onClick.AddListener(() =>
+                {
+                    if (isAscensionLocked)
+                    {
+                        if (NotificationManager.Instance != null)
+                            NotificationManager.Instance.ShowWarning($"Requires Ascension {currentLvl} to unlock!");
+                    }
+                    else
+                    {
+                        UpgradeWeapon(weapon, upgradeData);
+                    }
+                });
             }
         }
         else
         {
-            ascendGroupPanel.SetActive(false);
-            detailLevelText.gameObject.SetActive(false);
-            detailStatsText.gameObject.SetActive(false);
-            if (detailDescriptionText != null) 
-            { 
-                detailDescriptionText.gameObject.SetActive(true); 
-                detailDescriptionText.text = item.description; 
-            }
+            if (detailLevelText != null)
+                detailLevelText.text = $"Level {currentLvl} (MAX)";
+
+            int finalDamage = weapon.weaponBaseAttack + GetTotalBoostUntil(weapon, currentLvl - 1);
+
+            if (detailStatsText != null)
+                detailStatsText.text = $"Damage: {finalDamage}";
+
+            ClearMaterialSlots();
+
+            if (ascendBtn != null)
+                ascendBtn.interactable = false;
         }
     }
 
@@ -298,10 +378,21 @@ public class WeaponUpgradeUI : MonoBehaviour
             InventoryUIManager.Instance.isItemClickedFromGrid = false; 
         }
         
-        detailIcon.color = new Color(1, 1, 1, 0);
-        detailNameText.text = "Empty";
-        ascendGroupPanel.SetActive(false);
-        equipBtn.gameObject.SetActive(false);
+        ShowGeneralDetails(false, null);
+        ShowWeaponDetails(false, null);
+
+        if (detailIcon != null)
+            detailIcon.color = new Color(1, 1, 1, 0);
+
+        if (detailNameText != null)
+            detailNameText.text = "Empty";
+
+        if (detailDescriptionText != null)
+            detailDescriptionText.text = "No items here.";
+
+        if (equipBtn != null)
+            equipBtn.gameObject.SetActive(false);
+
         ResetHighlight();
     }
 

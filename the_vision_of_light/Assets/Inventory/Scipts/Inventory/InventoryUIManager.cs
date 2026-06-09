@@ -24,6 +24,8 @@ public class InventoryUIManager : MonoBehaviour
     [Header("References")]
     /// <summary>Reference to the player's combat system to update skills and weapon states.</summary>
     public PlayerCombat playerCombat;
+    /// <summary>Reference to persistent player data for weapon level and damage display.</summary>
+    public PlayerData playerData;
 
     [Header("Currency")]
     /// <summary>The data definition for the gold currency used to query the player's balance.</summary>
@@ -36,6 +38,10 @@ public class InventoryUIManager : MonoBehaviour
     public GameObject hudScreen;
     public Transform slotsParent;
     public GameObject slotPrefab;
+
+    [Header("Weapon Slot")]
+    [Tooltip("Optional dedicated slot prefab for weapons. Leave empty to reuse slotPrefab.")]
+    public GameObject weaponSlotPrefab;
 
     [Header("Quick Slots Movement")]
     /// <summary>The transform of the quick slots bar, dynamically repositioned when the inventory opens.</summary>
@@ -50,15 +56,20 @@ public class InventoryUIManager : MonoBehaviour
     public Color selectedTabColor = Color.white;
     public Color unselectedTabColor = Color.gray;
 
-    [Header("Details Panel")]
+    [Header("Details Panel - General")]
     public GameObject detailsPanel;
     public TextMeshProUGUI detailNameText;
     public Image detailIconImage;
     public TextMeshProUGUI detailDescriptionText;
 
+    [Header("Details Panel - Weapon Only")]
+    public Image weaponDetailsIconImage;
+    public TextMeshProUGUI weaponDetailLevelText;
+
     [Header("Skills HUD")]
     public GameObject windSwordSkillsGroup;
     public GameObject iceSwordSkillsGroup;
+    public GameObject fireSwordSkillsGroup;
 
     [Header("Equip Button")]
     public GameObject equipButtonObject;
@@ -205,7 +216,16 @@ public class InventoryUIManager : MonoBehaviour
     /// </summary>
     public void RefreshUI()
     {
-        grid.Refresh(currentFilter, goldCoinItem, goldAmountText, slotsParent, slotPrefab, ref currentlySelectedItem, HandleSlotClick, this);
+        grid.Refresh(
+            currentFilter,
+            goldCoinItem,
+            goldAmountText,
+            slotsParent,
+            slotPrefab,
+            weaponSlotPrefab,
+            ref currentlySelectedItem,
+            HandleSlotClick,
+            this);
     }
 
     /// <summary>
@@ -231,9 +251,10 @@ public class InventoryUIManager : MonoBehaviour
         isItemClickedFromGrid = fromUserClick;
 
         detailNameText.text = item.itemName;
-        detailIconImage.sprite = item.itemIcon;
-        detailIconImage.color = Color.white;
-        detailDescriptionText.text = item.description;
+
+        bool isWeapon = item.type == ItemType.Weapon;
+        ShowGeneralDetails(isWeapon, item);
+        ShowWeaponDetails(isWeapon, item);
 
         if (item.type == ItemType.Weapon || item.type == ItemType.Consumable)
         {
@@ -250,13 +271,74 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Shows the standard icon for non-weapons and the shared description for all item types.
+    /// </summary>
+    private void ShowGeneralDetails(bool isWeapon, ItemData item)
+    {
+        if (detailIconImage != null)
+        {
+            detailIconImage.gameObject.SetActive(!isWeapon && item != null);
+
+            if (!isWeapon && item != null)
+            {
+                detailIconImage.sprite = item.itemIcon;
+                detailIconImage.color = Color.white;
+            }
+        }
+
+        if (detailDescriptionText != null)
+        {
+            detailDescriptionText.gameObject.SetActive(item != null);
+
+            if (item != null)
+                detailDescriptionText.text = item.description;
+        }
+    }
+
+    /// <summary>
+    /// Shows the dedicated weapon preview and level text.
+    /// </summary>
+    private void ShowWeaponDetails(bool isWeapon, ItemData item)
+    {
+        if (weaponDetailsIconImage != null)
+        {
+            weaponDetailsIconImage.gameObject.SetActive(isWeapon);
+
+            if (isWeapon && item != null)
+            {
+                weaponDetailsIconImage.sprite = item.itemIcon;
+                weaponDetailsIconImage.color = Color.white;
+            }
+        }
+
+        if (weaponDetailLevelText != null)
+            weaponDetailLevelText.gameObject.SetActive(isWeapon);
+
+        if (!isWeapon || item is not WeaponItemData weapon)
+            return;
+
+        int level = playerData != null ? playerData.GetWeaponLevel(weapon.itemName) : 1;
+
+        if (weaponDetailLevelText != null)
+            weaponDetailLevelText.text = "Level " + level;
+    }
+
+    /// <summary>
     /// Clears the details panel, presenting a blank state when navigating to an empty category.
     /// </summary>
     public void ShowEmptyCategoryDetails()
     {
         detailNameText.text = "Empty";
-        detailDescriptionText.text = "No items here.";
-        detailIconImage.color = new Color(1, 1, 1, 0);
+
+        ShowGeneralDetails(false, null);
+        ShowWeaponDetails(false, null);
+
+        if (detailDescriptionText != null)
+            detailDescriptionText.text = "No items here.";
+
+        if (detailIconImage != null)
+            detailIconImage.color = new Color(1, 1, 1, 0);
+
         equipButtonObject.SetActive(false);
         currentlySelectedItem = null;
         isItemClickedFromGrid = false;
@@ -281,18 +363,23 @@ public class InventoryUIManager : MonoBehaviour
     /// <param name="weapon">The active weapon data, or null if unarmed.</param>
     public void UpdateSkillHUD(WeaponItemData weapon)
     {
-        windSwordSkillsGroup.SetActive(false);
-        iceSwordSkillsGroup.SetActive(false);
+        if (windSwordSkillsGroup != null) windSwordSkillsGroup.SetActive(false);
+        if (iceSwordSkillsGroup != null) iceSwordSkillsGroup.SetActive(false);
+        if (fireSwordSkillsGroup != null) fireSwordSkillsGroup.SetActive(false);
 
         if (weapon == null) return;
 
-        if (weapon.weaponElement == WeaponItemData.WeaponElement.Wind)
+        switch (weapon.weaponElement)
         {
-            windSwordSkillsGroup.SetActive(true);
-        }
-        else if (weapon.weaponElement == WeaponItemData.WeaponElement.Ice)
-        {
-            iceSwordSkillsGroup.SetActive(true);
+            case WeaponItemData.WeaponElement.Wind:
+                if (windSwordSkillsGroup != null) windSwordSkillsGroup.SetActive(true);
+                break;
+            case WeaponItemData.WeaponElement.Ice:
+                if (iceSwordSkillsGroup != null) iceSwordSkillsGroup.SetActive(true);
+                break;
+            case WeaponItemData.WeaponElement.Fire:
+                if (fireSwordSkillsGroup != null) fireSwordSkillsGroup.SetActive(true);
+                break;
         }
     }
 

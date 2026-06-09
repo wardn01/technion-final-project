@@ -41,6 +41,10 @@ public class QuickSlotManager : MonoBehaviour
     [Header("UI Icons")]
     public Image[] slotIcons = new Image[4];
 
+    [Header("UI Weapon Icons")]
+    [Tooltip("Dedicated larger/tilted weapon icons. Leave empty to reuse slotIcons.")]
+    public Image[] weaponSlotIcons = new Image[4];
+
     [Header("UI Amount Texts")]
     public TextMeshProUGUI[] slotTexts = new TextMeshProUGUI[4];
 
@@ -150,7 +154,8 @@ public class QuickSlotManager : MonoBehaviour
     {
         for (int i = 0; i < slots.Length; i++)
         {
-            SetupSlot(slots[i], slotIcons[i], slotTexts[i], i);
+            Image weaponIcon = i < weaponSlotIcons.Length ? weaponSlotIcons[i] : null;
+            SetupSlot(slots[i], slotIcons[i], weaponIcon, slotTexts[i], i);
         }
 
         UpdateCooldownUI();
@@ -158,31 +163,59 @@ public class QuickSlotManager : MonoBehaviour
 
     /// <summary>
     /// Maps the underlying ItemData to the specific UI elements of a slot.
-    /// Handles visual cues like selection highlights and dynamic stack counters.
+    /// Uses a dedicated weapon icon when configured, otherwise falls back to the standard icon.
     /// </summary>
-    private void SetupSlot(ItemData item, Image icon, TextMeshProUGUI text, int index)
+    private void SetupSlot(ItemData item, Image icon, Image weaponIcon, TextMeshProUGUI text, int index)
     {
-        if (item != null)
+        bool isWeapon = item != null && item.type == ItemType.Weapon;
+        bool useWeaponIcon = isWeapon && weaponIcon != null;
+        Color tint = index == selectedSlotIndex ? Color.gray : Color.white;
+
+        if (icon != null)
         {
-            icon.sprite = item.itemIcon;
+            bool showStandardIcon = item != null && !useWeaponIcon;
+            icon.gameObject.SetActive(showStandardIcon || item == null);
 
-            // Apply a gray tint if this slot is currently selected for swapping
-            icon.color = index == selectedSlotIndex ? Color.gray : Color.white;
-
-            if (text != null)
+            if (showStandardIcon)
             {
-                int amt = InventoryManager.Instance.GetItemAmount(item);
-
-                // Hide quantity text for weapons or empty stacks
-                text.text = (item is WeaponItemData || amt <= 0) ? "" : "x" + amt;
+                icon.sprite = item.itemIcon;
+                icon.color = tint;
+            }
+            else if (item == null)
+            {
+                icon.color = index == selectedSlotIndex
+                    ? new Color(0.5f, 0.5f, 0.5f, 0.5f)
+                    : new Color(1, 1, 1, 0);
             }
         }
-        else
-        {
-            // Apply semi-transparent gray if an empty slot is selected, else fully transparent
-            icon.color = index == selectedSlotIndex ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(1, 1, 1, 0);
 
-            if (text != null) text.text = "";
+        if (weaponIcon != null)
+        {
+            weaponIcon.gameObject.SetActive(useWeaponIcon);
+
+            if (useWeaponIcon)
+            {
+                weaponIcon.sprite = item.itemIcon;
+                weaponIcon.color = tint;
+            }
+        }
+        else if (isWeapon && icon != null)
+        {
+            icon.gameObject.SetActive(true);
+            icon.sprite = item.itemIcon;
+            icon.color = tint;
+        }
+
+        if (text != null)
+        {
+            if (item == null)
+            {
+                text.text = "";
+                return;
+            }
+
+            int amt = InventoryManager.Instance.GetItemAmount(item);
+            text.text = (item is WeaponItemData || amt <= 0) ? "" : "x" + amt;
         }
     }
 
@@ -294,11 +327,9 @@ public class QuickSlotManager : MonoBehaviour
     /// </summary>
     private void PlaceItemInSlot(ItemData item, int index)
     {
-        // Reject a 3rd weapon unless this slot already holds a weapon to replace.
-        if (item is WeaponItemData && !IsItemEquipped(item)
-            && CountWeapons() >= 2 && !(slots[index] is WeaponItemData))
+        if (WouldExceedWeaponLimit(item, index))
         {
-            NotificationManager.Instance?.ShowWarning("You can only equip 2 weapons!");
+            ShowQuickSlotWarning(MaxWeaponsWarning);
             return;
         }
 
@@ -338,31 +369,53 @@ public class QuickSlotManager : MonoBehaviour
 
     #region Slot Assignment
 
+    private const int MaxQuickSlotWeapons = 2;
+    private const string MaxWeaponsWarning = "You can only equip 2 weapons!";
+    private const string QuickBarFullWarning = "Quick bar is full. Click a slot to replace an item.";
+
     /// <summary>
-    /// Assigns the item to the first empty slot. If the bar is full, nothing happens;
-    /// the player is expected to drop the item onto a specific slot to swap it instead.
+    /// Assigns the item to the first empty slot.
+    /// Shows warnings when the 2-weapon cap or a full quick bar blocks placement.
     /// </summary>
     /// <param name="item">The item to bind to the hotbar.</param>
-    public void AssignToFirstEmptySlot(ItemData item)
+    /// <returns>True when the item was placed successfully.</returns>
+    public bool TryAssignToFirstEmptySlot(ItemData item)
     {
-        if (item == null || IsItemEquipped(item)) return;
+        if (item == null || IsItemEquipped(item))
+            return false;
+
+        if (WouldExceedWeaponLimit(item, -1))
+        {
+            ShowQuickSlotWarning(MaxWeaponsWarning);
+            return false;
+        }
 
         int emptyIndex = -1;
         for (int i = 0; i < slots.Length; i++)
         {
-            if (slots[i] == null) { emptyIndex = i; break; }
+            if (slots[i] == null)
+            {
+                emptyIndex = i;
+                break;
+            }
         }
 
-        // Bar is full: placement is handled by clicking a specific quick slot.
-        if (emptyIndex == -1) return;
-
-        if (item is WeaponItemData && CountWeapons() >= 2)
+        if (emptyIndex == -1)
         {
-            NotificationManager.Instance?.ShowWarning("You can only equip 2 weapons!");
-            return;
+            ShowQuickSlotWarning(QuickBarFullWarning);
+            return false;
         }
 
         AssignItem(item, emptyIndex);
+        return true;
+    }
+
+    /// <summary>
+    /// Backward-compatible wrapper around <see cref="TryAssignToFirstEmptySlot"/>.
+    /// </summary>
+    public void AssignToFirstEmptySlot(ItemData item)
+    {
+        TryAssignToFirstEmptySlot(item);
     }
 
     /// <summary>
@@ -373,18 +426,10 @@ public class QuickSlotManager : MonoBehaviour
     {
         if (item == null) return;
 
-        // Weapon Limit Validation: Prevent equipping more than 2 weapons total
-        if (item is WeaponItemData)
+        if (WouldExceedWeaponLimit(item, slotIndex))
         {
-            int currentWeaponCount = CountWeapons();
-            ItemData targetSlotItem = slots[slotIndex];
-            bool isAlreadyInSlots = IsItemEquipped(item);
-
-            if (!isAlreadyInSlots && currentWeaponCount >= 2 && !(targetSlotItem is WeaponItemData))
-            {
-                // Abort assignment if trying to add a 3rd weapon into a non-weapon slot
-                return;
-            }
+            ShowQuickSlotWarning(MaxWeaponsWarning);
+            return;
         }
 
         // If the item is already somewhere else on the hotbar, swap them to prevent duplicates
@@ -437,6 +482,30 @@ public class QuickSlotManager : MonoBehaviour
             if (item is WeaponItemData) count++;
         }
         return count;
+    }
+
+    /// <summary>
+    /// Returns true when placing this weapon would exceed the quick bar weapon cap.
+    /// A target slot that already contains a weapon is treated as a replacement, not a third weapon.
+    /// </summary>
+    private bool WouldExceedWeaponLimit(ItemData item, int targetSlotIndex)
+    {
+        if (item is not WeaponItemData || IsItemEquipped(item))
+            return false;
+
+        if (CountWeapons() < MaxQuickSlotWeapons)
+            return false;
+
+        if (targetSlotIndex < 0 || targetSlotIndex >= slots.Length)
+            return true;
+
+        return slots[targetSlotIndex] is not WeaponItemData;
+    }
+
+    private void ShowQuickSlotWarning(string message)
+    {
+        if (NotificationManager.Instance != null)
+            NotificationManager.Instance.ShowWarning(message);
     }
 
     #endregion
