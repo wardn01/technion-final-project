@@ -38910,9 +38910,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6111486948785554852}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 684894b5d05bb984ab4a16b41081f24f, type: 3}
+  m_Script: {fileID: 11500000, guid: ccac13e9f35adf446837e3ca94fc37c2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SkillDamage
+  m_EditorClassIdentifier: Assembly-CSharp::IceSkillEDamage
+  freezeDuration: 1
 --- !u!114 &6192894677448494344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38926,7 +38927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSkillAudio
   clips:
-  - {fileID: 8300000, guid: 465f3cfad95e7744c81d33f77a293d7b, type: 3}
+  - {fileID: 8300000, guid: c78fdd3388c0f85478c1aefeab43c09e, type: 3}
   volume: 1
   pitch: 1
   useRandomPitch: 0

@@ -16,6 +16,8 @@ public class EnemyStatusEffects : MonoBehaviour
     private float freezeEndTime;
     private Coroutine knockbackRoutine;
     private Coroutine burnRoutine;
+    private Coroutine slowRoutine;
+    private float slowEndTime;
 
     private void Awake()
     {
@@ -69,15 +71,33 @@ public class EnemyStatusEffects : MonoBehaviour
         RefreshState();
     }
 
-    public void ApplySlow(float slowPercent)
+    public void ApplySlow(float slowPercent, float duration)
     {
         if (enemyBase != null && enemyBase.IsDead) return;
-        SlowMultiplier = Mathf.Clamp01(1f - slowPercent);
+        if (slowPercent <= 0f) return;
+
+        float newMultiplier = Mathf.Clamp01(1f - slowPercent);
+        SlowMultiplier = Mathf.Min(SlowMultiplier, newMultiplier);
+
+        if (duration > 0f)
+        {
+            slowEndTime = Mathf.Max(slowEndTime, Time.time + duration);
+            if (slowRoutine == null)
+                slowRoutine = StartCoroutine(SlowRoutine());
+        }
+
         RefreshState();
     }
 
     public void RemoveSlow()
     {
+        if (slowRoutine != null)
+        {
+            StopCoroutine(slowRoutine);
+            slowRoutine = null;
+        }
+
+        slowEndTime = 0f;
         SlowMultiplier = 1f;
         RefreshState();
     }
@@ -96,9 +116,12 @@ public class EnemyStatusEffects : MonoBehaviour
 
             if (agent != null && agent.isActiveAndEnabled)
             {
-                agent.isStopped = true;
-                agent.ResetPath();
-                agent.velocity = Vector3.zero;
+                if (agent.isOnNavMesh)
+                {
+                    agent.isStopped = true;
+                    agent.ResetPath();
+                    agent.velocity = Vector3.zero;
+                }
             }
 
             if (anim != null) anim.speed = 0f;
@@ -136,6 +159,19 @@ public class EnemyStatusEffects : MonoBehaviour
         }
         
         knockbackRoutine = StartCoroutine(KnockbackRoutine(direction, distance, duration));
+    }
+
+    private IEnumerator SlowRoutine()
+    {
+        while (Time.time < slowEndTime)
+        {
+            if (enemyBase != null && enemyBase.IsDead) yield break;
+            yield return null;
+        }
+
+        slowRoutine = null;
+        SlowMultiplier = 1f;
+        RefreshState();
     }
 
     private IEnumerator BurnRoutine(float duration, float damagePerTick, float tickInterval)
@@ -195,17 +231,13 @@ public class EnemyStatusEffects : MonoBehaviour
         if (enemyBase != null)
             enemyBase.enabled = (aiPauseCount == 0 && !isFrozen);
 
-        if (agent != null)
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
-            if (isFrozen || movementLockCount > 0)
-            {
-                agent.isStopped = true;
+            bool shouldStop = isFrozen || movementLockCount > 0 || aiPauseCount > 0;
+            agent.isStopped = shouldStop;
+
+            if (shouldStop)
                 agent.velocity = Vector3.zero;
-            }
-            else
-            {
-                agent.isStopped = false;
-            }
         }
 
         if (anim != null)
@@ -223,10 +255,10 @@ public class EnemyStatusEffects : MonoBehaviour
         }
 
         RemoveBurn();
+        RemoveSlow();
 
         aiPauseCount = 0;
         movementLockCount = 0;
-        SlowMultiplier = 1f;
         isFrozen = false;
         freezeEndTime = 0f;
 

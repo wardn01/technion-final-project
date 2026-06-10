@@ -16,26 +16,28 @@ MonoBehaviour:
   description: 'A heavy blade infused with eternal frost. It chills enemies to the
     bone.
 
-    <b><color=#8E44AD>[E]</color></b> Frost Strike: Slashes with absolute
-    zero energy, freezing enemies in place.
+    <b><color=#8E44AD>[E]</color></b> Frost Strike: Launches a forward
+    ice wave that damages enemies and freezes them in place.
 
     <b><color=#8E44AD>[Q]</color></b>
-    Winter''s Domain: Creates a freezing aura that continuously damages and slows
-    enemies inside it.'
+    Glacial Sigil: Opens a frost circle above you and rains homing ice balls onto
+    nearby enemies.'
   itemIcon: {fileID: 21300000, guid: 3ae77a515b0f1604581157a0d05bb5c7, type: 3}
   value: 1000
   type: 2
   weaponElement: 2
   weaponModelPrefab: {fileID: 6868977283113561872, guid: f52543a48a1535344861fcc84764d6d8, type: 3}
   animatorOverride: {fileID: 22100000, guid: 02913bc2bc38fbc409a46a02800be412, type: 2}
-  weaponBaseAttack: 15
-  normalAttackDamage: 130
-  skillEDamage: 200
-  skillQDamage: 90
+  weaponBaseAttack: 14
+  normalAttackDamage: 112
+  skillEDamage: 190
+  skillQDamage: 68
+  skillQStrikeDamage: 0
   skillEPrefab: {fileID: 6111486948785554852, guid: 3538ca8d117bb5744ad2c43fab7e6242, type: 3}
   skillQPrefab: {fileID: 9177886612219991525, guid: 75a99ff903dda504da3d88d728523dbe, type: 3}
-  skillECooldown: 10
-  requiredE_For_Q: 2
+  skillQStrikePrefab: {fileID: 0}
+  skillECooldown: 9
+  requiredE_For_Q: 3
   upgradeLevels:
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}

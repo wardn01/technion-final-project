@@ -28,10 +28,10 @@ MonoBehaviour:
   weaponElement: 1
   weaponModelPrefab: {fileID: 5964385237128242903, guid: 9b1a5a4d3f3af904aa8a452036808be1, type: 3}
   animatorOverride: {fileID: 0}
-  weaponBaseAttack: 10
-  normalAttackDamage: 120
-  skillEDamage: 250
-  skillQDamage: 80
+  weaponBaseAttack: 8
+  normalAttackDamage: 100
+  skillEDamage: 225
+  skillQDamage: 55
   skillEPrefab: {fileID: 6111486948785554852, guid: fca01db85f1c8ad42930ab65bccee9f9, type: 3}
   skillQPrefab: {fileID: 1116249604692860204, guid: 31d373562b093f64fbdc45f9306996b4, type: 3}
   skillECooldown: 8

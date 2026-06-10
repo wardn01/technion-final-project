@@ -4903,7 +4903,7 @@ GameObject:
   - component: {fileID: 8829401001001001002}
   - component: {fileID: 8829401001001001003}
   m_Layer: 12
-  m_Name: Q_FIreBoom
+  m_Name: Q_FireBoom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

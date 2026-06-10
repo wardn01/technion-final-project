@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+[DefaultExecutionOrder(-50)]
 public class PlayerCombat : MonoBehaviour
 {
     private Animator anim;
@@ -17,6 +18,7 @@ public class PlayerCombat : MonoBehaviour
 
     private GameObject currentWeaponModel;
     private FireSwordQOrbitSystem activeFireQSystem;
+    private IceSwordQSystem activeIceQSystem;
 
     [Header("Player Hand & Spawn Points")]
     public Transform weaponHandPosition;
@@ -91,6 +93,21 @@ public class PlayerCombat : MonoBehaviour
         HideWeapon();
     }
 
+    /// <summary>Used by <see cref="CameraZoom"/> — combo/skill lunges only, not roll.</summary>
+    public bool RequiresCombatCameraFollow()
+    {
+        if (anim == null) return false;
+        return IsCombatCameraFollowState(anim.GetCurrentAnimatorStateInfo(1))
+            || (anim.IsInTransition(1) && IsCombatCameraFollowState(anim.GetNextAnimatorStateInfo(1)));
+    }
+
+    public bool IsRolling()
+    {
+        if (anim == null) return false;
+        if (movementScript != null && movementScript.isRolling) return true;
+        return anim.GetCurrentAnimatorStateInfo(1).IsName("Rolling");
+    }
+
     private void Update()
     {
         CheckAttackState();
@@ -124,7 +141,8 @@ public class PlayerCombat : MonoBehaviour
     {
         if (newWeaponData == null) return;
 
-        ClearFireQOrbs();
+        // Keep Fire/Ice Q VFX running — only drop PlayerCombat tracking.
+        ReleaseActiveQSystemReferences();
 
         if (currentWeaponModel != null)
         {
@@ -208,7 +226,7 @@ public class PlayerCombat : MonoBehaviour
 
     public void UnequipCurrentWeapon()
     {
-        ClearFireQOrbs();
+        ClearActiveQSystems();
 
         if (currentWeaponModel != null)
         {
@@ -466,18 +484,45 @@ public class PlayerCombat : MonoBehaviour
     private void OnAnimatorMove()
     {
         if (anim == null || controller == null) return;
+        if (!IsRootMotionAnimatorState()) return;
 
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(1);
+        bool isRolling = stateInfo.IsName("Rolling");
 
-        bool isAlwaysMovingSkill = stateInfo.IsName("Skill_Q") || stateInfo.IsName("Skill_E") || stateInfo.IsName("Rolling");
-        bool isNormalAttack = stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3");
+        Vector3 finalMovement = anim.deltaPosition;
+        finalMovement.y = -20f * Time.deltaTime;
 
-        if (isAlwaysMovingSkill || isNormalAttack)
+        Transform moveRoot = controller.transform;
+        // Roll facing is set in PlayerMovement before the animation plays.
+        if (!isRolling)
+            moveRoot.rotation *= anim.deltaRotation;
+
+        controller.Move(finalMovement);
+    }
+
+    private static bool IsCombatCameraFollowState(AnimatorStateInfo stateInfo)
+    {
+        return stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3")
+            || stateInfo.IsName("Skill_E") || stateInfo.IsName("Skill_Q");
+    }
+
+    private bool IsRootMotionAnimatorState()
+    {
+        if (anim == null) return false;
+
+        if (anim.IsInTransition(1))
         {
-            Vector3 finalMovement = anim.deltaPosition;
-            finalMovement.y = -20f * Time.deltaTime;
-            controller.Move(finalMovement);
+            AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(1);
+            if (IsRootMotionStateName(nextState)) return true;
         }
+
+        return IsRootMotionStateName(anim.GetCurrentAnimatorStateInfo(1));
+    }
+
+    private static bool IsRootMotionStateName(AnimatorStateInfo stateInfo)
+    {
+        return stateInfo.IsName("Attack_1") || stateInfo.IsName("Attack_2") || stateInfo.IsName("Attack_3")
+            || stateInfo.IsName("Skill_E") || stateInfo.IsName("Skill_Q") || stateInfo.IsName("Rolling");
     }
 
     private int GetWeaponUpgradeBoost(WeaponItemData weapon)
@@ -593,22 +638,22 @@ public class PlayerCombat : MonoBehaviour
             return;
         }
 
+        if (activeWeaponData.weaponElement == WeaponItemData.WeaponElement.Ice)
+        {
+            HandleIceSkillQ(CalculateSkillDamage(activeWeaponData.skillQDamage));
+            return;
+        }
+
         if (activeWeaponData.skillQPrefab == null || qSpawnPoint == null) return;
 
-        GameObject skill = Instantiate(activeWeaponData.skillQPrefab, qSpawnPoint.position, qSpawnPoint.rotation);
-
-        IceSkillQDamage iceScript = skill.GetComponent<IceSkillQDamage>();
-        if (iceScript != null)
-        {
-            skill.transform.parent = qSpawnPoint;
-            iceScript.SetDamage(finalDamage);
-        }
+        GameObject skill = Instantiate(
+            activeWeaponData.skillQPrefab,
+            qSpawnPoint.position,
+            qSpawnPoint.rotation);
 
         WindSkillQDamage windScript = skill.GetComponent<WindSkillQDamage>();
         if (windScript != null)
-        {
             windScript.SetDamage(finalDamage);
-        }
     }
 
     private float CalculateSkillDamage(int damagePercent)
@@ -621,15 +666,43 @@ public class PlayerCombat : MonoBehaviour
         return totalAttack * (damagePercent / 100f);
     }
 
+    private void HandleIceSkillQ(float ballDamage)
+    {
+        if (activeIceQSystem == null)
+            activeIceQSystem = GetComponentInChildren<IceSwordQSystem>();
+
+        if (activeIceQSystem != null && activeIceQSystem.IsActive)
+        {
+            activeIceQSystem.Activate(ballDamage, enemyLayer);
+            return;
+        }
+
+        activeIceQSystem = null;
+
+        if (activeWeaponData.skillQPrefab == null) return;
+
+        GameObject skill = Instantiate(activeWeaponData.skillQPrefab, transform.position, Quaternion.identity);
+        IceSwordQSystem iceSystem = skill.GetComponent<IceSwordQSystem>();
+        if (iceSystem == null) return;
+
+        activeIceQSystem = iceSystem;
+        iceSystem.Initialize(transform, ballDamage, enemyLayer);
+    }
+
     private void HandleFireSkillQ(float boomDamage, float orbDamage)
     {
         SpawnFireSkillQBoom(boomDamage);
 
-        if (activeFireQSystem != null)
+        if (activeFireQSystem == null)
+            activeFireQSystem = GetComponentInChildren<FireSwordQOrbitSystem>();
+
+        if (activeFireQSystem != null && activeFireQSystem.IsActive)
         {
             activeFireQSystem.RefreshOrbs(orbDamage);
             return;
         }
+
+        activeFireQSystem = null;
 
         if (activeWeaponData.skillQPrefab == null) return;
 
@@ -655,6 +728,26 @@ public class PlayerCombat : MonoBehaviour
             boomScript.SetDamage(finalDamage);
     }
 
+    private void ReleaseActiveQSystemReferences()
+    {
+        activeFireQSystem = null;
+        activeIceQSystem = null;
+    }
+
+    private void ClearActiveQSystems()
+    {
+        ClearFireQOrbs();
+        ClearIceQSystem();
+    }
+
+    private void ClearIceQSystem()
+    {
+        if (activeIceQSystem == null) return;
+
+        activeIceQSystem.Cleanup();
+        activeIceQSystem = null;
+    }
+
     private void ClearFireQOrbs()
     {
         if (activeFireQSystem == null) return;
@@ -673,10 +766,32 @@ public class PlayerCombat : MonoBehaviour
 
     public void PlaySkillESound()
     {
+        if (activeWeaponData == null) return;
+
+        Vector3 position = eSpawnPoint != null ? eSpawnPoint.position : transform.position;
+        WeaponSkillAudio.PlayFromPrefab(activeWeaponData.skillEPrefab, position);
     }
 
     public void PlaySkillQSound()
     {
+        if (activeWeaponData == null) return;
+
+        Vector3 position = qSpawnPoint != null ? qSpawnPoint.position : transform.position;
+        if (WeaponSkillAudio.PlayFromPrefab(activeWeaponData.skillQPrefab, position))
+            return;
+
+        PlayIceQCastSound(activeWeaponData.skillQPrefab, position);
+    }
+
+    private static void PlayIceQCastSound(GameObject qPrefab, Vector3 position)
+    {
+        IceSwordQSystem iceQ = qPrefab != null ? qPrefab.GetComponent<IceSwordQSystem>() : null;
+        if (iceQ == null || iceQ.circleVfxPrefab == null) return;
+
+        IceCircleQZone circle = iceQ.circleVfxPrefab.GetComponent<IceCircleQZone>();
+        if (circle == null || circle.circleOpenClip == null) return;
+
+        AudioSource.PlayClipAtPoint(circle.circleOpenClip, position, circle.circleOpenVolume);
     }
 
     public void PlayRollSound()

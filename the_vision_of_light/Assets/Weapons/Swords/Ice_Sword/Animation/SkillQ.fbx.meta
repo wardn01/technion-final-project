@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 86c495fe9b4570c41b5220d25da76d90
+guid: 47bc03d6cece4c14bb97f46c916cdb53
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -35,10 +35,10 @@ ModelImporter:
       takeName: mixamo.com
       internalID: -203655887218126122
       firstFrame: 0
-      lastFrame: 177
+      lastFrame: 212
       wrapMode: 0
       orientationOffsetY: 0
-      level: -0.5
+      level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
@@ -46,10 +46,10 @@ ModelImporter:
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1
-      loopBlendPositionXZ: 1
-      keepOriginalOrientation: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 1
       keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
+      keepOriginalPositionXZ: 1
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
@@ -62,7 +62,7 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.57843137
+      - time: 0.5810276
         functionName: OnSkillQ
         data: 
         objectReferenceParameter: {instanceID: 0}

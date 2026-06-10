@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: Fire Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemData
   itemName: Fire sword
-  description: 'A blade tempered in molten core. Each swing leaves embers in its wake,
-    and its wielder commands both a blazing rush and orbiting flames.
+  description: 'A blade tempered in molten core. Each swing leaves embers in its
+    wake, and its wielder commands both a blazing rush and orbiting flames.
 
-    <b><color=#8E44AD>[E]</color></b> Fire Slash: Lunges forward with a searing
-    arc that burns enemies over time.
+    <b><color=#8E44AD>[E]</color></b>
+    Fire Slash: Lunges forward with a searing arc that burns enemies over time.
 
-    <b><color=#8E44AD>[Q]</color></b> Inferno Burst: Launches a fire wave ahead
-    while three fireballs orbit behind you, homing onto nearby foes.'
+    <b><color=#8E44AD>[Q]</color></b>
+    Inferno Burst: Launches a fire wave ahead while three fireballs orbit behind
+    you, homing onto nearby foes.'
   itemIcon: {fileID: 21300000, guid: 5299b13e7207b2341b39d4682b248e8e, type: 3}
   value: 1000
   type: 2
@@ -28,15 +29,15 @@ MonoBehaviour:
   weaponModelPrefab: {fileID: 2831044802675985272, guid: 765c0021b3014634f9d345c2f260b3c7, type: 3}
   animatorOverride: {fileID: 22100000, guid: 1952610285f62a24484b2d7ae672104f, type: 2}
   weaponBaseAttack: 10
-  normalAttackDamage: 120
+  normalAttackDamage: 105
   skillEDamage: 250
-  skillQDamage: 80
-  skillQStrikeDamage: 120
+  skillQDamage: 65
+  skillQStrikeDamage: 115
   skillEPrefab: {fileID: 6111486948785554852, guid: ac154935536184743b9cb58ec9cd2ceb, type: 3}
   skillQPrefab: {fileID: 8172946501837462910, guid: c8f1a2b34d5e6f708192a3b4c5d6e7f8, type: 3}
   skillQStrikePrefab: {fileID: 5099431166652583641, guid: e1caae398e5c7aa4f8ecd4c02c9373ff, type: 3}
-  skillECooldown: 0
-  requiredE_For_Q: 0
+  skillECooldown: 10
+  requiredE_For_Q: 2
   upgradeLevels:
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
