@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
+[DefaultExecutionOrder(100)]
 public class PauseMenuManager : MonoBehaviour
 {
     public static PauseMenuManager Instance { get; private set; }
@@ -166,7 +167,8 @@ public class PauseMenuManager : MonoBehaviour
         if (mapScreen != null) mapScreen.SetActive(false);
         if (questScreen != null) questScreen.SetActive(false);
         if (playerStatsScreen != null) playerStatsScreen.SetActive(false);
-        if (fullMapCamera != null) fullMapCamera.SetActive(false);
+        if (FullMapController.Instance != null)
+            FullMapController.Instance.SetFullMapCameraEnabled(false);
 
         if (InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf)
             InventoryUIManager.Instance.ToggleInventory();
@@ -180,8 +182,13 @@ public class PauseMenuManager : MonoBehaviour
     public void OpenMap()
     {
         OpenSubScreen(mapScreen, false);
-        if (fullMapCamera != null) fullMapCamera.SetActive(true);
-        if (FullMapController.Instance != null) FullMapController.Instance.RefreshMapUI();
+        if (FullMapController.Instance != null)
+        {
+            FullMapController.Instance.SetFullMapCameraEnabled(true);
+            FullMapController.Instance.RefreshMapUI();
+        }
+        else if (fullMapCamera != null)
+            fullMapCamera.SetActive(true);
     }
 
     public void OpenInventory()
@@ -247,6 +254,13 @@ public class PauseMenuManager : MonoBehaviour
             data.playerPos[0] = playerTransform.position.x;
             data.playerPos[1] = playerTransform.position.y;
             data.playerPos[2] = playerTransform.position.z;
+
+            PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                data.hasSavedHealth = true;
+                data.savedCurrentHealth = playerHealth.currentHealth;
+            }
         }
 
         if (InventoryManager.Instance != null)
@@ -307,7 +321,7 @@ public class PauseMenuManager : MonoBehaviour
                     foreach (ItemData item in allItems)
                         if (item.name == savedItem.itemName)
                         {
-                            InventoryManager.Instance.AddItem(item, savedItem.amount);
+                            InventoryManager.Instance.AddItem(item, savedItem.amount, silent: true);
                             break;
                         }
             }
@@ -326,6 +340,25 @@ public class PauseMenuManager : MonoBehaviour
                 playerProfile.RestoreAfterLoad();
                 playerProfile.LoadBuild(playerProfile.currentActiveLoadout);
             }
+
+            ApplyLoadedPlayerHealth(data);
         }
+        else
+        {
+            ApplyLoadedPlayerHealth(null);
+        }
+    }
+
+    private void ApplyLoadedPlayerHealth(GameData data)
+    {
+        if (playerTransform == null) return;
+
+        PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
+        if (playerHealth == null) return;
+
+        if (data != null && data.hasSavedHealth)
+            playerHealth.ApplyLoadedHealth(true, data.savedCurrentHealth);
+        else
+            playerHealth.ApplyLoadedHealth(false, 0);
     }
 }

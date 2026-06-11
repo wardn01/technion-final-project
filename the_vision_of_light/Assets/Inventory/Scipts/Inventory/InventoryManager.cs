@@ -73,7 +73,8 @@ public class InventoryManager : MonoBehaviour
     /// </summary>
     /// <param name="item">The ItemData object to add to the inventory.</param>
     /// <param name="amount">The quantity to add (default is 1).</param>
-    public void AddItem(ItemData item, int amount = 1)
+    /// <param name="silent">When true, skips the pickup notification (e.g. save load).</param>
+    public void AddItem(ItemData item, int amount = 1, bool silent = false)
     {
         if (item == null)
             return;
@@ -91,22 +92,40 @@ public class InventoryManager : MonoBehaviour
         }
 
         // Trigger UI notification only if a positive amount was actually added
-        if (amount > 0)
-        {
-            if (notificationPrefab != null && notificationParent != null)
-            {
-                GameObject notif = Instantiate(notificationPrefab, notificationParent);
-                
-                // Ensure the newest notification appears at the bottom of the layout group
-                notif.transform.SetAsLastSibling();
+        if (amount > 0 && !silent)
+            ShowPickupNotification(item, amount);
+    }
 
-                PickupNotification notifScript = notif.GetComponent<PickupNotification>();
-                if (notifScript != null)
-                {
-                    notifScript.Setup(item, amount);
-                }
+    private void ShowPickupNotification(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0 || notificationPrefab == null || notificationParent == null)
+            return;
+
+        for (int i = notificationParent.childCount - 1; i >= 0; i--)
+        {
+            PickupNotification existing = notificationParent.GetChild(i).GetComponent<PickupNotification>();
+            if (existing != null && existing.TryStack(item, amount))
+            {
+                existing.transform.SetAsLastSibling();
+                return;
             }
         }
+
+        GameObject notif = Instantiate(notificationPrefab, notificationParent);
+        notif.transform.SetAsLastSibling();
+
+        PickupNotification notifScript = notif.GetComponent<PickupNotification>();
+        if (notifScript != null)
+            notifScript.Setup(item, amount);
+    }
+
+    private void ClearPickupNotifications()
+    {
+        if (notificationParent == null)
+            return;
+
+        for (int i = notificationParent.childCount - 1; i >= 0; i--)
+            Destroy(notificationParent.GetChild(i).gameObject);
     }
 
     /// <summary>
@@ -136,6 +155,7 @@ public class InventoryManager : MonoBehaviour
     public void ClearInventory()
     {
         inventory.Clear();
+        ClearPickupNotifications();
     }
 
     #endregion

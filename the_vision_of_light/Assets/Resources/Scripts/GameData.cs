@@ -20,4 +20,8 @@ public class GameData
 
     public int mainQuestState;
     public int questStepIndex;
+
+    /// <summary>True when this save includes a health value (false for older saves).</summary>
+    public bool hasSavedHealth;
+    public int savedCurrentHealth;
 }

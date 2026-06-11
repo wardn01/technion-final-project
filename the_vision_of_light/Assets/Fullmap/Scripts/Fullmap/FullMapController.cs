@@ -8,6 +8,7 @@ public class FullMapController : MonoBehaviour
 {
     #region Singleton
     public static FullMapController Instance { get; private set; }
+    public static Camera FullMapRenderCamera { get; private set; }
     #endregion
 
     #region References & Settings
@@ -34,6 +35,21 @@ public class FullMapController : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        if (fullMapCamera != null)
+        {
+            FullMapRenderCamera = fullMapCamera.GetComponent<Camera>();
+            MapRenderSettings.ApplyToFullMap(FullMapRenderCamera);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+            FullMapRenderCamera = null;
+        }
     }
 
     /// <summary>
@@ -41,10 +57,16 @@ public class FullMapController : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        if (fullMapCamera != null)
-        {
-            fullMapCamera.gameObject.SetActive(false);
-        }
+        MapRenderSettings.ApplyToFullMap(FullMapRenderCamera);
+        MapRenderSettings.EnsurePlayerMapIconLayer(player);
+        SetFullMapCameraEnabled(false);
+    }
+
+    /// <summary>Toggles full-map rendering without disabling this manager or MapNightVision on the minimap rig.</summary>
+    public void SetFullMapCameraEnabled(bool enabled)
+    {
+        if (FullMapRenderCamera != null)
+            FullMapRenderCamera.enabled = enabled;
     }
     #endregion
 

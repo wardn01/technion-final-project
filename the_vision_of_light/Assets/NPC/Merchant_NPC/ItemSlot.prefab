@@ -224,7 +224,6 @@ GameObject:
   - component: {fileID: 5121949633599215328}
   - component: {fileID: 2155414698560472573}
   - component: {fileID: 8808873889026234640}
-  - component: {fileID: 7779275805207169431}
   m_Layer: 5
   m_Name: ItemSlot
   m_TagString: Untagged
@@ -361,20 +360,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &7779275805207169431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3021948448239725819}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76a5e405877c63d45afd12d9a7496b52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoverCursor
-  hoverCursorTexture: {fileID: 2800000, guid: 1d9200069d504c54193b43927dcb1c58, type: 3}
-  hotSpot: {x: 100, y: 0}
 --- !u!1 &5841859084268476460
 GameObject:
   m_ObjectHideFlags: 0

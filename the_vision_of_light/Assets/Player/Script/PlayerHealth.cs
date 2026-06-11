@@ -36,7 +36,6 @@ public class PlayerHealth : MonoBehaviour
     void Start()
     {
         UpdateMaxHealthFromData();
-        currentHealth = maxHealth;
         UpdateHealthUI();
 
         if (deathScreen != null)
@@ -59,6 +58,22 @@ public class PlayerHealth : MonoBehaviour
     public void UpdateStatsFromData()
     {
         UpdateMaxHealthFromData();
+    }
+
+    /// <summary>Called after save load. Uses full HP when <paramref name="savedHealth"/> is negative or save has no health data.</summary>
+    public void ApplyLoadedHealth(bool hasSavedValue, int savedHealth)
+    {
+        UpdateMaxHealthFromData();
+
+        if (hasSavedValue)
+            currentHealth = Mathf.Clamp(savedHealth, 0, maxHealth);
+        else
+            currentHealth = maxHealth;
+
+        UpdateHealthUI();
+
+        if (currentHealth <= 0 && !isDead)
+            Die();
     }
 
     public void UpdateMaxHealthFromData()
@@ -97,6 +112,9 @@ public class PlayerHealth : MonoBehaviour
         float damageMultiplier = 100f / (100f + playerDefense);
         int finalDamage = Mathf.RoundToInt(incomingDamage * damageMultiplier);
         finalDamage = Mathf.Max(0, finalDamage);
+
+        if (finalDamage <= 0)
+            return;
 
         currentHealth -= finalDamage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
@@ -148,6 +166,12 @@ public class PlayerHealth : MonoBehaviour
                 yield break;
 
             int healInt = Mathf.RoundToInt(amountPerTick);
+            if (healInt <= 0)
+            {
+                ticksDone++;
+                continue;
+            }
+
             currentHealth = Mathf.Min(currentHealth + healInt, maxHealth);
 
             UpdateHealthUI();
@@ -254,16 +278,20 @@ public class PlayerHealth : MonoBehaviour
 
     private void ShowFloatingText(string text, Color color)
     {
-        if (uiFloatingTextPrefab != null && uiTextSpawnPoint != null)
-        {
-            GameObject obj = Instantiate(uiFloatingTextPrefab, uiTextSpawnPoint.position, Quaternion.identity, uiTextSpawnPoint.parent);
-            UIFloatingText floatingText = obj.GetComponent<UIFloatingText>();
+        if (uiFloatingTextPrefab == null || uiTextSpawnPoint == null || string.IsNullOrEmpty(text))
+            return;
 
-            if (floatingText != null)
-            {
-                floatingText.Setup(text, color);
-            }
-        }
+        RectTransform spawnRect = uiTextSpawnPoint as RectTransform;
+        if (spawnRect == null)
+            return;
+
+        GameObject obj = Instantiate(uiFloatingTextPrefab, spawnRect.parent);
+        RectTransform objRect = obj.transform as RectTransform;
+
+        UIFloatingText.PlaceAtSpawn(objRect, spawnRect, UIFloatingText.GetNextSpawnOffset());
+
+        UIFloatingText floatingText = obj.GetComponent<UIFloatingText>();
+        floatingText?.Setup(text, color);
     }
 
     private void SetRagdollState(bool state)
