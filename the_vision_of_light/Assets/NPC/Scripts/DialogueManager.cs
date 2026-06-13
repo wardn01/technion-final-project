@@ -5,6 +5,11 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.Cinemachine;
 
+/// <summary>
+/// Singleton dialogue UI controller: typing effect, Continue/Shop/Accept/Decline buttons,
+/// Cinemachine camera swap, and HUD hide/show while talking.
+/// Lives on NPCManager in the scene with <see cref="ShopManager"/>.
+/// </summary>
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance { get; private set; }
@@ -20,19 +25,20 @@ public class DialogueManager : MonoBehaviour
     public GameObject continueButton;
     public GameObject shopButton;
     public GameObject leaveButton;
-    public GameObject acceptButton; 
+    public GameObject acceptButton;
     public GameObject declineButton;
 
     [Header("Settings")]
+    [Tooltip("Delay between characters while typing (seconds).")]
     public float typingSpeed = 0.04f;
 
-    [HideInInspector] 
+    [HideInInspector]
     public bool isDialogueOpen = false;
 
     private Queue<string> sentences;
     private bool isTyping = false;
     private bool isShopDialogue = false;
-    private bool isQuestOfferDialogue = false; 
+    private bool isQuestOfferDialogue = false;
     private bool isPlayerTurnToSpeak = false;
     private string currentSentence = "";
     private ShopkeeperNPC currentShopNPC;
@@ -43,25 +49,33 @@ public class DialogueManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null)
+            Instance = this;
         else
         {
             Destroy(gameObject);
             return;
         }
+
         sentences = new Queue<string>();
     }
 
     private void Start()
     {
-        dialoguePanel.SetActive(false);
-        if (shopButton != null) shopButton.GetComponent<Button>().onClick.AddListener(OpenShop);
-        if (leaveButton != null) leaveButton.GetComponent<Button>().onClick.AddListener(EndDialogue);
-        
-        if (acceptButton != null) acceptButton.GetComponent<Button>().onClick.AddListener(AcceptQuest);
-        if (declineButton != null) declineButton.GetComponent<Button>().onClick.AddListener(DeclineQuest);
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        if (shopButton != null)
+            shopButton.GetComponent<Button>().onClick.AddListener(OpenShop);
+        if (leaveButton != null)
+            leaveButton.GetComponent<Button>().onClick.AddListener(EndDialogue);
+        if (acceptButton != null)
+            acceptButton.GetComponent<Button>().onClick.AddListener(AcceptQuest);
+        if (declineButton != null)
+            declineButton.GetComponent<Button>().onClick.AddListener(DeclineQuest);
     }
 
+    /// <summary>Opens the panel, enqueues lines, and shows the first sentence.</summary>
     public void StartDialogue(
         string npcName,
         string[] lines,
@@ -71,7 +85,7 @@ public class DialogueManager : MonoBehaviour
         CinemachineCamera camNPC = null,
         CinemachineCamera camPlayer = null,
         System.Action onEnd = null,
-        bool isQuest = false) 
+        bool isQuest = false)
     {
         isDialogueOpen = true;
         isShopDialogue = isShop;
@@ -83,11 +97,15 @@ public class DialogueManager : MonoBehaviour
         isPlayerTurnToSpeak = false;
         onDialogueEndCallback = onEnd;
 
-        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = true;
-        if (ShopManager.Instance != null) ShopManager.Instance.SetPlayerFreeze(true);
+        if (UIManager.Instance != null)
+            UIManager.Instance.isDialogueOpen = true;
+        if (ShopManager.Instance != null)
+            ShopManager.Instance.SetPlayerFreeze(true);
 
-        if (hudScreen != null) hudScreen.SetActive(false);
-        if (quickSlotsBar != null) quickSlotsBar.SetActive(false);
+        if (hudScreen != null)
+            hudScreen.SetActive(false);
+        if (quickSlotsBar != null)
+            quickSlotsBar.SetActive(false);
 
         dialoguePanel.SetActive(true);
         continueButton.SetActive(true);
@@ -99,10 +117,13 @@ public class DialogueManager : MonoBehaviour
         nameText.text = npcName;
         sentences.Clear();
 
-        foreach (string line in lines) sentences.Enqueue(line);
+        foreach (string line in lines)
+            sentences.Enqueue(line);
+
         DisplayNextSentence();
     }
 
+    /// <summary>Skips typing or advances to the next line; ends when the queue is empty.</summary>
     public void DisplayNextSentence()
     {
         if (isTyping)
@@ -112,7 +133,6 @@ public class DialogueManager : MonoBehaviour
             isTyping = false;
             CheckIfLastSentence();
             SetNPCTalkingState(false);
-                        
             return;
         }
 
@@ -134,6 +154,7 @@ public class DialogueManager : MonoBehaviour
                 npcCamera.Priority = 20;
                 playerCamera.Priority = 0;
             }
+
             isPlayerTurnToSpeak = !isPlayerTurnToSpeak;
         }
 
@@ -146,7 +167,8 @@ public class DialogueManager : MonoBehaviour
         isTyping = true;
         dialogueText.text = "";
 
-        if (!isPlayerTurnToSpeak) SetNPCTalkingState(true);
+        if (!isPlayerTurnToSpeak)
+            SetNPCTalkingState(true);
 
         foreach (char letter in sentence.ToCharArray())
         {
@@ -161,37 +183,44 @@ public class DialogueManager : MonoBehaviour
 
     private void SetNPCTalkingState(bool isTalking)
     {
-        Animator anim = currentShopNPC != null ? currentShopNPC.GetComponent<Animator>() : currentStoryNPCAnim;
-        if (anim != null)
-        {
-            if (isTalking) anim.SetInteger("TalkIndex", Random.Range(0, 3));
-            anim.SetBool("IsTalk", isTalking);
-        }
+        Animator anim = currentShopNPC != null
+            ? currentShopNPC.GetComponent<Animator>()
+            : currentStoryNPCAnim;
+
+        if (anim == null)
+            return;
+
+        if (isTalking)
+            anim.SetInteger("TalkIndex", Random.Range(0, 3));
+
+        anim.SetBool("IsTalk", isTalking);
     }
 
+    /// <summary>After the last line, show Shop / Accept-Decline / Leave instead of Continue.</summary>
     private void CheckIfLastSentence()
     {
-        if (sentences.Count == 0)
-        {
-            continueButton.SetActive(false);
+        if (sentences.Count != 0)
+            return;
 
-            if (isShopDialogue)
-            {
-                if (shopButton != null) shopButton.SetActive(true);
-                if (leaveButton != null) leaveButton.SetActive(true);
-            }
-            else if (isQuestOfferDialogue) 
-            {
-                if (acceptButton != null) acceptButton.SetActive(true);
-                if (declineButton != null) declineButton.SetActive(true);
-            }
-            else
-            {
-                if (leaveButton != null) leaveButton.SetActive(true);
-            }
+        continueButton.SetActive(false);
+
+        if (isShopDialogue)
+        {
+            if (shopButton != null) shopButton.SetActive(true);
+            if (leaveButton != null) leaveButton.SetActive(true);
+        }
+        else if (isQuestOfferDialogue)
+        {
+            if (acceptButton != null) acceptButton.SetActive(true);
+            if (declineButton != null) declineButton.SetActive(true);
+        }
+        else if (leaveButton != null)
+        {
+            leaveButton.SetActive(true);
         }
     }
 
+    /// <summary>Re-opens shop/leave buttons when returning from the shop panel.</summary>
     public void ShowShopOptions()
     {
         dialoguePanel.SetActive(true);
@@ -203,18 +232,21 @@ public class DialogueManager : MonoBehaviour
     public void OpenShop()
     {
         dialoguePanel.SetActive(false);
+
         if (currentShopNPC != null && ShopManager.Instance != null)
             ShopManager.Instance.OpenShop(currentShopNPC.itemsToSell);
     }
 
+    /// <summary>Accept runs the end callback (quest advance) via <see cref="EndDialogue"/>.</summary>
     public void AcceptQuest()
     {
-        EndDialogue(); 
+        EndDialogue();
     }
 
+    /// <summary>Decline closes dialogue without running the quest callback.</summary>
     public void DeclineQuest()
     {
-        onDialogueEndCallback = null; 
+        onDialogueEndCallback = null;
         EndDialogue();
     }
 
@@ -222,13 +254,17 @@ public class DialogueManager : MonoBehaviour
     {
         SetNPCTalkingState(false);
 
-        if (npcCamera != null) npcCamera.Priority = 0;
-        if (playerCamera != null) playerCamera.Priority = 0;
+        if (npcCamera != null)
+            npcCamera.Priority = 0;
+        if (playerCamera != null)
+            playerCamera.Priority = 0;
 
         dialoguePanel.SetActive(false);
 
-        if (hudScreen != null) hudScreen.SetActive(true);
-        if (quickSlotsBar != null) quickSlotsBar.SetActive(true);
+        if (hudScreen != null)
+            hudScreen.SetActive(true);
+        if (quickSlotsBar != null)
+            quickSlotsBar.SetActive(true);
 
         isDialogueOpen = false;
         isShopDialogue = false;
@@ -236,7 +272,9 @@ public class DialogueManager : MonoBehaviour
         currentShopNPC = null;
         currentStoryNPCAnim = null;
 
-        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = false;
+        if (UIManager.Instance != null)
+            UIManager.Instance.isDialogueOpen = false;
+
         if (ShopManager.Instance != null && !ShopManager.Instance.shopPanel.activeSelf)
             ShopManager.Instance.SetPlayerFreeze(false);
 

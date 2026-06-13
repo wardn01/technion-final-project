@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b73c6b92f4274846a19e695a9dd4b67, type: 3}
+  m_Name: BearData
+  m_EditorClassIdentifier: Assembly-CSharp::BearStats
+  enemyName: Bear
+  baseMaxHealth: 85
+  baseAttack: 10
+  baseDefense: 3.5
+  hpScale: 3.8
+  atkScale: 0.65
+  defScale: 0.35
+  walkSpeed: 2.2
+  runSpeed: 5
+  chaseRange: 16
+  rotationSpeed: 9
+  lootTable:
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+    minAmount: 12
+    maxAmount: 22
+    dropChance: 100
+  - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+    minAmount: 1
+    maxAmount: 2
+    dropChance: 55
+  xpReward: 45
+  animalDamage: 95
+  attackRange: 2.2
+  attackCooldown: 2.5
+  heavyAttackMultiplier: 1.5
+  slamAttackMultiplier: 2
+  sleepDuration: 12
+  walkDuration: 20
+  aggroLeashDistance: 28

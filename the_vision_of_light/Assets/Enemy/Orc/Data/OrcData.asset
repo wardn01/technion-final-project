@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af27a5c47307134cac6e6195b4b9544, type: 3}
+  m_Name: OrcData
+  m_EditorClassIdentifier: Assembly-CSharp::OrcStats
+  enemyName: Orc
+  baseMaxHealth: 200
+  baseAttack: 20
+  baseDefense: 10
+  hpScale: 8
+  atkScale: 1.5
+  defScale: 0.6
+  walkSpeed: 3
+  runSpeed: 6
+  chaseRange: 20
+  rotationSpeed: 9
+  lootTable:
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+    minAmount: 80
+    maxAmount: 120
+    dropChance: 100
+  - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+    minAmount: 2
+    maxAmount: 5
+    dropChance: 70
+  xpReward: 70
+  phase1Damage: 100
+  attackRange: 1.6
+  phase1AttackCooldown: 2.5
+  enrageHealthPercentage: 0.5
+  phase2NormalDamage: 130
+  phase2AttackCooldown: 1.8
+  heavyAttackDamage: 150
+  aggroLeashDistance: 32
+  maxLeashDistance: 35

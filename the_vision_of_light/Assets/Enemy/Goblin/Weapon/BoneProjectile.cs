@@ -1,13 +1,15 @@
 using UnityEngine;
 
+/// <summary>
+/// Physics bone thrown by <see cref="Goblin"/>. Damages the player once on first hit.
+/// </summary>
 public class BoneProjectile : MonoBehaviour
 {
-    [Header("Settings")]
     [SerializeField] private float lifeTime = 10f;
+
     private float damage;
-    
     private bool canDamage = true;
-    private bool hasDamagedPlayer = false;
+    private bool hasDamagedPlayer;
 
     private void Start()
     {
@@ -23,21 +25,16 @@ public class BoneProjectile : MonoBehaviour
     {
         if (!collision.gameObject.CompareTag("Player"))
         {
-            canDamage = false; 
+            canDamage = false;
+            return;
         }
 
-        if (collision.gameObject.CompareTag("Player") && canDamage && !hasDamagedPlayer)
-        {
-            hasDamagedPlayer = true; 
-            canDamage = false; 
-            
-            Debug.Log("Bone projectile hit player in air! Damage: " + damage);
-            
-            PlayerHealth pHealth = collision.gameObject.GetComponent<PlayerHealth>();
-            if (pHealth != null)
-            {
-                pHealth.TakeDamage(damage);
-            }
-        }
+        if (!canDamage || hasDamagedPlayer) return;
+
+        hasDamagedPlayer = true;
+        canDamage = false;
+
+        if (collision.gameObject.TryGetComponent(out PlayerHealth pHealth))
+            pHealth.TakeDamage(damage);
     }
 }

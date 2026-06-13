@@ -44,11 +44,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Bear_tpose
-      takeName: Bear_tpose
+      name: Bear_Attack3 (1)
+      takeName: Bear_Attack3
       internalID: -2937485055117710192
-      firstFrame: 0
-      lastFrame: 2
+      firstFrame: 2
+      lastFrame: 78
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -67,11 +67,18 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.13164558
+        functionName: PlayEnemySound
+        data: Attack
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
+      additiveReferencePoseFrame: 2
     - serializedVersion: 16
       name: Bear_Attack3
       takeName: Bear_Attack3
@@ -97,6 +104,13 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
+      - time: 0.1
+        functionName: PlayEnemySound
+        data: Attack
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       - time: 0.2622549
         functionName: AnimHit
         data: 

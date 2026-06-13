@@ -72,7 +72,6 @@ public class MonsterQuestManager : MonoBehaviour
         if (QuestManager.Instance != null && IsObjectiveActive())
         {
             currentKills++;
-            Debug.Log($"Monsters Killed: {currentKills} / {monstersToKill}");
 
             if (currentKills >= monstersToKill)
             {
@@ -98,8 +97,6 @@ public class MonsterQuestManager : MonoBehaviour
             QuestManager.Instance.AdvanceToState(4);
         else
             QuestManager.Instance.AdvanceStep(targetQuestState, targetQuestStep);
-
-        Debug.Log("Quest Updated! Return to Albedo.");
     }
     #endregion
 }

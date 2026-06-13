@@ -2,8 +2,17 @@ using UnityEngine;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 
+/// <summary>
+/// Picks quest-specific or default dialogue for an NPC and forwards it to
+/// <see cref="DialogueManager"/>. Attach alongside <see cref="StoryNPC"/> or
+/// <see cref="ShopkeeperNPC"/> on the same GameObject.
+/// </summary>
 public class DialogueTrigger : MonoBehaviour
 {
+    [Tooltip("Optional profile asset; overrides matching rows in dialogueStates.")]
+    public NPCDialogueProfile dialogueProfile;
+
+    [Tooltip("Quest/state-specific dialogue rows; matched by stateId + requiredStep.")]
     public List<QuestDialogueEntry> dialogueStates;
 
     [Header("Cinematic Dialogue Cameras")]
@@ -11,6 +20,7 @@ public class DialogueTrigger : MonoBehaviour
     public CinemachineCamera playerFocusCamera;
 
     [Header("Navigation")]
+    [Tooltip("After quest state 2, this NPC moves here (e.g. Albedo outside).")]
     public Transform outsideLocation;
 
     public enum QuestDialogueAction
@@ -27,21 +37,69 @@ public class DialogueTrigger : MonoBehaviour
         public int requiredStep;
         public DialogueData dialogue;
         public QuestData questData;
+
+        [Tooltip("What happens when the player finishes this dialogue.")]
         public QuestDialogueAction onComplete = QuestDialogueAction.None;
+    }
+
+    private void Awake()
+    {
+        ApplyDialogueProfile();
     }
 
     private void Start()
     {
-        if (QuestManager.Instance != null && QuestManager.Instance.mainQuestState >= 2)
+        if (QuestManager.Instance != null && QuestManager.Instance.mainQuestState >= 2
+            && outsideLocation != null)
         {
-            if (outsideLocation != null)
-            {
-                transform.position = outsideLocation.position;
-                transform.rotation = outsideLocation.rotation;
-            }
+            transform.position = outsideLocation.position;
+            transform.rotation = outsideLocation.rotation;
         }
     }
 
+    private void ApplyDialogueProfile()
+    {
+        if (dialogueProfile == null)
+            dialogueProfile = TryLoadProfileFromResources();
+
+        if (dialogueProfile == null || dialogueProfile.entries == null)
+            return;
+
+        if (dialogueStates == null)
+            dialogueStates = new List<QuestDialogueEntry>();
+
+        foreach (QuestDialogueEntry entry in dialogueProfile.entries)
+        {
+            if (entry == null)
+                continue;
+
+            int index = dialogueStates.FindIndex(
+                x => x.stateId == entry.stateId && x.requiredStep == entry.requiredStep);
+
+            if (index >= 0)
+                dialogueStates[index] = entry;
+            else
+                dialogueStates.Add(entry);
+        }
+    }
+
+    private NPCDialogueProfile TryLoadProfileFromResources()
+    {
+        StoryNPC storyNPC = GetComponent<StoryNPC>();
+        if (storyNPC == null || storyNPC.myData == null)
+            return null;
+
+        NPCDialogueProfile[] profiles = Resources.LoadAll<NPCDialogueProfile>("DialogueProfiles");
+        foreach (NPCDialogueProfile profile in profiles)
+        {
+            if (profile != null && profile.npcName == storyNPC.myData.npcName)
+                return profile;
+        }
+
+        return null;
+    }
+
+    /// <summary>Called when the player presses Interact near this NPC.</summary>
     public void TriggerDialogue()
     {
         StoryNPC storyNPC = GetComponent<StoryNPC>();
@@ -72,8 +130,8 @@ public class DialogueTrigger : MonoBehaviour
                     npcFocusCamera,
                     playerFocusCamera,
                     onDialogueComplete,
-                    isQuest
-                );
+                    isQuest);
+
                 return;
             }
         }
@@ -89,8 +147,8 @@ public class DialogueTrigger : MonoBehaviour
                 null,
                 null,
                 null,
-                false
-            );
+                false);
+
             return;
         }
 
@@ -106,8 +164,7 @@ public class DialogueTrigger : MonoBehaviour
                 null,
                 null,
                 null,
-                false
-            );
+                false);
         }
     }
 

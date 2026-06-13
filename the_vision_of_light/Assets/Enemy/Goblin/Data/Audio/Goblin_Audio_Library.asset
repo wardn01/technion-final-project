@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f146423d63e8c84c9e15766f48c8920, type: 3}
+  m_Name: Goblin_Audio_Library
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAudioData
+  sounds:
+  - actionName: Attack
+    clips:
+    - {fileID: 8300000, guid: 225741e4d53681a4d85be2a3d90e22d0, type: 3}
+    - {fileID: 8300000, guid: 75006a44842066349b98276af0d9b612, type: 3}
+    - {fileID: 8300000, guid: 5ebb293fdf53ce14c992e141eb0a5abd, type: 3}
+    volume: 1
+  - actionName: Throw
+    clips:
+    - {fileID: 8300000, guid: 4698621d332e1d24a817eb58b86c9b04, type: 3}
+    - {fileID: 8300000, guid: d7f8202f34ac5b345bff29b78f3b4f9c, type: 3}
+    volume: 1
+  - actionName: Step
+    clips:
+    - {fileID: 8300000, guid: 15b8c821a4b15ea40adb63ccf9748ec8, type: 3}
+    - {fileID: 8300000, guid: b0e9a67feadd16740a4dc45419e645ce, type: 3}
+    volume: 0.28
+  - actionName: Death
+    clips:
+    - {fileID: 8300000, guid: d4a7c2668b4be3241b0f311f44843852, type: 3}
+    - {fileID: 8300000, guid: d305920584010af478140142c1936d17, type: 3}
+    volume: 1
+  - actionName: Hit
+    clips:
+    - {fileID: 8300000, guid: 8fcf3de1cc4f348428d85af3c360db30, type: 3}
+    - {fileID: 8300000, guid: 623b27d9e13fc0a47be1036b000e1e8c, type: 3}
+    - {fileID: 8300000, guid: 71d4d39f80e5a21459f9f013a313e28c, type: 3}
+    volume: 0.9

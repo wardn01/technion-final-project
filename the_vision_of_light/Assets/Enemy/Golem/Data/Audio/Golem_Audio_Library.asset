@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f146423d63e8c84c9e15766f48c8920, type: 3}
+  m_Name: Golem_Audio_Library
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAudioData
+  sounds:
+  - actionName: Attack
+    clips:
+    - {fileID: 8300000, guid: 8b57d970bc30aa6478ee9bc48dc55ac8, type: 3}
+    - {fileID: 8300000, guid: c19d791af71319a4da519d435bd3e81f, type: 3}
+    - {fileID: 8300000, guid: 4391484d663298b4d9a827e39f7e9ce2, type: 3}
+    - {fileID: 8300000, guid: 366189f4f311e7e4283bae35caca3b2d, type: 3}
+    volume: 1
+  - actionName: Throw
+    clips:
+    - {fileID: 8300000, guid: 50c0a617c3a13e941bb6ade1aaf66497, type: 3}
+    - {fileID: 8300000, guid: 4ccd99a5075619b4ebcf492fe8494e0c, type: 3}
+    volume: 1
+  - actionName: StoneFly
+    clips: []
+    volume: 0.85
+  - actionName: StoneImpact
+    clips: []
+    volume: 1
+  - actionName: StartFight
+    clips:
+    - {fileID: 8300000, guid: 1f72320fe62cb4043b37e10e6b253398, type: 3}
+    volume: 1
+  - actionName: Death
+    clips:
+    - {fileID: 8300000, guid: 5791820f747812d4b90ece80c0658530, type: 3}
+    volume: 1
+  - actionName: Hit
+    clips:
+    - {fileID: 8300000, guid: 2eeaa02e12dc54743874bfb4307b8b80, type: 3}
+    - {fileID: 8300000, guid: 079ab66311fdfe840ab1177302c01de5, type: 3}
+    - {fileID: 8300000, guid: 36dd74b2a4849e44882b87d5873e57ed, type: 3}
+    - {fileID: 8300000, guid: 58765ef0ae425c649bca37ca32f941cd, type: 3}
+    volume: 0.9
+  - actionName: Step
+    clips:
+    - {fileID: 8300000, guid: 0be649811d902634ebb7e2efbad0e3af, type: 3}
+    - {fileID: 8300000, guid: 4a140ed6c53ffa84eb0a4bd46f288966, type: 3}
+    volume: 0.28

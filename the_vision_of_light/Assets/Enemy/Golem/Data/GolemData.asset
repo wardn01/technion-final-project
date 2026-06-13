@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c3d4e5f6789012345678cafe001234, type: 3}
+  m_Name: GolemData
+  m_EditorClassIdentifier: Assembly-CSharp::GolemStats
+  enemyName: Golem
+  baseMaxHealth: 240
+  baseAttack: 26
+  baseDefense: 11
+  hpScale: 10
+  atkScale: 1.6
+  defScale: 0.8
+  walkSpeed: 2.2
+  runSpeed: 4.8
+  chaseRange: 24
+  rotationSpeed: 7
+  lootTable:
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+    minAmount: 100
+    maxAmount: 150
+    dropChance: 100
+  - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+    minAmount: 2
+    maxAmount: 6
+    dropChance: 75
+  xpReward: 90
+  phase1Damage: 100
+  attackRange: 3.2
+  phase1AttackCooldown: 2.6
+  enrageHealthPercentage: 0.5
+  phase2NormalDamage: 140
+  phase2AttackCooldown: 2
+  heavyAttackDamage: 160
+  aggroLeashDistance: 34
+  maxLeashDistance: 38
+  projectileSpeed: 26
+  throwDamage: 95
