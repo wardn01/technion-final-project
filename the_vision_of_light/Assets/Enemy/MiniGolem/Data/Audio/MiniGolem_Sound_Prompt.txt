@@ -1,0 +1,97 @@
+MINI GOLEM — SFX GENERATION PROMPT
+==================================
+Use for ElevenLabs Sound Effects, Suno, Udio, or similar.
+Export: MP3, mono or stereo, 44.1 kHz, 1–3 seconds per clip (Death up to 4s).
+Style: fantasy action RPG, chunky stone creature, smaller/lighter than the big boss Golem.
+
+Place finished files in:
+  Assets/Enemy/MiniGolem/Data/Audio/Sounds/
+
+Then wire them in:
+  Assets/Enemy/MiniGolem/Data/Audio/MiniGolem_Audio_Library.asset
+
+Required action names (must match exactly in Unity):
+
+----------------------------------------------------------------------
+1) Attack  (2 variants) — melee punch, Attack02
+----------------------------------------------------------------------
+Prompt:
+"Short heavy stone fist punch impact, small rock golem melee hit, dull thud with gritty rock scrape, fantasy game SFX, no voice, single hit, 0.4–0.8 seconds"
+
+Filename suggestion: Attack_1.mp3, Attack_2.mp3
+
+----------------------------------------------------------------------
+2) Throw  (2 variants) — rock throw wind-up, Attack01
+----------------------------------------------------------------------
+Prompt:
+"Small stone golem throwing a rock, grunt of effort plus whoosh as pebble leaves hand, lighter than giant boulder throw, fantasy RPG enemy attack, no voice words, 0.6–1.2 seconds"
+
+Filename suggestion: Throw_1.mp3, Throw_2.mp3
+
+----------------------------------------------------------------------
+3) Step  (2 variants) — walk cycle footfalls
+----------------------------------------------------------------------
+Prompt:
+"Small heavy stone creature footstep on dirt and gravel, short dull stomp, fantasy game walk SFX, subtle rock crumble, 0.2–0.4 seconds each"
+
+Filename suggestion: Step_1.mp3, Step_2.mp3
+Recommended volume in library: ~0.75
+
+----------------------------------------------------------------------
+4) Hit  (2 variants) — taking damage
+----------------------------------------------------------------------
+Prompt:
+"Small rock golem getting hit, stone chips cracking, pain grunt made of rock grinding, fantasy enemy hurt reaction, no speech, 0.3–0.7 seconds"
+
+Filename suggestion: Hit_1.mp3, Hit_2.mp3
+
+----------------------------------------------------------------------
+5) Death  (1 variant)
+----------------------------------------------------------------------
+Prompt:
+"Small stone golem death collapse, rocks breaking apart and falling to ground, crumbling debris, fantasy game enemy defeat, no music, 1.5–3 seconds"
+
+Filename suggestion: Death_1.mp3
+
+----------------------------------------------------------------------
+6) StoneFly  (1 variant) — projectile in air
+----------------------------------------------------------------------
+Prompt:
+"Small rock projectile flying through air, fast whoosh with light spinning stone tumble, fantasy game ranged attack, 0.5–1.0 seconds, loop-friendly tail optional"
+
+Filename suggestion: StoneFly_1.mp3
+
+----------------------------------------------------------------------
+7) StoneImpact  (1 variant) — projectile hits player/ground
+----------------------------------------------------------------------
+Prompt:
+"Small rock hitting target, sharp stone impact crack, gravel burst, fantasy game projectile hit, 0.3–0.6 seconds"
+
+Filename suggestion: StoneImpact_1.mp3
+
+----------------------------------------------------------------------
+UNITY WIRING CHECKLIST
+----------------------------------------------------------------------
+MiniGolem_Audio_Library.asset entries:
+  - actionName: Attack    → Attack_1, Attack_2
+  - actionName: Throw     → Throw_1, Throw_2
+  - actionName: Step      → Step_1, Step_2
+  - actionName: Hit       → Hit_1, Hit_2
+  - actionName: Death     → Death_1
+  - actionName: StoneFly  → StoneFly_1
+  - actionName: StoneImpact → StoneImpact_1
+
+Animation events already call:
+  Attack02 → "Attack"
+  Attack01 → "Throw"
+  Walk     → "Step"
+  GetHit   → "Hit"
+  Die      → "Death"
+  Stone projectile → "StoneFly" / "StoneImpact" (via MiniGolemStoneProjectile)
+
+----------------------------------------------------------------------
+STYLE REFERENCE (do NOT copy — match vibe only)
+----------------------------------------------------------------------
+- Smaller, quicker, higher-pitched than big Golem boss sounds
+- Less epic than boss; more like a tough normal mob (between Skeleton and Goblin weight)
+- No human dialogue, only creature/stone texture

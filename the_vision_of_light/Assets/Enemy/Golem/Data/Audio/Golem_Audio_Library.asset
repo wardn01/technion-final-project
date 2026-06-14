@@ -26,10 +26,12 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 4ccd99a5075619b4ebcf492fe8494e0c, type: 3}
     volume: 1
   - actionName: StoneFly
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: aa983f3c7b7420f4d849b44a43368988, type: 3}
     volume: 0.85
   - actionName: StoneImpact
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 3641b62d58f3b08428b01d6b66b870d4, type: 3}
     volume: 1
   - actionName: StartFight
     clips:
@@ -48,6 +50,7 @@ MonoBehaviour:
     volume: 0.9
   - actionName: Step
     clips:
-    - {fileID: 8300000, guid: 0be649811d902634ebb7e2efbad0e3af, type: 3}
-    - {fileID: 8300000, guid: 4a140ed6c53ffa84eb0a4bd46f288966, type: 3}
-    volume: 0.28
+    - {fileID: 8300000, guid: 6b5d004a048db8744b653832121eee61, type: 3}
+    - {fileID: 8300000, guid: c7dfefa3cb9dca84ba7eb3eafffa4b8e, type: 3}
+    - {fileID: 8300000, guid: 3202b6311828d4b4995237506b595796, type: 3}
+    volume: 1

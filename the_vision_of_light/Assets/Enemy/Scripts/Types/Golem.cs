@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -8,7 +9,7 @@ using UnityEngine;
 /// Animation events (see clips under <c>Golem/Animation/</c>):
 /// <list type="bullet">
 ///   <item>Attack_1 / Attack_2: <c>PlayLightAttackVfx</c> + <c>AnimHit</c> (separate events)</item>
-///   <item>ThrowStone: <c>PlayStoneThrowVfx</c> + <c>ShootStone</c></item>
+///   <item>ThrowStone: <c>ShootStone</c> only (no VFX)</item>
 ///   <item>JumpAttack: <c>PlayHeavyAttackVfx</c> + <c>AnimHit</c></item>
 ///   <item>Hit: <c>PlayEnemySound("Hit")</c>, <c>EndHit</c></item>
 ///   <item>Die: <c>PlayEnemySound("Death")</c></item>
@@ -39,6 +40,14 @@ public class Golem : BossEnemy
     [SerializeField] private float jumpAttackMaxDistance = 8.5f;
     [SerializeField] private float jumpAttackCooldown = 12f;
 
+    [Header("Mini Golem Summon")]
+    [SerializeField] private GameObject miniGolemPrefab;
+    [SerializeField] private Transform[] miniGolemSpawnPoints;
+    [Tooltip("Spawn minions once this many seconds after the fight starts, or sooner if HP drops below the threshold.")]
+    [SerializeField] private float miniGolemSummonDelay = 75f;
+    [SerializeField] [Range(0.05f, 1f)] private float miniGolemSummonHealthPercent = 0.3f;
+    [SerializeField] private int miniGolemCount = 2;
+
     private bool openingSequenceDone;
     private bool isInOpeningSequence;
     private bool isInStartFightSlap;
@@ -55,6 +64,9 @@ public class Golem : BossEnemy
 
     private enum AnimRootMotionMode { None, Full, ThrowPositionOnly }
     private AnimRootMotionMode animRootMotionMode;
+    private bool miniGolemsSummoned;
+    private float fightStartTime = -1f;
+    private readonly List<GameObject> activeMiniGolems = new List<GameObject>();
 
     private bool TryGetThrowStats(out float throwDamagePercent, out float projectileSpeed)
     {
@@ -155,6 +167,9 @@ public class Golem : BossEnemy
         {
             DisableAnimRootMotion();
         }
+
+        MarkFightStartedIfNeeded();
+        TrySummonMiniGolems();
 
         base.Update();
     }
@@ -272,6 +287,7 @@ public class Golem : BossEnemy
         if (openingSequenceDone || isInOpeningSequence) return;
 
         EnterAggro();
+        MarkFightStarted();
         isInOpeningSequence = true;
         isInStartFightSlap = true;
         openingAnimReached = false;
@@ -447,12 +463,6 @@ public class Golem : BossEnemy
         attackVfx?.PlayHeavyEffect();
     }
 
-    /// <summary>Animation event — stone release VFX (ThrowStone clip).</summary>
-    public void PlayStoneThrowVfx()
-    {
-        attackVfx?.PlayStoneThrowEffect();
-    }
-
     /// <summary>Animation event on melee / jump attack clips — damage only.</summary>
     public void AnimHit()
     {
@@ -510,6 +520,9 @@ public class Golem : BossEnemy
 
     public override void TakeDamage(float damage, bool playHitReaction = true)
     {
+        MarkFightStarted();
+        TrySummonMiniGolems(currentHealth - damage);
+
         if (!isEnraged && BossStats != null && currentHealth > 0)
         {
             float threshold = currentMaxHealth * BossStats.EnrageHealthPercentage;
@@ -579,5 +592,95 @@ public class Golem : BossEnemy
         throwLaunchDirection = Vector3.zero;
         isJumpAttackActive = false;
         lastJumpAttackTime = -999f;
+        miniGolemsSummoned = false;
+        fightStartTime = -1f;
+        ClearSummonedMiniGolems();
+    }
+
+    protected override void Die()
+    {
+        ClearSummonedMiniGolems();
+        base.Die();
+    }
+
+    private void MarkFightStartedIfNeeded()
+    {
+        if (fightStartTime >= 0f || isDead || isReturningToCamp || target == null || stats == null)
+            return;
+
+        if (Vector3.Distance(transform.position, target.position) <= stats.ChaseRange)
+            MarkFightStarted();
+    }
+
+    private void MarkFightStarted()
+    {
+        if (fightStartTime >= 0f)
+            return;
+
+        fightStartTime = Time.time;
+    }
+
+    private void TrySummonMiniGolems(float projectedHealth = -1f)
+    {
+        if (miniGolemsSummoned || isDead || isReturningToCamp || miniGolemPrefab == null || fightStartTime < 0f)
+            return;
+
+        float healthToCheck = projectedHealth >= 0f ? projectedHealth : currentHealth;
+        bool timerReady = Time.time >= fightStartTime + miniGolemSummonDelay;
+        bool healthReady = currentMaxHealth > 0f
+            && healthToCheck <= currentMaxHealth * miniGolemSummonHealthPercent;
+
+        if (!timerReady && !healthReady)
+            return;
+
+        SpawnMiniGolems();
+    }
+
+    private void SpawnMiniGolems()
+    {
+        miniGolemsSummoned = true;
+
+        if (miniGolemSpawnPoints != null && miniGolemSpawnPoints.Length > 0)
+        {
+            int spawnCount = Mathf.Min(miniGolemCount, miniGolemSpawnPoints.Length);
+            for (int i = 0; i < spawnCount; i++)
+            {
+                Transform spawnPoint = miniGolemSpawnPoints[i];
+                if (spawnPoint == null)
+                    continue;
+
+                SpawnOneMiniGolem(spawnPoint.position, spawnPoint.rotation);
+            }
+
+            return;
+        }
+
+        Vector3 forward = transform.forward;
+        Vector3 right = transform.right;
+        Vector3 basePosition = transform.position;
+
+        SpawnOneMiniGolem(basePosition + right * 2.5f - forward * 1.5f, transform.rotation);
+        if (miniGolemCount > 1)
+            SpawnOneMiniGolem(basePosition - right * 2.5f - forward * 1.5f, transform.rotation);
+    }
+
+    private void SpawnOneMiniGolem(Vector3 position, Quaternion rotation)
+    {
+        GameObject miniGolemObject = Instantiate(miniGolemPrefab, position, rotation);
+        activeMiniGolems.Add(miniGolemObject);
+
+        if (miniGolemObject.TryGetComponent(out MiniGolem miniGolem))
+            miniGolem.InitializeAsSummon();
+    }
+
+    private void ClearSummonedMiniGolems()
+    {
+        for (int i = activeMiniGolems.Count - 1; i >= 0; i--)
+        {
+            if (activeMiniGolems[i] != null)
+                Destroy(activeMiniGolems[i]);
+        }
+
+        activeMiniGolems.Clear();
     }
 }

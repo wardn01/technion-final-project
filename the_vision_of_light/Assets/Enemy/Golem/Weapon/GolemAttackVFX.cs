@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Spawns <see cref="attackEffectPrefab"/> for <see cref="Golem"/> hits.
-/// Assign a <see cref="Transform"/> spawn point per attack type in the Inspector.
+/// The prefab handles its own particles / lifetime — no runtime fade scaling.
 /// </summary>
 public class GolemAttackVFX : MonoBehaviour
 {
@@ -13,39 +13,27 @@ public class GolemAttackVFX : MonoBehaviour
     [SerializeField] private Transform meleeLightSpawn;
     [Tooltip("JumpAttack landing / impact VFX.")]
     [SerializeField] private Transform meleeHeavySpawn;
-    [Tooltip("Stone release VFX (falls back to Golem throwPoint if empty).")]
-    [SerializeField] private Transform stoneThrowSpawn;
 
-    [Header("Light — Attack_1, Attack_2, stone")]
-    [SerializeField] private float lightScale = 0.45f;
-    [SerializeField] private float lightLifetime = 0.55f;
+    [Header("Scale")]
+    [SerializeField] private float lightScale = 1f;
+    [SerializeField] private float heavyScale = 1.5f;
 
-    [Header("Heavy — JumpAttack")]
-    [SerializeField] private float heavyScale = 1.65f;
-    [SerializeField] private float heavyLifetime = 1.35f;
-
-    [Header("Fade In / Out")]
-    [SerializeField] private float lightFadeIn = 0.12f;
-    [SerializeField] private float lightFadeOut = 0.22f;
-    [SerializeField] private float heavyFadeIn = 0.18f;
-    [SerializeField] private float heavyFadeOut = 0.45f;
+    [Header("Cleanup")]
+    [Tooltip("Fallback destroy if the prefab leaves an empty root behind.")]
+    [SerializeField] private float lightCleanupDelay = 2f;
+    [SerializeField] private float heavyCleanupDelay = 3f;
 
     public void PlayLightEffect()
     {
-        SpawnAtPoint(meleeLightSpawn, lightScale, lightLifetime, lightFadeIn, lightFadeOut);
+        SpawnAtPoint(meleeLightSpawn, lightScale, lightCleanupDelay);
     }
 
     public void PlayHeavyEffect()
     {
-        SpawnAtPoint(meleeHeavySpawn, heavyScale, heavyLifetime, heavyFadeIn, heavyFadeOut);
+        SpawnAtPoint(meleeHeavySpawn, heavyScale, heavyCleanupDelay);
     }
 
-    public void PlayStoneThrowEffect()
-    {
-        SpawnAtPoint(stoneThrowSpawn, lightScale, lightLifetime, lightFadeIn, lightFadeOut);
-    }
-
-    private void SpawnAtPoint(Transform spawnPoint, float scale, float lifetime, float fadeIn, float fadeOut)
+    private void SpawnAtPoint(Transform spawnPoint, float scale, float cleanupDelay)
     {
         if (attackEffectPrefab == null)
             return;
@@ -57,7 +45,20 @@ public class GolemAttackVFX : MonoBehaviour
         }
 
         GameObject fx = Instantiate(attackEffectPrefab, spawnPoint.position, spawnPoint.rotation);
-        TimedVFXFade fade = fx.AddComponent<TimedVFXFade>();
-        fade.Configure(scale, lifetime, fadeIn, fadeOut);
+        fx.transform.localScale = Vector3.one * scale;
+        StripGameplay(fx);
+        Destroy(fx, cleanupDelay);
+    }
+
+    private static void StripGameplay(GameObject fx)
+    {
+        foreach (MonoBehaviour behaviour in fx.GetComponents<MonoBehaviour>())
+            behaviour.enabled = false;
+
+        foreach (Collider collider in fx.GetComponentsInChildren<Collider>(true))
+            collider.enabled = false;
+
+        foreach (Rigidbody body in fx.GetComponentsInChildren<Rigidbody>(true))
+            Destroy(body);
     }
 }

@@ -1969,10 +1969,11 @@ Transform:
   - {fileID: 1605828565860059460}
   - {fileID: 3511393271652815840}
   - {fileID: 8200010010010010004}
-  - {fileID: 8200010010010010006}
+  - {fileID: 6356934727386284707}
   - {fileID: 8200010010010010021}
   - {fileID: 8200010010010010023}
-  - {fileID: 8200010010010010025}
+  - {fileID: 8200010010010010031}
+  - {fileID: 8200010010010010033}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &9167342770509913365
@@ -2020,8 +2021,22 @@ MonoBehaviour:
   damageTextPrefab: {fileID: 6555890384464250565, guid: 29839a0f38d5992438b5d5df4dc2a5ec, type: 3}
   textSpawnPoint: {fileID: 8200010010010010004}
   throwMinDistance: 8
+  throwMaxDistance: 20
+  throwChance: 0.35
   stonePrefab: {fileID: 8100000000000000001, guid: 6c94f88519562544b94954841f4bb015, type: 3}
-  throwPoint: {fileID: 8200010010010010006}
+  throwPoint: {fileID: 6356934727386284707}
+  throwAimHeight: 1.05
+  jumpAttackChance: 0.2
+  jumpAttackMinDistance: 3
+  jumpAttackMaxDistance: 8.5
+  jumpAttackCooldown: 12
+  miniGolemPrefab: {fileID: 1077356408, guid: c6cfc32748fb5004aa11a1be074b5c58, type: 3}
+  miniGolemSpawnPoints:
+  - {fileID: 8200010010010010031}
+  - {fileID: 8200010010010010033}
+  miniGolemSummonDelay: 75
+  miniGolemSummonHealthPercent: 0.3
+  miniGolemCount: 2
 --- !u!114 &8200010010010010012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2076,10 +2091,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1.2
-  m_Height: 3.8
+  m_Radius: 0.9
+  m_Height: 3.5
   m_Direction: 1
-  m_Center: {x: 0, y: 1.9, z: 0}
+  m_Center: {x: 0, y: 1.4, z: 0}
 --- !u!114 &8200010010010010015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2201,18 +2216,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7a8b9c0d1e234567890abcdef012345, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GolemAttackVFX
-  attackEffectPrefab: {fileID: 100002, guid: 98c2e6b3233a6a44aa5d8c4ac6828ea8, type: 3}
+  attackEffectPrefab: {fileID: 4350555220821152982, guid: 98c2e6b3233a6a44aa5d8c4ac6828ea8, type: 3}
   meleeLightSpawn: {fileID: 8200010010010010021}
   meleeHeavySpawn: {fileID: 8200010010010010023}
-  stoneThrowSpawn: {fileID: 8200010010010010025}
-  lightScale: 0.45
-  lightLifetime: 0.55
-  heavyScale: 1.65
-  heavyLifetime: 1.35
-  lightFadeIn: 0.12
-  lightFadeOut: 0.22
-  heavyFadeIn: 0.18
-  heavyFadeOut: 0.45
+  lightScale: 0.5
+  heavyScale: 1
+  lightCleanupDelay: 4
+  heavyCleanupDelay: 5
 --- !u!1 &8200010010010010003
 GameObject:
   m_ObjectHideFlags: 0
@@ -2244,37 +2254,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8200010010010010002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8200010010010010005
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8200010010010010006}
-  m_Layer: 15
-  m_Name: ThrowPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8200010010010010006
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8200010010010010005}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.2, z: 1.2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8200010010010010002}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8200010010010010020
 GameObject:
   m_ObjectHideFlags: 0
@@ -2300,7 +2279,7 @@ Transform:
   m_GameObject: {fileID: 8200010010010010020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.1, z: 1.4}
+  m_LocalPosition: {x: 0, y: -0.156, z: 1.217}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2331,13 +2310,13 @@ Transform:
   m_GameObject: {fileID: 8200010010010010022}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.4, z: 1.9}
+  m_LocalPosition: {x: 0, y: -0.259, z: 0.284}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8200010010010010002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8200010010010010024
+--- !u!1 &8200010010010010030
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2345,24 +2324,86 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8200010010010010025}
+  - component: {fileID: 8200010010010010031}
   m_Layer: 15
-  m_Name: VFX_StoneThrow
+  m_Name: SummonPoint_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8200010010010010025
+--- !u!4 &8200010010010010031
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8200010010010010024}
+  m_GameObject: {fileID: 8200010010010010030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.2, z: 1.2}
+  m_LocalPosition: {x: -2.5, y: 0, z: 1.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8200010010010010002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8200010010010010032
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8200010010010010033}
+  m_Layer: 15
+  m_Name: SummonPoint_R
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8200010010010010033
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8200010010010010032}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.5, y: 0, z: 1.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8200010010010010002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8675042013216375433
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6356934727386284707}
+  m_Layer: 15
+  m_Name: VFX_ThrowPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6356934727386284707
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8675042013216375433}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.861, z: 1.217}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

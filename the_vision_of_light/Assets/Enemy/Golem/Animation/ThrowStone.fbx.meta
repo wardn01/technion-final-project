@@ -55,28 +55,14 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.08023716
+      - time: 0.46815935
         functionName: PlayEnemySound
         data: Throw
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.41875222
-        functionName: PlayEnemySound
-        data: Throw
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.4
-        functionName: PlayStoneThrowVfx
-        data: 
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.45
+      - time: 0.5250988
         functionName: ShootStone
         data: 
         objectReferenceParameter: {instanceID: 0}
