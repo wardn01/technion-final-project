@@ -3,7 +3,7 @@ using UnityEngine.AI;
 using System.Collections;
 
 /// <summary>
-/// Boss enemy AI with Genshin-style camp reset: returns to spawn and heals when the player
+/// Boss enemy AI with camp reset: returns to spawn and heals when the player
 /// escapes or the boss is dragged too far from its starting position.
 /// </summary>
 public abstract class BossEnemy : EnemyBase
@@ -238,9 +238,14 @@ public abstract class BossEnemy : EnemyBase
 
         if (Time.time >= pathUpdateTimer)
         {
-            agent.SetDestination(target.position);
+            agent.SetDestination(GetChaseDestination());
             pathUpdateTimer = Time.time + 0.2f;
         }
+    }
+
+    protected virtual Vector3 GetChaseDestination()
+    {
+        return target != null ? target.position : transform.position;
     }
 
     protected virtual void IdleBehavior()

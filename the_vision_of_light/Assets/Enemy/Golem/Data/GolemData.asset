@@ -34,7 +34,7 @@ MonoBehaviour:
     dropChance: 100
   xpReward: 90
   phase1Damage: 100
-  attackRange: 3.2
+  attackRange: 2
   phase1AttackCooldown: 2.6
   enrageHealthPercentage: 0.5
   phase2NormalDamage: 140

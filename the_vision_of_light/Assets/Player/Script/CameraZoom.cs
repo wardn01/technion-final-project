@@ -20,7 +20,7 @@ public class CameraZoom : MonoBehaviour
     public float minZoom = 0.1f;
     public float maxZoom = 1.2f;
 
-    [Header("Obstacle Avoidance (Genshin Style)")]
+    [Header("Obstacle Avoidance")]
     public LayerMask obstacleLayers;
     public Vector3 targetOffset = new Vector3(0, 0f, 0);
     public float autoZoomSpeed = 15f;

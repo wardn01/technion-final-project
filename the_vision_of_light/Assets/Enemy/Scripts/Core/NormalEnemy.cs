@@ -3,7 +3,7 @@ using UnityEngine.AI;
 using System.Collections;
 
 /// <summary>
-/// Normal enemy AI: patrol, chase, melee attack, and Genshin-style camp reset.
+/// Normal enemy AI: patrol, chase, melee attack, and camp reset when the player leaves combat range.
 /// </summary>
 public class NormalEnemy : EnemyBase
 {
@@ -18,7 +18,7 @@ public class NormalEnemy : EnemyBase
     protected PlayerHealth playerHealth; 
     protected EnemyStatusEffects statusEffects;
 
-    [Header("Camp Reset System (Genshin Style)")]
+    [Header("Camp Reset System")]
     public bool isReturningToCamp = false;
 
     protected NormalEnemyStats MeleeStats => stats as NormalEnemyStats;
@@ -186,10 +186,15 @@ public class NormalEnemy : EnemyBase
 
             if (Time.time >= pathUpdateTimer)
             {
-                agent.SetDestination(target.position);
+                agent.SetDestination(GetChaseDestination());
                 pathUpdateTimer = Time.time + 0.2f; 
             }
         }
+    }
+
+    protected virtual Vector3 GetChaseDestination()
+    {
+        return target != null ? target.position : transform.position;
     }
 
     protected virtual void PatrolBehavior()

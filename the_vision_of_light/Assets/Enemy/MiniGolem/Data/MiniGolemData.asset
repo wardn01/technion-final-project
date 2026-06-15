@@ -19,8 +19,8 @@ MonoBehaviour:
   hpScale: 4
   atkScale: 0.55
   defScale: 0.2
-  walkSpeed: 1.4
-  runSpeed: 3.6
+  walkSpeed: 1.2
+  runSpeed: 3
   chaseRange: 12
   rotationSpeed: 8
   lootTable:
@@ -34,12 +34,12 @@ MonoBehaviour:
     dropChance: 35
   xpReward: 38
   normalDamage: 100
-  normalAttackRange: 1.85
+  normalAttackRange: 1.3
   normalAttackCooldown: 2.2
   maxLeashDistance: 22
   throwMinDistance: 4
   rangedAttackRange: 10
-  throwChance: 0.35
+  throwChance: 0.3
   projectileSpeed: 18
   throwDamage: 85
   rangedAttackCooldown: 2.8

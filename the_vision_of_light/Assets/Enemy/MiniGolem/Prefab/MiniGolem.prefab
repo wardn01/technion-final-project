@@ -334,9 +334,9 @@ GameObject:
   - component: {fileID: 9000000000000000001}
   - component: {fileID: 9000000000000000002}
   - component: {fileID: 9000000000000000003}
-  - component: {fileID: 9000000000000000004}
   - component: {fileID: 9000000000000000005}
   - component: {fileID: 9000000000000000006}
+  - component: {fileID: 5660647604029997621}
   m_Layer: 15
   m_Name: MiniGolem
   m_TagString: Enemy
@@ -353,7 +353,7 @@ Transform:
   m_GameObject: {fileID: 1077356408}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 177.17146, y: 11.191263, z: -14.63598}
+  m_LocalPosition: {x: 174.61655, y: 11.277404, z: -15.911182}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -435,42 +435,19 @@ NavMeshAgent:
   m_GameObject: {fileID: 1077356408}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.42
+  m_Radius: 0.5
   m_Speed: 0
-  m_Acceleration: 18
+  m_Acceleration: 14
   avoidancePriority: 50
-  m_AngularSpeed: 280
+  m_AngularSpeed: 240
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 1.15
+  m_Height: 2
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!136 &9000000000000000004
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1077356408}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 2.2
-  m_Height: 4.5
-  m_Direction: 1
-  m_Center: {x: 0, y: 1.7, z: 0}
 --- !u!114 &9000000000000000005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -580,6 +557,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!135 &5660647604029997621
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1077356408}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 2
+  m_Center: {x: 0, y: 1.8, z: 0}
 --- !u!1 &1099011281
 GameObject:
   m_ObjectHideFlags: 0

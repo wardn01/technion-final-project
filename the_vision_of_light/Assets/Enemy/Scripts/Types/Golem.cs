@@ -38,6 +38,8 @@ public class Golem : BossEnemy
     [SerializeField] [Range(0.05f, 1f)] private float miniGolemSummonHealthPercent = 0.3f;
     [SerializeField] private int miniGolemCount = 2;
 
+    private const float MeleeStandOff = 1.75f;
+
     public float MiniGolemSummonHealthPercent => miniGolemSummonHealthPercent;
 
     private bool openingSequenceDone;
@@ -76,6 +78,20 @@ public class Golem : BossEnemy
     }
 
     protected override bool IsInPhase2 => isEnraged;
+
+    protected override Vector3 GetChaseDestination()
+    {
+        if (target == null)
+            return transform.position;
+
+        Vector3 toTarget = target.position - transform.position;
+        toTarget.y = 0f;
+        float distance = toTarget.magnitude;
+        if (distance <= MeleeStandOff)
+            return transform.position;
+
+        return target.position - toTarget.normalized * MeleeStandOff;
+    }
 
     protected override void Update()
     {
@@ -684,9 +700,9 @@ public class Golem : BossEnemy
         Vector3 right = transform.right;
         Vector3 basePosition = transform.position;
 
-        SpawnOneMiniGolem(basePosition + right * 2.5f - forward * 1.5f, transform.rotation);
+        SpawnOneMiniGolem(basePosition + right * 3.5f - forward * 1.5f, transform.rotation);
         if (miniGolemCount > 1)
-            SpawnOneMiniGolem(basePosition - right * 2.5f - forward * 1.5f, transform.rotation);
+            SpawnOneMiniGolem(basePosition - right * 3.5f - forward * 1.5f, transform.rotation);
     }
 
     private void SpawnOneMiniGolem(Vector3 position, Quaternion rotation)
@@ -695,7 +711,7 @@ public class Golem : BossEnemy
         activeMiniGolems.Add(miniGolemObject);
 
         if (miniGolemObject.TryGetComponent(out MiniGolem miniGolem))
-            miniGolem.InitializeAsSummon();
+            miniGolem.InitializeAsSummon(this);
     }
 
     private void ClearSummonedMiniGolems()

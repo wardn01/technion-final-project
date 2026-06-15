@@ -34,7 +34,7 @@ MonoBehaviour:
     dropChance: 45
   xpReward: 35
   normalDamage: 90
-  normalAttackRange: 1.35
+  normalAttackRange: 1.3
   normalAttackCooldown: 2
   maxLeashDistance: 22
   rangedAttackRange: 11

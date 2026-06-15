@@ -2027,8 +2027,8 @@ MonoBehaviour:
   throwPoint: {fileID: 6356934727386284707}
   throwAimHeight: 1.05
   jumpAttackChance: 0.2
-  jumpAttackMinDistance: 3
-  jumpAttackMaxDistance: 8.5
+  jumpAttackMinDistance: 2
+  jumpAttackMaxDistance: 5
   jumpAttackCooldown: 12
   hitReactionCooldown: 6
   miniGolemPrefab: {fileID: 1077356408, guid: c6cfc32748fb5004aa11a1be074b5c58, type: 3}
@@ -2059,16 +2059,16 @@ NavMeshAgent:
   m_GameObject: {fileID: 8200010010010010001}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 1.2
+  m_Radius: 0.8
   m_Speed: 0
-  m_Acceleration: 20
+  m_Acceleration: 12
   avoidancePriority: 50
-  m_AngularSpeed: 300
+  m_AngularSpeed: 200
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 3.8
+  m_Height: 3
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -2091,8 +2091,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.9
-  m_Height: 3.5
+  m_Radius: 0.8
+  m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 1.4, z: 0}
 --- !u!114 &8200010010010010015

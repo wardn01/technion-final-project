@@ -17,9 +17,14 @@ public class MiniGolem : NormalEnemy
     [SerializeField] [Range(0.5f, 1f)] private float attackAnimFinishThreshold = 0.88f;
 
     private bool isSpawning;
+    private bool agentControlLocked;
     private Vector3 lockedPos;
+    private Golem summoningGolem;
+    private float lastThrowTime = -999f;
 
     private MiniGolemStats RangedStats => stats as MiniGolemStats;
+
+    private const float PeerSeparationRadius = 2.4f;
 
     protected override IEnumerator Start()
     {
@@ -27,11 +32,14 @@ public class MiniGolem : NormalEnemy
 
         if (anim != null)
             anim.applyRootMotion = false;
+
+        RegisterAgentSettings();
     }
 
     /// <summary>Called by <see cref="Golem"/> on spawn — plays emerge animation and locks movement.</summary>
-    public void InitializeAsSummon()
+    public void InitializeAsSummon(Golem owner = null)
     {
+        summoningGolem = owner;
         isSpawning = true;
 
         if (agent != null)
@@ -42,6 +50,18 @@ public class MiniGolem : NormalEnemy
 
         if (anim != null)
             anim.Play("spawn", 0, 0f);
+    }
+
+    private void RegisterAgentSettings()
+    {
+        if (agent != null)
+            agent.avoidancePriority = 45 + (Mathf.Abs(GetInstanceID()) % 15);
+
+        if (summoningGolem == null || !TryGetComponent(out Collider selfCollider))
+            return;
+
+        if (summoningGolem.TryGetComponent(out Collider golemCollider))
+            Physics.IgnoreCollision(selfCollider, golemCollider, true);
     }
 
     protected override void UpdateBlendTree()
@@ -55,7 +75,25 @@ public class MiniGolem : NormalEnemy
             return;
         }
 
-        base.UpdateBlendTree();
+        if (agent == null || stats == null)
+            return;
+
+        // Blend tree: 0 = Idle, 0.5 = Walk, 1 = Walk @ 1.8x (run substitute)
+        float velocity = agent.velocity.magnitude;
+        float walkSpeed = stats.WalkSpeed;
+        float runSpeed = stats.RunSpeed;
+
+        float blend;
+        if (velocity < 0.05f)
+            blend = 0f;
+        else if (velocity <= walkSpeed)
+            blend = walkSpeed > 0f ? Mathf.Lerp(0f, 0.5f, velocity / walkSpeed) : 0.5f;
+        else
+            blend = runSpeed > walkSpeed
+                ? Mathf.Lerp(0.5f, 1f, (velocity - walkSpeed) / (runSpeed - walkSpeed))
+                : 1f;
+
+        anim.SetFloat("Speed", blend);
     }
 
     protected override void Update()
@@ -81,14 +119,13 @@ public class MiniGolem : NormalEnemy
 
         if (isReturningToCamp)
         {
-            EnableAgentIfNeeded();
             ReturnToCampBehavior();
             return;
         }
 
         if (playerHealth.isDead)
         {
-            EnableAgentIfNeeded();
+            UnlockAgentControl();
             StopAgent();
             isAttackingBase = false;
             if (anim != null)
@@ -98,12 +135,8 @@ public class MiniGolem : NormalEnemy
 
         if (isAttackingBase)
         {
-            transform.position = lockedPos;
-
-            if (anim != null)
-                anim.SetFloat("Speed", 0f);
-
             FaceTarget();
+            HoldAttackPosition();
             TryFinishAttackAnimation();
             return;
         }
@@ -117,6 +150,7 @@ public class MiniGolem : NormalEnemy
         }
 
         UpdateBlendTree();
+        ApplyPeerSeparation();
 
         if (MeleeStats != null)
         {
@@ -130,6 +164,12 @@ public class MiniGolem : NormalEnemy
 
         distanceToTarget = Vector3.Distance(transform.position, target.position);
 
+        if (IsInThrowRange() && ShouldThrowStone())
+        {
+            HandleAttack(isMelee: false);
+            return;
+        }
+
         if (MeleeStats != null && distanceToTarget <= MeleeStats.NormalAttackRange)
             HandleAttack(isMelee: true);
         else if (distanceToTarget <= stats.ChaseRange)
@@ -138,16 +178,48 @@ public class MiniGolem : NormalEnemy
             PatrolBehavior();
     }
 
+    private void ApplyPeerSeparation()
+    {
+        if (isAttackingBase || isSpawning || isHitBase || agent == null || !agent.isOnNavMesh)
+            return;
+
+        Vector3 push = Vector3.zero;
+        int neighbors = 0;
+
+        foreach (MiniGolem other in FindObjectsByType<MiniGolem>(FindObjectsSortMode.None))
+        {
+            if (other == null || other == this)
+                continue;
+
+            Vector3 offset = transform.position - other.transform.position;
+            offset.y = 0f;
+            float distance = offset.magnitude;
+            if (distance >= PeerSeparationRadius || distance < 0.001f)
+                continue;
+
+            push += offset.normalized * (PeerSeparationRadius - distance);
+            neighbors++;
+        }
+
+        if (neighbors == 0)
+            return;
+
+        agent.Move((push / neighbors) * (Time.deltaTime * 8f));
+    }
+
+    private bool IsInThrowRange()
+    {
+        if (RangedStats == null)
+            return false;
+
+        return distanceToTarget >= RangedStats.ThrowMinDistance
+            && distanceToTarget <= RangedStats.RangedAttackRange;
+    }
+
     protected override void ChaseBehavior()
     {
         if (isAttackingBase)
             return;
-
-        if (ShouldThrowStone())
-        {
-            HandleAttack(isMelee: false);
-            return;
-        }
 
         base.ChaseBehavior();
     }
@@ -162,28 +234,24 @@ public class MiniGolem : NormalEnemy
 
     protected override void PlayHitEffect()
     {
-        EnableAgentIfNeeded();
+        UnlockAgentControl();
         base.PlayHitEffect();
     }
 
     private bool ShouldThrowStone()
     {
-        if (RangedStats == null || isAttackingBase)
+        if (RangedStats == null || isAttackingBase || stonePrefab == null || throwPoint == null)
             return false;
 
-        if (distanceToTarget < RangedStats.ThrowMinDistance)
+        if (!IsInThrowRange())
             return false;
 
-        if (distanceToTarget > RangedStats.RangedAttackRange)
+        if (Time.time < lastThrowTime + RangedStats.RangedAttackCooldown)
             return false;
 
-        if (Time.time < lastAttackTime + RangedStats.RangedAttackCooldown)
-            return false;
-
-        // One roll per cooldown window — without this, 35% every frame ≈ guaranteed throw.
         if (Random.value > RangedStats.ThrowChance)
         {
-            lastAttackTime = Time.time;
+            lastThrowTime = Time.time;
             return false;
         }
 
@@ -202,12 +270,16 @@ public class MiniGolem : NormalEnemy
             ? MeleeStats.NormalAttackCooldown
             : RangedStats.RangedAttackCooldown;
 
-        if (Time.time < lastAttackTime + cooldown)
+        if (isMelee && Time.time < lastAttackTime + cooldown)
             return;
 
         FaceTarget();
         BeginAttack();
-        lastAttackTime = Time.time;
+
+        if (isMelee)
+            lastAttackTime = Time.time;
+        else
+            lastThrowTime = Time.time;
 
         if (anim == null)
             return;
@@ -221,9 +293,7 @@ public class MiniGolem : NormalEnemy
     {
         isAttackingBase = true;
         lockedPos = transform.position;
-
-        if (agent != null)
-            agent.enabled = false;
+        LockAgentForAttack();
 
         if (anim != null)
         {
@@ -232,12 +302,35 @@ public class MiniGolem : NormalEnemy
         }
     }
 
-    private void EnableAgentIfNeeded()
+    private void LockAgentForAttack()
     {
-        if (agent == null || agent.enabled)
+        StopAgent();
+
+        if (agent == null)
             return;
 
-        agent.enabled = true;
+        agent.updatePosition = false;
+        agent.updateRotation = false;
+        agentControlLocked = true;
+    }
+
+    private void HoldAttackPosition()
+    {
+        transform.position = lockedPos;
+        StopAgent();
+
+        if (anim != null)
+            anim.SetFloat("Speed", 0f);
+    }
+
+    private void UnlockAgentControl()
+    {
+        if (agent == null || !agentControlLocked)
+            return;
+
+        agent.updatePosition = true;
+        agent.updateRotation = true;
+        agentControlLocked = false;
 
         if (agent.isOnNavMesh)
             agent.Warp(transform.position);
@@ -299,16 +392,13 @@ public class MiniGolem : NormalEnemy
         if (TryGetAttackAnimationNormalizedTime(out float normalizedTime) && normalizedTime < attackAnimFinishThreshold)
             return;
 
-        if (agent != null)
-            agent.enabled = true;
-
+        UnlockAgentControl();
         base.ResetCombatStates();
     }
 
     protected override void TriggerCampReset()
     {
-        if (agent != null)
-            agent.enabled = true;
+        UnlockAgentControl();
 
         if (anim != null)
         {
@@ -357,7 +447,7 @@ public class MiniGolem : NormalEnemy
 
     private void IgnoreStoneCollisionWithSelf(GameObject stoneObj)
     {
-        if (!TryGetComponent(out CapsuleCollider selfCollider))
+        if (!TryGetComponent(out Collider selfCollider))
             return;
 
         foreach (Collider stoneCollider in stoneObj.GetComponentsInChildren<Collider>())

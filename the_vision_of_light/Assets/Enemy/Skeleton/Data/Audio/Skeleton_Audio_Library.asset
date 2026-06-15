@@ -16,7 +16,6 @@ MonoBehaviour:
   - actionName: Attack
     clips:
     - {fileID: 8300000, guid: fbad32f0e9796204e952aadaa8d76dcb, type: 3}
-    - {fileID: 8300000, guid: cd569510bf0ec0c4aa14221083930e03, type: 3}
     - {fileID: 8300000, guid: b78c0ea383835a043a65bed410848546, type: 3}
     volume: 1
   - actionName: Step

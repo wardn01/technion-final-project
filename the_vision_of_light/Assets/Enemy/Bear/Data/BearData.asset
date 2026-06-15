@@ -34,10 +34,10 @@ MonoBehaviour:
     dropChance: 55
   xpReward: 45
   animalDamage: 95
-  attackRange: 2.2
+  attackRange: 2.1
   attackCooldown: 2.5
-  heavyAttackMultiplier: 1.5
-  slamAttackMultiplier: 2
   sleepDuration: 12
   walkDuration: 20
   aggroLeashDistance: 28
+  heavyAttackMultiplier: 1.5
+  slamAttackMultiplier: 2

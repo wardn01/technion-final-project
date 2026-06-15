@@ -14,6 +14,7 @@ public class Orc : BossEnemy
     private bool isInvincible;
     private bool isInEnrageSequence;
     private float enrageSequenceStartTime;
+    private bool wasPlayingRageCombatAnimation;
 
     public float EnrageHealthPercent => BossStats != null ? BossStats.EnrageHealthPercentage : 0.5f;
     public bool IsEnrageTriggered => phase2Triggered;
@@ -28,7 +29,7 @@ public class Orc : BossEnemy
 
         if (isInEnrageSequence)
         {
-            FaceTarget();
+            HoldRageCombatPosition();
             if (Time.time >= enrageSequenceStartTime + EnrageSequenceTimeout)
                 ForceCompleteEnrageSequence();
             return;
@@ -37,7 +38,37 @@ public class Orc : BossEnemy
         if (isInvincible)
             ForceCompleteEnrageSequence();
 
+        if (IsPlayingRageCombatAnimation())
+        {
+            wasPlayingRageCombatAnimation = true;
+            HoldRageCombatPosition();
+            return;
+        }
+
+        if (wasPlayingRageCombatAnimation)
+        {
+            wasPlayingRageCombatAnimation = false;
+            ResetCombatStates();
+        }
+
         base.Update();
+    }
+
+    private bool IsPlayingRageCombatAnimation()
+    {
+        if (anim == null)
+            return false;
+
+        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+        return state.IsName("RageAttack") || state.IsName("rage");
+    }
+
+    private void HoldRageCombatPosition()
+    {
+        StopAgent();
+        FaceTarget();
+        if (anim != null)
+            anim.SetFloat("Speed", 0f);
     }
 
     public override void TakeDamage(float damage, bool playHitReaction = true)
@@ -187,7 +218,11 @@ public class Orc : BossEnemy
 
         isInEnrageSequence = false;
         isInvincible = false;
-        ResetCombatStates();
+
+        if (IsPlayingRageCombatAnimation())
+            HoldRageCombatPosition();
+        else
+            ResetCombatStates();
     }
 
     public override void EndAttack() => ResetCombatStates();
@@ -200,6 +235,7 @@ public class Orc : BossEnemy
         isEnraged = false;
         isInvincible = false;
         isInEnrageSequence = false;
+        wasPlayingRageCombatAnimation = false;
         enrageSequenceStartTime = 0f;
     }
 }
