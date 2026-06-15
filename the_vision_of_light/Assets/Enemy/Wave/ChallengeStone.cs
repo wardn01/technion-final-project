@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Interactive challenge stone — spawns enemy waves for quests or default training trials.
+/// </summary>
 public class ChallengeStone : MonoBehaviour
 {
+    #region Data Types
     [System.Serializable]
     public class EnemySpawnInfo
     {
@@ -31,7 +35,9 @@ public class ChallengeStone : MonoBehaviour
         public int nextQuestState = 7;
         public Wave[] waves;
     }
+    #endregion
 
+    #region Inspector Settings
     [Header("Challenge Settings")]
     public KeyCode interactionKey = KeyCode.F; 
     
@@ -61,7 +67,9 @@ public class ChallengeStone : MonoBehaviour
     private List<EnemyBase> aliveEnemies = new List<EnemyBase>();
     private Transform player;
     private bool isPlayerNear = false;
+    #endregion
 
+    #region Unity Lifecycle
     void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -143,7 +151,9 @@ public class ChallengeStone : MonoBehaviour
             if (promptContainer != null) promptContainer.SetActive(false);
         }
     }
+    #endregion
 
+    #region Challenge Flow
     void TryStartChallenge()
     {
         activeQuestChallenge = null;
@@ -228,4 +238,5 @@ public class ChallengeStone : MonoBehaviour
         activeQuestChallenge = null;
         activeWaves = null;
     }
+    #endregion
 }

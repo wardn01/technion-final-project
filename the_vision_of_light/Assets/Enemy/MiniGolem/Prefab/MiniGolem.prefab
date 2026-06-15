@@ -94,7 +94,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 763194842}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0.66065186, y: -16.791199, z: -2.1882832}
 --- !u!1 &659241722
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,6 +412,7 @@ MonoBehaviour:
   stonePrefab: {fileID: 8200000000000000001, guid: b2c3d4e5f6789012345678cafe002008, type: 3}
   throwPoint: {fileID: 9000000000000000013}
   throwAimHeight: 1.05
+  attackAnimFinishThreshold: 0.88
 --- !u!114 &9000000000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,10 +467,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.42
-  m_Height: 1.15
+  m_Radius: 2.2
+  m_Height: 4.5
   m_Direction: 1
-  m_Center: {x: 0, y: 0.58, z: 0}
+  m_Center: {x: 0, y: 1.7, z: 0}
 --- !u!114 &9000000000000000005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -704,7 +705,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 739286404}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0.66068053, y: 16.791542, z: 177.81166}
 --- !u!1 &1423454222
 GameObject:
   m_ObjectHideFlags: 0
@@ -879,7 +880,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 831724753}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -22.92549, y: -90, z: 0}
 --- !u!1 &1545627964
 GameObject:
   m_ObjectHideFlags: 0

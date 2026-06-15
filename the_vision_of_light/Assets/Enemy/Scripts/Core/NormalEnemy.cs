@@ -2,8 +2,12 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 
+/// <summary>
+/// Normal enemy AI: patrol, chase, melee attack, and Genshin-style camp reset.
+/// </summary>
 public class NormalEnemy : EnemyBase
 {
+    #region State
     [Header("AI Logic")]
     protected float distanceToTarget;
     protected float lastAttackTime;
@@ -18,7 +22,9 @@ public class NormalEnemy : EnemyBase
     public bool isReturningToCamp = false;
 
     protected NormalEnemyStats MeleeStats => stats as NormalEnemyStats;
+    #endregion
 
+    #region Unity Lifecycle
     protected override IEnumerator Start()
     {
         yield return base.Start();
@@ -90,7 +96,10 @@ public class NormalEnemy : EnemyBase
             PatrolBehavior(); 
         }
     }
+    #endregion
 
+    #region Camp Reset
+    /// <summary>Heals to full HP and sends the enemy back to its spawn when the leash is broken.</summary>
     protected virtual void TriggerCampReset()
     {
         isReturningToCamp = true;
@@ -122,6 +131,7 @@ public class NormalEnemy : EnemyBase
         }
     }
 
+    /// <summary>Ignores damage while walking home; resumes normal AI on arrival.</summary>
     public override void TakeDamage(float amount, bool playHitReaction = true)
     {
         if (isReturningToCamp) return;
@@ -136,7 +146,9 @@ public class NormalEnemy : EnemyBase
         isAttackingBase = false; 
         StopAgent();
     }
+    #endregion
 
+    #region Combat Behavior
     protected virtual void AttackBehavior()
     {
         StopAgent();
@@ -205,4 +217,5 @@ public class NormalEnemy : EnemyBase
             }
         }
     }
+    #endregion
 }

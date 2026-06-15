@@ -2,24 +2,8 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Normal enemy: close-range punch (Attack02) + stone throw when the player is far.
+/// Golem minion — melee punch and 35% stone throw. Data: MiniGolem/Data/MiniGolemData.asset.
 /// </summary>
-/// <remarks>
-/// Combat bands:
-/// <list type="bullet">
-///   <item>Melee range → Attack02 punch</item>
-///   <item>Throw range → Attack01 rock throw (<see cref="ShootStone"/>)</item>
-///   <item>Chase range → run toward player</item>
-/// </list>
-/// Animation events:
-/// <list type="bullet">
-///   <item>Attack01: <c>PlayEnemySound("Throw")</c>, <c>ShootStone</c>, <c>ResetCombatStates</c></item>
-///   <item>Attack02: <c>PlayEnemySound("Attack")</c>, <c>AnimHit</c>, <c>ResetCombatStates</c></item>
-/// </list>
-/// Weapon: scale the thrown stone in <c>MiniGolem/Weapon/Stone.prefab</c>.
-/// Stats: <c>MiniGolem/Data/MiniGolemData.asset</c>.
-/// Audio: <c>MiniGolem/Data/Audio/MiniGolem_Audio_Library.asset</c>.
-/// </remarks>
 [RequireComponent(typeof(EnemyAudioEmitter))]
 public class MiniGolem : NormalEnemy
 {
@@ -28,10 +12,24 @@ public class MiniGolem : NormalEnemy
     [SerializeField] private Transform throwPoint;
     [SerializeField] private float throwAimHeight = 1.05f;
 
+    [Header("Attack")]
+    [Tooltip("Resume chasing after the attack clip reaches this normalized time.")]
+    [SerializeField] [Range(0.5f, 1f)] private float attackAnimFinishThreshold = 0.88f;
+
     private bool isSpawning;
+    private Vector3 lockedPos;
 
     private MiniGolemStats RangedStats => stats as MiniGolemStats;
 
+    protected override IEnumerator Start()
+    {
+        yield return base.Start();
+
+        if (anim != null)
+            anim.applyRootMotion = false;
+    }
+
+    /// <summary>Called by <see cref="Golem"/> on spawn — plays emerge animation and locks movement.</summary>
     public void InitializeAsSummon()
     {
         isSpawning = true;
@@ -44,6 +42,20 @@ public class MiniGolem : NormalEnemy
 
         if (anim != null)
             anim.Play("spawn", 0, 0f);
+    }
+
+    protected override void UpdateBlendTree()
+    {
+        if (anim == null)
+            return;
+
+        if (isAttackingBase || isSpawning || isHitBase)
+        {
+            anim.SetFloat("Speed", 0f);
+            return;
+        }
+
+        base.UpdateBlendTree();
     }
 
     protected override void Update()
@@ -67,29 +79,44 @@ public class MiniGolem : NormalEnemy
         if (isDead || target == null || playerHealth == null)
             return;
 
-        UpdateBlendTree();
-
         if (isReturningToCamp)
         {
+            EnableAgentIfNeeded();
             ReturnToCampBehavior();
             return;
         }
 
         if (playerHealth.isDead)
         {
+            EnableAgentIfNeeded();
             StopAgent();
             isAttackingBase = false;
-            if (anim != null) anim.SetFloat("Speed", 0f);
+            if (anim != null)
+                anim.SetFloat("Speed", 0f);
             return;
         }
 
-        if (isHitBase || isAttackingBase)
+        if (isAttackingBase)
         {
-            StopAgent();
-            if (isAttackingBase)
-                FaceTarget();
+            transform.position = lockedPos;
+
+            if (anim != null)
+                anim.SetFloat("Speed", 0f);
+
+            FaceTarget();
+            TryFinishAttackAnimation();
             return;
         }
+
+        if (isHitBase)
+        {
+            StopAgent();
+            if (anim != null)
+                anim.SetFloat("Speed", 0f);
+            return;
+        }
+
+        UpdateBlendTree();
 
         if (MeleeStats != null)
         {
@@ -105,12 +132,38 @@ public class MiniGolem : NormalEnemy
 
         if (MeleeStats != null && distanceToTarget <= MeleeStats.NormalAttackRange)
             HandleAttack(isMelee: true);
-        else if (ShouldThrowStone())
-            HandleAttack(isMelee: false);
         else if (distanceToTarget <= stats.ChaseRange)
             ChaseBehavior();
         else
             PatrolBehavior();
+    }
+
+    protected override void ChaseBehavior()
+    {
+        if (isAttackingBase)
+            return;
+
+        if (ShouldThrowStone())
+        {
+            HandleAttack(isMelee: false);
+            return;
+        }
+
+        base.ChaseBehavior();
+    }
+
+    protected override void PatrolBehavior()
+    {
+        if (isAttackingBase)
+            return;
+
+        base.PatrolBehavior();
+    }
+
+    protected override void PlayHitEffect()
+    {
+        EnableAgentIfNeeded();
+        base.PlayHitEffect();
     }
 
     private bool ShouldThrowStone()
@@ -121,7 +174,20 @@ public class MiniGolem : NormalEnemy
         if (distanceToTarget < RangedStats.ThrowMinDistance)
             return false;
 
-        return distanceToTarget <= RangedStats.RangedAttackRange;
+        if (distanceToTarget > RangedStats.RangedAttackRange)
+            return false;
+
+        if (Time.time < lastAttackTime + RangedStats.RangedAttackCooldown)
+            return false;
+
+        // One roll per cooldown window — without this, 35% every frame ≈ guaranteed throw.
+        if (Random.value > RangedStats.ThrowChance)
+        {
+            lastAttackTime = Time.time;
+            return false;
+        }
+
+        return true;
     }
 
     private void HandleAttack(bool isMelee)
@@ -132,9 +198,6 @@ public class MiniGolem : NormalEnemy
         if (!isMelee && RangedStats == null)
             return;
 
-        StopAgent();
-        FaceTarget();
-
         float cooldown = isMelee
             ? MeleeStats.NormalAttackCooldown
             : RangedStats.RangedAttackCooldown;
@@ -142,15 +205,42 @@ public class MiniGolem : NormalEnemy
         if (Time.time < lastAttackTime + cooldown)
             return;
 
-        isAttackingBase = true;
+        FaceTarget();
+        BeginAttack();
         lastAttackTime = Time.time;
 
         if (anim == null)
             return;
 
-        anim.ResetTrigger("Throw");
+        anim.ResetTrigger("Attack");
         anim.SetInteger("AttackIndex", isMelee ? 1 : 0);
         anim.SetTrigger("Attack");
+    }
+
+    private void BeginAttack()
+    {
+        isAttackingBase = true;
+        lockedPos = transform.position;
+
+        if (agent != null)
+            agent.enabled = false;
+
+        if (anim != null)
+        {
+            anim.applyRootMotion = false;
+            anim.SetFloat("Speed", 0f);
+        }
+    }
+
+    private void EnableAgentIfNeeded()
+    {
+        if (agent == null || agent.enabled)
+            return;
+
+        agent.enabled = true;
+
+        if (agent.isOnNavMesh)
+            agent.Warp(transform.position);
     }
 
     /// <summary>Animation event on Attack01 clip — spawns <see cref="MiniGolemStoneProjectile"/>.</summary>
@@ -162,31 +252,34 @@ public class MiniGolem : NormalEnemy
         float damage = currentAttack * (RangedStats.ThrowDamage / 100f);
         GameObject stoneObj = Instantiate(stonePrefab, throwPoint.position, throwPoint.rotation);
 
-        if (stoneObj.TryGetComponent(out MiniGolemStoneProjectile projectile))
+        IgnoreStoneCollisionWithSelf(stoneObj);
+
+        MiniGolemStoneProjectile projectile = null;
+        if (stoneObj.TryGetComponent(out projectile))
         {
             projectile.SetDamage(damage);
+            projectile.SetTarget(target);
             if (TryGetComponent(out EnemyAudioEmitter emitter))
                 projectile.BindAudio(emitter);
         }
 
-        if (target != null && stoneObj.TryGetComponent(out Rigidbody rb))
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+        if (!stoneObj.TryGetComponent(out Rigidbody rb))
+            return;
 
+        Vector3 direction = transform.forward;
+        if (target != null)
+        {
             Vector3 aimPoint = target.position + Vector3.up * throwAimHeight;
-            Vector3 direction = aimPoint - throwPoint.position;
+            direction = aimPoint - throwPoint.position;
             direction.y -= new Vector3(direction.x, 0f, direction.z).magnitude * 0.012f;
 
             if (direction.sqrMagnitude > 0.01f)
                 direction.Normalize();
-            else
-                direction = transform.forward;
-
-            rb.AddForce(direction * RangedStats.ProjectileSpeed, ForceMode.Impulse);
         }
 
-        IgnoreStoneCollisionWithSelf(stoneObj);
+        rb.linearVelocity = direction * RangedStats.ProjectileSpeed;
+        rb.angularVelocity = Vector3.zero;
+        projectile?.NotifyLaunched();
     }
 
     /// <summary>Animation event on Attack02 clip.</summary>
@@ -201,15 +294,65 @@ public class MiniGolem : NormalEnemy
 
     protected override void PerformAttack() { }
 
+    public override void ResetCombatStates()
+    {
+        if (TryGetAttackAnimationNormalizedTime(out float normalizedTime) && normalizedTime < attackAnimFinishThreshold)
+            return;
+
+        if (agent != null)
+            agent.enabled = true;
+
+        base.ResetCombatStates();
+    }
+
     protected override void TriggerCampReset()
     {
+        if (agent != null)
+            agent.enabled = true;
+
         if (anim != null)
         {
             anim.ResetTrigger("Attack");
-            anim.ResetTrigger("Throw");
+            anim.ResetTrigger("Hit");
         }
 
         base.TriggerCampReset();
+    }
+
+    private void TryFinishAttackAnimation()
+    {
+        if (!TryGetAttackAnimationNormalizedTime(out float normalizedTime))
+        {
+            ResetCombatStates();
+            return;
+        }
+
+        if (normalizedTime >= attackAnimFinishThreshold)
+            ResetCombatStates();
+    }
+
+    private bool TryGetAttackAnimationNormalizedTime(out float normalizedTime)
+    {
+        normalizedTime = 0f;
+        if (anim == null) return false;
+
+        AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+        AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
+
+        if (currentState.IsName("Attack01") || currentState.IsName("Attack02"))
+        {
+            normalizedTime = currentState.normalizedTime;
+            return true;
+        }
+        else if (nextState.IsName("Attack01") || nextState.IsName("Attack02"))
+        {
+            // We are currently transitioning INTO the attack animation.
+            // Don't abort the attack!
+            normalizedTime = 0f;
+            return true;
+        }
+
+        return false;
     }
 
     private void IgnoreStoneCollisionWithSelf(GameObject stoneObj)

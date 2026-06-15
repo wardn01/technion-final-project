@@ -2,16 +2,8 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Forest animal enemy: sleeps and patrols until provoked, then chases like other enemies.
+/// Forest animal — sleeps and patrols until provoked, then chases within leash. Data: Bear/Data/BearData.asset.
 /// </summary>
-/// <remarks>
-/// Peaceful: sleep → walk patrol → sleep.
-/// Combat: player enters chase range, hits the bear, or gets too close → wake roar →
-/// persistent chase until the player exceeds <see cref="BearStats.AggroLeashDistance"/>.
-/// Animation events: see clips under <c>Bear/Animation/</c>.
-/// Stats: <c>Bear/Data/BearData.asset</c>.
-/// Audio: <c>Bear/Data/Audio/Bear_Audio_Library.asset</c>.
-/// </remarks>
 [RequireComponent(typeof(EnemyAudioEmitter))]
 public class Bear : AnimalEnemy
 {
@@ -74,6 +66,7 @@ public class Bear : AnimalEnemy
         HandleLifeCycle();
     }
 
+    /// <summary>Waking the bear on damage or proximity.</summary>
     public override void TakeDamage(float amount, bool playHitReaction = true)
     {
         EnterAggro(playRoar: IsSleeping());
@@ -195,9 +188,12 @@ public class Bear : AnimalEnemy
         ExecuteMeleeAttack(damagePercent / 100f, AnimalStats.AttackRange);
     }
 
+    /// <summary>Animation event — ends the attack clip and resumes movement.</summary>
     public void EndAttack() => ResetCombatStates();
 
+    /// <summary>Animation event — ends the hit reaction clip.</summary>
     public void EndHit() => ResetCombatStates();
 
+    /// <summary>Animation event — ends the wake-up roar and resumes combat.</summary>
     public void EndBuff() => isRoaring = false;
 }

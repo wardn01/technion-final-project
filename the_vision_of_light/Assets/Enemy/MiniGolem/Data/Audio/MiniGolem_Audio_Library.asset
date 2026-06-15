@@ -41,3 +41,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 0ab8dfdd02789e149b1501db7e4b31da, type: 3}
     volume: 1
+  - actionName: Spawn
+    clips:
+    - {fileID: 8300000, guid: 2712851bd0cf9c84084e39b804e4d1bb, type: 3}
+    volume: 0.95

@@ -1,82 +1,142 @@
 using UnityEngine;
 
 /// <summary>
-/// Boss enemy: two combat phases with an enrage cutscene, multi-attack index, and heavy fire strike.
+/// Boss: phase-1 melee, then enrage cutscene at 50% HP with faster phase-2 attacks.
+/// Drives the RageOrc HUD meter until enrage triggers. Data: Orc/Data/OrcData.asset.
 /// </summary>
-/// <remarks>
-/// Phase 1: melee attacks 1–2 at normal damage/cooldown.
-/// Phase 2: triggered at <see cref="BossEnemyStats.EnrageHealthPercentage"/> HP — invincible rage
-/// animation, then faster attacks 3–4 including heavy fire (<c>AnimHeavyHit</c>).
-/// Animation events: see clips under <c>Orc/Animation/</c> (rage calls <c>EndEnrage</c>).
-/// Stats: <c>Orc/Data/OrcData.asset</c>.
-/// Audio: <c>Orc/Data/Audio/Orc_Audio_Library.asset</c>.
-/// VFX: <c>Orc/VFX/Orc_RageVFX.prefab</c>, <c>Orc/VFX/Orc_HeavyAttackVFX.prefab</c>.
-/// UI: boss HP bar on player HUD via <see cref="BossHealthBarUI"/> (not world-space).
-/// Camp reset: returns to spawn and heals when the player escapes (see <see cref="BossEnemy"/>).
-/// </remarks>
 [RequireComponent(typeof(EnemyAudioEmitter))]
 public class Orc : BossEnemy
 {
+    private const float EnrageSequenceTimeout = 8f;
+
     private bool isEnraged;
     private bool phase2Triggered;
     private bool isInvincible;
+    private bool isInEnrageSequence;
+    private float enrageSequenceStartTime;
+
+    public float EnrageHealthPercent => BossStats != null ? BossStats.EnrageHealthPercentage : 0.5f;
+    public bool IsEnrageTriggered => phase2Triggered;
 
     protected override bool IsInPhase2 => isEnraged;
     protected override bool SuppressHitReaction => isInvincible || isEnraged;
 
     protected override void Update()
     {
-        if (isDead || target == null) return;
+        if (isDead || target == null)
+            return;
+
+        if (isInEnrageSequence)
+        {
+            FaceTarget();
+            if (Time.time >= enrageSequenceStartTime + EnrageSequenceTimeout)
+                ForceCompleteEnrageSequence();
+            return;
+        }
 
         if (isInvincible)
-            FaceTarget();
+            ForceCompleteEnrageSequence();
 
         base.Update();
     }
 
     public override void TakeDamage(float damage, bool playHitReaction = true)
     {
-        if (isInvincible || BossStats == null) return;
-
-        float enrageThreshold = currentMaxHealth * BossStats.EnrageHealthPercentage;
-        float damageMultiplier = 100f / (100f + currentDefense);
-        float predictedFinalDamage = damage * damageMultiplier;
-
-        if (!phase2Triggered && (currentHealth - predictedFinalDamage) <= enrageThreshold)
-        {
-            float actualDamageAllowed = currentHealth - enrageThreshold;
-            float rawDamageAllowed = actualDamageAllowed / damageMultiplier;
-
-            if (rawDamageAllowed > 0)
-                base.TakeDamage(rawDamageAllowed, playHitReaction);
-
-            TriggerEnragePhase();
+        if (isInvincible || BossStats == null)
             return;
+
+        float enrageThresholdHealth = GetEnrageThresholdHealth();
+
+        if (!phase2Triggered)
+        {
+            if (currentHealth <= enrageThresholdHealth)
+            {
+                SnapHealthToEnrageThreshold(enrageThresholdHealth);
+                TriggerEnragePhase();
+                return;
+            }
+
+            float damageMultiplier = 100f / (100f + currentDefense);
+            float predictedFinalDamage = Mathf.Max(1f, damage * damageMultiplier);
+
+            if (currentHealth - predictedFinalDamage <= enrageThresholdHealth)
+            {
+                float allowedFinalDamage = currentHealth - enrageThresholdHealth;
+                if (allowedFinalDamage > 0f)
+                {
+                    float rawAllowed = allowedFinalDamage / damageMultiplier;
+                    base.TakeDamage(rawAllowed, playHitReaction);
+                }
+
+                SnapHealthToEnrageThreshold(enrageThresholdHealth);
+                TriggerEnragePhase();
+                return;
+            }
         }
 
         base.TakeDamage(damage, playHitReaction);
     }
 
+    /// <summary>Syncs HP bar and RageOrc enrage meter on the HUD.</summary>
+    protected override void UpdateHealthUI()
+    {
+        base.UpdateHealthUI();
+
+        if (BossHealthBarUI.Instance == null)
+            return;
+
+        BossHealthBarUI.Instance.UpdateOrcRageMeter(
+            currentHealth,
+            currentMaxHealth,
+            EnrageHealthPercent,
+            phase2Triggered);
+    }
+
+    private float GetEnrageThresholdHealth()
+    {
+        return Mathf.Max(1f, currentMaxHealth * BossStats.EnrageHealthPercentage);
+    }
+
+    private void SnapHealthToEnrageThreshold(float enrageThresholdHealth)
+    {
+        if (Mathf.Approximately(currentHealth, enrageThresholdHealth))
+            return;
+
+        currentHealth = enrageThresholdHealth;
+        UpdateHealthUI();
+    }
+
     private void TriggerEnragePhase()
     {
+        if (phase2Triggered)
+            return;
+
         phase2Triggered = true;
         isEnraged = true;
-        isHitBase = false;
-        isAttackingBase = true;
+        isInEnrageSequence = true;
         isInvincible = true;
+        isHitBase = false;
+        isAttackingBase = false;
+        enrageSequenceStartTime = Time.time;
 
         StopAgent();
-        anim.ResetTrigger("Hit");
+
+        if (anim != null)
+        {
+            anim.ResetTrigger("Hit");
+            anim.ResetTrigger("Attack");
+            anim.SetTrigger("Enrage");
+        }
 
         EnemyStatusEffects statusEffects = GetComponent<EnemyStatusEffects>();
         if (statusEffects != null)
             statusEffects.ResetAllEffects();
 
-        anim.SetTrigger("Enrage");
-
         EnemyVFX vfxController = GetComponent<EnemyVFX>();
         if (vfxController != null)
             vfxController.PlayRageVFX();
+
+        BossHealthBarUI.Instance?.HideOrcRageMeter();
     }
 
     protected override void PerformAttack()
@@ -86,17 +146,21 @@ public class Orc : BossEnemy
         anim.SetTrigger("Attack");
     }
 
+    /// <summary>Animation event — phase-1/2 melee damage frame.</summary>
     public void AnimHit()
     {
-        if (BossStats == null) return;
+        if (BossStats == null || isInEnrageSequence)
+            return;
 
         float damageMultiplier = GetDamagePercent() / 100f;
         ExecuteMeleeAttack(damageMultiplier, BossStats.AttackRange);
     }
 
+    /// <summary>Animation event — phase-2 heavy fire strike with ground VFX.</summary>
     public void AnimHeavyHit()
     {
-        if (target == null || BossStats == null) return;
+        if (target == null || BossStats == null || isInEnrageSequence)
+            return;
 
         EnemyVFX vfxController = GetComponent<EnemyVFX>();
         if (vfxController != null)
@@ -113,6 +177,15 @@ public class Orc : BossEnemy
     /// <summary>Called from rage animation event when the cutscene finishes.</summary>
     public void EndEnrage()
     {
+        ForceCompleteEnrageSequence();
+    }
+
+    private void ForceCompleteEnrageSequence()
+    {
+        if (!isInEnrageSequence && !isInvincible)
+            return;
+
+        isInEnrageSequence = false;
         isInvincible = false;
         ResetCombatStates();
     }
@@ -126,5 +199,7 @@ public class Orc : BossEnemy
         phase2Triggered = false;
         isEnraged = false;
         isInvincible = false;
+        isInEnrageSequence = false;
+        enrageSequenceStartTime = 0f;
     }
 }

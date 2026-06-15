@@ -2,8 +2,12 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// Applies crowd-control and DoT effects to enemies — slow, freeze, burn, and knockback.
+/// </summary>
 public class EnemyStatusEffects : MonoBehaviour
 {
+    #region State
     private NavMeshAgent agent;
     private Animator anim;
     private EnemyBase enemyBase; 
@@ -40,7 +44,10 @@ public class EnemyStatusEffects : MonoBehaviour
 
         RefreshState();
     }
+    #endregion
 
+    #region Effect API
+    /// <summary>Stops NavMesh and disables enemy AI until <see cref="ResumeAI"/>.</summary>
     public void PauseAI()
     {
         aiPauseCount++;
@@ -53,6 +60,7 @@ public class EnemyStatusEffects : MonoBehaviour
         RefreshState();
     }
 
+    /// <summary>Re-enables AI when all pause sources are cleared.</summary>
     public void ResumeAI()
     {
         aiPauseCount = Mathf.Max(0, aiPauseCount - 1);
@@ -71,6 +79,7 @@ public class EnemyStatusEffects : MonoBehaviour
         RefreshState();
     }
 
+    /// <summary>Reduces move and animation speed for the given duration.</summary>
     public void ApplySlow(float slowPercent, float duration)
     {
         if (enemyBase != null && enemyBase.IsDead) return;
@@ -89,6 +98,7 @@ public class EnemyStatusEffects : MonoBehaviour
         RefreshState();
     }
 
+    /// <summary>Clears slow and restores full movement speed.</summary>
     public void RemoveSlow()
     {
         if (slowRoutine != null)
@@ -102,6 +112,7 @@ public class EnemyStatusEffects : MonoBehaviour
         RefreshState();
     }
 
+    /// <summary>Freezes NavMesh, movement, and animator until the duration expires.</summary>
     public void ApplyFreeze(float duration)
     {
         if (enemyBase != null && enemyBase.IsDead) return;
@@ -138,6 +149,7 @@ public class EnemyStatusEffects : MonoBehaviour
         burnRoutine = StartCoroutine(BurnRoutine(duration, damagePerTick, tickInterval));
     }
 
+    /// <summary>Stops burn DoT ticks.</summary>
     public void RemoveBurn()
     {
         if (burnRoutine != null)
@@ -147,6 +159,7 @@ public class EnemyStatusEffects : MonoBehaviour
         }
     }
 
+    /// <summary>Pushes the enemy along a direction while pausing AI.</summary>
     public void ApplyKnockback(Vector3 direction, float distance, float duration)
     {
         if (enemyBase != null && enemyBase.IsDead) return;
@@ -251,6 +264,7 @@ public class EnemyStatusEffects : MonoBehaviour
         }
     }
 
+    /// <summary>Clears all active effects — used on boss camp reset.</summary>
     public void ResetAllEffects()
     {
         if (knockbackRoutine != null)
@@ -276,4 +290,5 @@ public class EnemyStatusEffects : MonoBehaviour
         if (anim != null) anim.speed = 1f;
         if (enemyBase != null && !enemyBase.IsDead) enemyBase.enabled = true;
     }
+    #endregion
 }

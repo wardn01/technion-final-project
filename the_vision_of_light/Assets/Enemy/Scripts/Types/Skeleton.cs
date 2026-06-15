@@ -1,19 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Weakest normal enemy tier (Hilichurl-style grunt).
-/// Uses default <see cref="NormalEnemy"/> AI: patrol, chase, one melee swing, camp reset.
+/// Weakest normal enemy — single melee attack and camp reset. Data: Skeleton/Data/SkeletonData.asset.
 /// </summary>
-/// <remarks>
-/// Animation events on the Attack clip:
-/// <list type="bullet">
-///   <item><c>PlayEnemySound("Attack")</c> — via <see cref="EnemyAudioEmitter"/></item>
-///   <item><c>AnimHit()</c> — damage frame</item>
-///   <item><c>ResetCombatStates()</c> — resume NavMesh after swing</item>
-/// </list>
-/// Stats: <c>Skeleton/Data/SkeletonData.asset</c>.
-/// Audio: <c>Skeleton/Data/Audio/Skeleton_Audio_Library.asset</c>.
-/// </remarks>
 [RequireComponent(typeof(EnemyAudioEmitter))]
 public class Skeleton : NormalEnemy
 {

@@ -3,22 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Mid-boss enemy: opening StartFight → JumpAttack, then melee + occasional jump leap + stone throw.
+/// Mid-boss: opening leap, melee, stone throw, and MiniGolem summon at 30% HP.
+/// Drives the RageGolem HUD meter until minions spawn. Data: Golem/Data/GolemData.asset.
 /// </summary>
-/// <remarks>
-/// Animation events (see clips under <c>Golem/Animation/</c>):
-/// <list type="bullet">
-///   <item>Attack_1 / Attack_2: <c>PlayLightAttackVfx</c> + <c>AnimHit</c> (separate events)</item>
-///   <item>ThrowStone: <c>ShootStone</c> only (no VFX)</item>
-///   <item>JumpAttack: <c>PlayHeavyAttackVfx</c> + <c>AnimHit</c></item>
-///   <item>Hit: <c>PlayEnemySound("Hit")</c>, <c>EndHit</c></item>
-///   <item>Die: <c>PlayEnemySound("Death")</c></item>
-///   <item>Walk / Run: <c>PlayEnemySound("Step")</c></item>
-/// </list>
-/// Stats: <c>Golem/Data/GolemData.asset</c>.
-/// Audio: <c>Golem/Data/Audio/Golem_Audio_Library.asset</c>.
-/// Assign <see cref="stonePrefab"/> (<c>Golem/Weapon/Stone.prefab</c> — mesh + physics + <see cref="StoneProjectile"/>).
-/// </remarks>
 [RequireComponent(typeof(EnemyAudioEmitter))]
 [RequireComponent(typeof(GolemAttackVFX))]
 public class Golem : BossEnemy
@@ -40,13 +27,18 @@ public class Golem : BossEnemy
     [SerializeField] private float jumpAttackMaxDistance = 8.5f;
     [SerializeField] private float jumpAttackCooldown = 12f;
 
+    [Header("Hit Reaction")]
+    [Tooltip("Minimum seconds between GetHit animations so rapid player hits do not lock the boss out of attacking.")]
+    [SerializeField] private float hitReactionCooldown = 6f;
+
     [Header("Mini Golem Summon")]
     [SerializeField] private GameObject miniGolemPrefab;
     [SerializeField] private Transform[] miniGolemSpawnPoints;
-    [Tooltip("Spawn minions once this many seconds after the fight starts, or sooner if HP drops below the threshold.")]
-    [SerializeField] private float miniGolemSummonDelay = 75f;
+    [Tooltip("Spawn minions once HP drops to this fraction of max health.")]
     [SerializeField] [Range(0.05f, 1f)] private float miniGolemSummonHealthPercent = 0.3f;
     [SerializeField] private int miniGolemCount = 2;
+
+    public float MiniGolemSummonHealthPercent => miniGolemSummonHealthPercent;
 
     private bool openingSequenceDone;
     private bool isInOpeningSequence;
@@ -57,6 +49,7 @@ public class Golem : BossEnemy
     private bool isThrowing;
     private float throwAnimStartTime;
     private float lastJumpAttackTime = -999f;
+    private float lastHitReactionTime = -999f;
     private bool isJumpAttackActive;
     private GolemAttackVFX attackVfx;
     private Quaternion throwLockedRotation;
@@ -169,7 +162,6 @@ public class Golem : BossEnemy
         }
 
         MarkFightStartedIfNeeded();
-        TrySummonMiniGolems();
 
         base.Update();
     }
@@ -266,7 +258,13 @@ public class Golem : BossEnemy
         if (Time.time < lastAttackTime + GetAttackCooldown())
             return false;
 
-        return Random.value <= throwChance;
+        if (Random.value > throwChance)
+        {
+            lastAttackTime = Time.time;
+            return false;
+        }
+
+        return true;
     }
 
     private void ForceEndThrow()
@@ -487,26 +485,27 @@ public class Golem : BossEnemy
 
         GameObject stoneObj = Instantiate(stonePrefab, throwPoint.position, throwLockedRotation);
 
-        if (stoneObj.TryGetComponent(out StoneProjectile projectile))
+        IgnoreStoneCollisionWithGolem(stoneObj);
+
+        StoneProjectile projectile = null;
+        if (stoneObj.TryGetComponent(out projectile))
         {
             projectile.SetDamage(damage);
+            projectile.SetTarget(target);
             if (TryGetComponent(out EnemyAudioEmitter emitter))
                 projectile.BindAudio(emitter);
         }
 
         if (stoneObj.TryGetComponent(out Rigidbody rb))
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-
             Vector3 direction = throwLaunchDirection.sqrMagnitude > 0.01f
                 ? throwLaunchDirection
                 : throwLockedRotation * Vector3.forward;
 
-            rb.AddForce(direction * projectileSpeed, ForceMode.Impulse);
+            rb.linearVelocity = direction * projectileSpeed;
+            rb.angularVelocity = Vector3.zero;
+            projectile?.NotifyLaunched();
         }
-
-        IgnoreStoneCollisionWithGolem(stoneObj);
     }
 
     private void IgnoreStoneCollisionWithGolem(GameObject stoneObj)
@@ -521,6 +520,10 @@ public class Golem : BossEnemy
     public override void TakeDamage(float damage, bool playHitReaction = true)
     {
         MarkFightStarted();
+
+        if (HasLivingMiniGolems())
+            return;
+
         TrySummonMiniGolems(currentHealth - damage);
 
         if (!isEnraged && BossStats != null && currentHealth > 0)
@@ -531,6 +534,30 @@ public class Golem : BossEnemy
         }
 
         base.TakeDamage(damage, playHitReaction);
+    }
+
+    protected override void PlayHitEffect()
+    {
+        if (Time.time < lastHitReactionTime + hitReactionCooldown)
+            return;
+
+        lastHitReactionTime = Time.time;
+        base.PlayHitEffect();
+    }
+
+    /// <summary>Syncs HP bar and RageGolem summon meter on the HUD.</summary>
+    protected override void UpdateHealthUI()
+    {
+        base.UpdateHealthUI();
+
+        if (BossHealthBarUI.Instance == null)
+            return;
+
+        BossHealthBarUI.Instance.UpdateGolemSummonMeter(
+            currentHealth,
+            currentMaxHealth,
+            miniGolemSummonHealthPercent,
+            miniGolemsSummoned);
     }
 
     public override void EndAttack()
@@ -592,6 +619,7 @@ public class Golem : BossEnemy
         throwLaunchDirection = Vector3.zero;
         isJumpAttackActive = false;
         lastJumpAttackTime = -999f;
+        lastHitReactionTime = -999f;
         miniGolemsSummoned = false;
         fightStartTime = -1f;
         ClearSummonedMiniGolems();
@@ -626,11 +654,7 @@ public class Golem : BossEnemy
             return;
 
         float healthToCheck = projectedHealth >= 0f ? projectedHealth : currentHealth;
-        bool timerReady = Time.time >= fightStartTime + miniGolemSummonDelay;
-        bool healthReady = currentMaxHealth > 0f
-            && healthToCheck <= currentMaxHealth * miniGolemSummonHealthPercent;
-
-        if (!timerReady && !healthReady)
+        if (currentMaxHealth <= 0f || healthToCheck > currentMaxHealth * miniGolemSummonHealthPercent)
             return;
 
         SpawnMiniGolems();
@@ -639,6 +663,7 @@ public class Golem : BossEnemy
     private void SpawnMiniGolems()
     {
         miniGolemsSummoned = true;
+        BossHealthBarUI.Instance?.HideGolemSummonMeter();
 
         if (miniGolemSpawnPoints != null && miniGolemSpawnPoints.Length > 0)
         {
@@ -682,5 +707,31 @@ public class Golem : BossEnemy
         }
 
         activeMiniGolems.Clear();
+    }
+
+    private bool HasLivingMiniGolems()
+    {
+        if (!miniGolemsSummoned)
+            return false;
+
+        for (int i = activeMiniGolems.Count - 1; i >= 0; i--)
+        {
+            GameObject miniGolemObject = activeMiniGolems[i];
+            if (miniGolemObject == null)
+            {
+                activeMiniGolems.RemoveAt(i);
+                continue;
+            }
+
+            if (miniGolemObject.TryGetComponent(out MiniGolem miniGolem) && miniGolem.IsDead)
+            {
+                activeMiniGolems.RemoveAt(i);
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

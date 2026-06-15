@@ -135,11 +135,11 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 20
+  m_Radius: 0.45
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &8200000000000000007
 MonoBehaviour:
@@ -154,4 +154,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MiniGolemStoneProjectile
   lifeTime: 12
-  hitCheckPadding: 0.45
+  playerHitRadius: 0.55
+  minAirTimeBeforeDamage: 0.08

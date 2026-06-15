@@ -16,6 +16,7 @@ public class BoneProjectile : MonoBehaviour
         Destroy(gameObject, lifeTime);
     }
 
+    /// <summary>Sets impact damage from the thrower's scaled attack.</summary>
     public void SetDamage(float dmgAmount)
     {
         damage = dmgAmount;

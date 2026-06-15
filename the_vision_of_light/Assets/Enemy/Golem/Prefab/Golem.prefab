@@ -1985,7 +1985,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8200010010010010001}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 1b1595a3eddd7394f8dff33a9b282ac0, type: 3}
+  m_Avatar: {fileID: 9000000, guid: cfbfb95b5f2b90949be0b5faab2775fb, type: 3}
   m_Controller: {fileID: 9100000, guid: d4e5f6789012345678cafe0012345678, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
@@ -2030,11 +2030,11 @@ MonoBehaviour:
   jumpAttackMinDistance: 3
   jumpAttackMaxDistance: 8.5
   jumpAttackCooldown: 12
+  hitReactionCooldown: 6
   miniGolemPrefab: {fileID: 1077356408, guid: c6cfc32748fb5004aa11a1be074b5c58, type: 3}
   miniGolemSpawnPoints:
   - {fileID: 8200010010010010031}
   - {fileID: 8200010010010010033}
-  miniGolemSummonDelay: 75
   miniGolemSummonHealthPercent: 0.3
   miniGolemCount: 2
 --- !u!114 &8200010010010010012

@@ -1,8 +1,12 @@
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Floating damage number that rises, fades, and billboards toward the camera.
+/// </summary>
 public class DamageText : MonoBehaviour
 {
+    #region Settings
     [Header("Settings")]
     public float moveSpeed = 2f;
     public float lifetime = 1.5f;
@@ -10,7 +14,9 @@ public class DamageText : MonoBehaviour
     private TextMeshPro textMesh;
     private Color textColor;
     private Camera targetCamera;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         textMesh = GetComponent<TextMeshPro>();
@@ -27,12 +33,6 @@ public class DamageText : MonoBehaviour
         }
     }
 
-    public void Setup(float damageAmount)
-    {
-        textMesh.text = damageAmount.ToString("0");
-        Destroy(gameObject, lifetime);
-    }
-
     private void LateUpdate()
     {
         transform.position += Vector3.up * moveSpeed * Time.deltaTime;
@@ -45,4 +45,14 @@ public class DamageText : MonoBehaviour
         textColor.a -= (1f / lifetime) * Time.deltaTime;
         textMesh.color = textColor;
     }
+    #endregion
+
+    #region Public API
+    /// <summary>Displays the damage value and schedules self-destruction.</summary>
+    public void Setup(float damageAmount)
+    {
+        textMesh.text = damageAmount.ToString("0");
+        Destroy(gameObject, lifetime);
+    }
+    #endregion
 }

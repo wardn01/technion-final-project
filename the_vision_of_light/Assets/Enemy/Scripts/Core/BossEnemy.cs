@@ -8,6 +8,7 @@ using System.Collections;
 /// </summary>
 public abstract class BossEnemy : EnemyBase
 {
+    #region State
     protected float distanceToTarget;
     protected float lastAttackTime;
     protected Vector3 startingPosition;
@@ -20,7 +21,9 @@ public abstract class BossEnemy : EnemyBase
     protected EnemyStatusEffects statusEffects;
 
     protected BossEnemyStats BossStats => stats as BossEnemyStats;
+    #endregion
 
+    #region Unity Lifecycle
     protected override void Awake()
     {
         base.Awake();
@@ -126,7 +129,10 @@ public abstract class BossEnemy : EnemyBase
         else
             ChaseBehavior();
     }
+    #endregion
 
+    #region Aggro & Camp Reset
+    /// <summary>First hit or chase-range entry shows the HUD boss bar.</summary>
     public override void TakeDamage(float damage, bool playHitReaction = true)
     {
         if (isReturningToCamp) return;
@@ -143,6 +149,7 @@ public abstract class BossEnemy : EnemyBase
         ShowBossBar();
     }
 
+    /// <summary>Heals, hides the boss bar, and resets subclass phase state when the player escapes.</summary>
     protected virtual void TriggerCampReset()
     {
         isReturningToCamp = true;
@@ -170,7 +177,9 @@ public abstract class BossEnemy : EnemyBase
 
     /// <summary>Subclass hook — e.g. Orc resets enrage phase.</summary>
     protected virtual void OnCampReset() { }
+    #endregion
 
+    #region Combat Behavior
     protected void ReturnToCampBehavior()
     {
         if (agent == null || !agent.isOnNavMesh) return;
@@ -244,11 +253,13 @@ public abstract class BossEnemy : EnemyBase
         if (anim != null) anim.SetFloat("Speed", 0f);
     }
 
+    /// <summary>Animation event — clears the attacking flag after a swing.</summary>
     public virtual void EndAttack()
     {
         isAttackingBase = false;
     }
 
+    /// <summary>Animation event — clears the hit-reaction flag.</summary>
     public virtual void EndHit()
     {
         isHitBase = false;
@@ -290,4 +301,5 @@ public abstract class BossEnemy : EnemyBase
 
         BossHealthBarUI.Instance.HideBoss(this);
     }
+    #endregion
 }

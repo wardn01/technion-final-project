@@ -2,8 +2,12 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 
+/// <summary>
+/// Shared enemy foundation: scaled stats, NavMesh movement, damage, loot, and animation-driven audio.
+/// </summary>
 public abstract class EnemyBase : MonoBehaviour
 {
+    #region Serialized Fields
     [Header("Player Data Reference")]
     public PlayerData playerData;
 
@@ -33,7 +37,9 @@ public abstract class EnemyBase : MonoBehaviour
     [Header("UI & Effects")]
     public GameObject damageTextPrefab;
     public Transform textSpawnPoint;
+    #endregion
 
+    #region Unity Lifecycle
     protected virtual void Awake()
     {
         anim = GetComponent<Animator>();
@@ -84,7 +90,10 @@ public abstract class EnemyBase : MonoBehaviour
             }
         }
     }
+    #endregion
 
+    #region Stat Scaling
+    /// <summary>Rolls level from player ascension and applies HP/ATK/DEF scaling from <see cref="stats"/>.</summary>
     protected virtual void ScaleStatsWithPlayer()
     {
         if (playerData != null && stats != null)
@@ -114,7 +123,10 @@ public abstract class EnemyBase : MonoBehaviour
             currentDefense = stats.BaseDefense + (10 * stats.DefScale);
         }
     }
+    #endregion
 
+    #region Combat
+    /// <summary>Clears hit/attack flags and resumes NavMesh after an animation finishes.</summary>
     public virtual void ResetCombatStates()
     {
         isHitBase = false;
@@ -126,6 +138,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
+    /// <summary>Stops NavMesh movement and zeroes velocity.</summary>
     public void StopAgent()
     {
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -144,6 +157,7 @@ public abstract class EnemyBase : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * stats.RotationSpeed);
     }
 
+    /// <summary>Applies defense-scaled damage, floating numbers, hit reaction, and death when HP reaches zero.</summary>
     public virtual void TakeDamage(float incomingDamage, bool playHitReaction = true)
     {
         if (isDead) return;
@@ -178,6 +192,7 @@ public abstract class EnemyBase : MonoBehaviour
         if (enemyUI != null) enemyUI.UpdateHealthBar(currentHealth);
     }
 
+    /// <summary>Plays death animation, disables colliders, drops loot, grants XP, and destroys the object.</summary>
     protected virtual void Die()
     {
         if (isDead) return;
@@ -234,6 +249,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
+    /// <summary>Deals melee damage to the player when in range and facing the target.</summary>
     protected void ExecuteMeleeAttack(float damageMultiplier = 1f, float attackRange = 2f, float maxAngle = 60f)
     {
         if (target == null) return;
@@ -257,4 +273,5 @@ public abstract class EnemyBase : MonoBehaviour
             }
         }
     }
+    #endregion
 }

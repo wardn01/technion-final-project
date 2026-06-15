@@ -1,9 +1,13 @@
 using UnityEngine;
 
+/// <summary>
+/// Keeps a world-space UI element facing the active camera each frame.
+/// </summary>
 public class FaceCamera : MonoBehaviour
 {
     public Camera myTargetCamera;
 
+    #region Unity Lifecycle
     private void Start()
     {
         if (myTargetCamera == null)
@@ -19,4 +23,5 @@ public class FaceCamera : MonoBehaviour
             transform.forward = myTargetCamera.transform.forward;
         }
     }
+    #endregion
 }

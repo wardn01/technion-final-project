@@ -28,10 +28,10 @@ MonoBehaviour:
     minAmount: 5
     maxAmount: 12
     dropChance: 100
-  - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+  - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
     minAmount: 1
     maxAmount: 1
-    dropChance: 25
+    dropChance: 35
   xpReward: 38
   normalDamage: 100
   normalAttackRange: 1.85
@@ -39,6 +39,7 @@ MonoBehaviour:
   maxLeashDistance: 22
   throwMinDistance: 4
   rangedAttackRange: 10
+  throwChance: 0.35
   projectileSpeed: 18
   throwDamage: 85
   rangedAttackCooldown: 2.8

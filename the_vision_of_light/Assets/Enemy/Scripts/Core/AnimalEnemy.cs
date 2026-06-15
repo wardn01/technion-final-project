@@ -2,8 +2,12 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 
+/// <summary>
+/// Peaceful animal AI base: patrol and attack when provoked. Subclasses define wake-up behavior.
+/// </summary>
 public class AnimalEnemy : EnemyBase
 {
+    #region State
     protected float distanceToTarget;
     protected float lastAttackTime;
     private Vector3 startingPosition;
@@ -14,7 +18,9 @@ public class AnimalEnemy : EnemyBase
     protected EnemyStatusEffects statusEffects; 
 
     protected AnimalEnemyStats AnimalStats => stats as AnimalEnemyStats;
+    #endregion
 
+    #region Unity Lifecycle
     protected override IEnumerator Start()
     {
         yield return base.Start(); 
@@ -73,7 +79,9 @@ public class AnimalEnemy : EnemyBase
             PatrolBehavior(); 
         }
     }
+    #endregion
 
+    #region Combat Behavior
     protected override void PlayHitEffect()
     {
         base.PlayHitEffect();
@@ -150,4 +158,5 @@ public class AnimalEnemy : EnemyBase
             }
         }
     }
+    #endregion
 }

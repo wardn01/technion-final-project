@@ -1,26 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Mid-tier normal enemy (Mitachurl-style): melee sword + bone throw at range.
-/// Inherits camp reset from <see cref="NormalEnemy"/>.
+/// Mid-tier normal enemy — melee sword and bone throw at range. Data: Goblin/Data/GoblinData.asset.
 /// </summary>
-/// <remarks>
-/// Combat bands (distance to player):
-/// <list type="bullet">
-///   <item>Melee range → sword swing (<c>MeleeAttack</c>)</item>
-///   <item>Charge range → chase with sword out</item>
-///   <item>Ranged range → bone throw (<c>RangedAttack</c> → <see cref="ShootBone"/>)</item>
-///   <item>Chase range → run toward player, sword hidden</item>
-/// </list>
-/// Animation events:
-/// <list type="bullet">
-///   <item>Attack_2: <c>PlayEnemySound("Attack")</c>, <c>AnimHit</c>, <c>ResetCombatStates</c></item>
-///   <item>Throw: <c>PlayEnemySound("Throw")</c>, <c>ShootBone</c>, <c>ResetCombatStates</c></item>
-///   <item>Hit / Die / Run: see clip events under <c>Goblin/Animation/</c></item>
-/// </list>
-/// Stats: <c>Goblin/Data/GoblinData.asset</c>.
-/// Audio: <c>Goblin/Data/Audio/Goblin_Audio_Library.asset</c>.
-/// </remarks>
 [RequireComponent(typeof(EnemyAudioEmitter))]
 public class Goblin : NormalEnemy
 {
