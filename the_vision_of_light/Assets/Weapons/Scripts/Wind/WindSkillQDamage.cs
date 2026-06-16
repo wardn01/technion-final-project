@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Wind Sword [Q] tornado. Pulls enemies away, ticks damage while they stay inside,

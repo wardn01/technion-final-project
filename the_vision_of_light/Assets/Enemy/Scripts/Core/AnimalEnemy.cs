@@ -2,161 +2,164 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 
-/// <summary>
-/// Peaceful animal AI base: patrol and attack when provoked. Subclasses define wake-up behavior.
-/// </summary>
-public class AnimalEnemy : EnemyBase
+namespace VisionOfLight.Enemy
 {
-    #region State
-    protected float distanceToTarget;
-    protected float lastAttackTime;
-    private Vector3 startingPosition;
-    private float waitTimer;
-    private float pathUpdateTimer; 
-    
-    protected PlayerHealth playerHealth; 
-    protected EnemyStatusEffects statusEffects; 
-
-    protected AnimalEnemyStats AnimalStats => stats as AnimalEnemyStats;
-    #endregion
-
-    #region Unity Lifecycle
-    protected override IEnumerator Start()
+    /// <summary>
+    /// Peaceful animal AI base: patrol and attack when provoked. Subclasses define wake-up behavior.
+    /// </summary>
+    public class AnimalEnemy : EnemyBase
     {
-        yield return base.Start(); 
+        #region State
+        protected float distanceToTarget;
+        protected float lastAttackTime;
+        private Vector3 startingPosition;
+        private float waitTimer;
+        private float pathUpdateTimer; 
 
-        statusEffects = GetComponent<EnemyStatusEffects>(); 
+        protected PlayerHealth playerHealth; 
+        protected EnemyStatusEffects statusEffects; 
 
-        if (target != null)
+        protected AnimalEnemyStats AnimalStats => stats as AnimalEnemyStats;
+        #endregion
+
+        #region Unity Lifecycle
+        protected override IEnumerator Start()
         {
-            playerHealth = target.GetComponent<PlayerHealth>();
-        }
+            yield return base.Start(); 
 
-        if (playerHealth == null)
-        {
-            playerHealth = FindAnyObjectByType<PlayerHealth>();
-            if (playerHealth != null) target = playerHealth.transform; 
-        }
+            statusEffects = GetComponent<EnemyStatusEffects>(); 
 
-        startingPosition = transform.position; 
-    }
-
-    protected virtual void Update()
-    {
-        if (isDead || target == null || playerHealth == null) return;
-
-        if (playerHealth.isDead)
-        {
-            StopAgent();
-            isAttackingBase = false;
-            if (anim != null) 
+            if (target != null)
             {
-                anim.SetFloat("Speed", 0f);
+                playerHealth = target.GetComponent<PlayerHealth>();
             }
-            return; 
-        }
 
-        UpdateBlendTree(); 
-
-        if (isHitBase || isAttackingBase) 
-        {
-            StopAgent();
-            return; 
-        }
-
-        distanceToTarget = Vector3.Distance(transform.position, target.position);
-
-        if (AnimalStats != null && distanceToTarget <= AnimalStats.AttackRange)
-        {
-            AttackBehavior(); 
-        }
-        else if (distanceToTarget <= stats.ChaseRange)
-        {
-            ChaseBehavior(); 
-        }
-        else
-        {
-            PatrolBehavior(); 
-        }
-    }
-    #endregion
-
-    #region Combat Behavior
-    protected override void PlayHitEffect()
-    {
-        base.PlayHitEffect();
-        isHitBase = true;     
-        isAttackingBase = false; 
-        StopAgent();
-    }
-
-    protected virtual void AttackBehavior()
-    {
-        StopAgent();
-        FaceTarget();
-
-        if (AnimalStats != null && Time.time >= lastAttackTime + AnimalStats.AttackCooldown)
-        {
-            isAttackingBase = true; 
-            PerformAttack();
-            lastAttackTime = Time.time;
-        }
-    }
-
-    protected virtual void PerformAttack()
-    {
-        if (anim != null) anim.SetTrigger("Attack");
-    }
-
-    protected virtual void UpdateBlendTree()
-    {
-        if (anim != null && agent != null)
-        {
-            anim.SetFloat("Speed", agent.velocity.magnitude);
-        }
-    }
-
-    protected virtual void ChaseBehavior()
-    {
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-            
-            float slowMulti = statusEffects != null ? statusEffects.SlowMultiplier : 1f;
-            agent.speed = stats.RunSpeed * slowMulti; 
-
-            if (Time.time >= pathUpdateTimer)
+            if (playerHealth == null)
             {
-                agent.SetDestination(target.position);
-                pathUpdateTimer = Time.time + 0.2f; 
+                playerHealth = FindAnyObjectByType<PlayerHealth>();
+                if (playerHealth != null) target = playerHealth.transform; 
             }
+
+            startingPosition = transform.position; 
         }
-    }
 
-    protected virtual void PatrolBehavior()
-    {
-        if (agent != null && agent.isOnNavMesh)
+        protected virtual void Update()
         {
-            agent.isStopped = false;
+            if (isDead || target == null || playerHealth == null) return;
 
-            float slowMulti = statusEffects != null ? statusEffects.SlowMultiplier : 1f;
-            agent.speed = stats.WalkSpeed * slowMulti; 
-
-            if (agent.remainingDistance <= agent.stoppingDistance)
+            if (playerHealth.isDead)
             {
-                waitTimer -= Time.deltaTime;
-                if (waitTimer <= 0)
+                StopAgent();
+                isAttackingBase = false;
+                if (anim != null) 
                 {
-                    Vector3 randomDir = Random.insideUnitSphere * 5f + startingPosition;
-                    NavMeshHit hit;
-                    if (NavMesh.SamplePosition(randomDir, out hit, 5f, 1))
-                    {
-                        agent.SetDestination(hit.position);
-                    }
-                    waitTimer = 3f; 
+                    anim.SetFloat("Speed", 0f);
+                }
+                return; 
+            }
+
+            UpdateBlendTree(); 
+
+            if (isHitBase || isAttackingBase) 
+            {
+                StopAgent();
+                return; 
+            }
+
+            distanceToTarget = Vector3.Distance(transform.position, target.position);
+
+            if (AnimalStats != null && distanceToTarget <= AnimalStats.AttackRange)
+            {
+                AttackBehavior(); 
+            }
+            else if (distanceToTarget <= stats.ChaseRange)
+            {
+                ChaseBehavior(); 
+            }
+            else
+            {
+                PatrolBehavior(); 
+            }
+        }
+        #endregion
+
+        #region Combat Behavior
+        protected override void PlayHitEffect()
+        {
+            base.PlayHitEffect();
+            isHitBase = true;     
+            isAttackingBase = false; 
+            StopAgent();
+        }
+
+        protected virtual void AttackBehavior()
+        {
+            StopAgent();
+            FaceTarget();
+
+            if (AnimalStats != null && Time.time >= lastAttackTime + AnimalStats.AttackCooldown)
+            {
+                isAttackingBase = true; 
+                PerformAttack();
+                lastAttackTime = Time.time;
+            }
+        }
+
+        protected virtual void PerformAttack()
+        {
+            if (anim != null) anim.SetTrigger("Attack");
+        }
+
+        protected virtual void UpdateBlendTree()
+        {
+            if (anim != null && agent != null)
+            {
+                anim.SetFloat("Speed", agent.velocity.magnitude);
+            }
+        }
+
+        protected virtual void ChaseBehavior()
+        {
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+
+                float slowMulti = statusEffects != null ? statusEffects.SlowMultiplier : 1f;
+                agent.speed = stats.RunSpeed * slowMulti; 
+
+                if (Time.time >= pathUpdateTimer)
+                {
+                    agent.SetDestination(target.position);
+                    pathUpdateTimer = Time.time + 0.2f; 
                 }
             }
         }
+
+        protected virtual void PatrolBehavior()
+        {
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+
+                float slowMulti = statusEffects != null ? statusEffects.SlowMultiplier : 1f;
+                agent.speed = stats.WalkSpeed * slowMulti; 
+
+                if (agent.remainingDistance <= agent.stoppingDistance)
+                {
+                    waitTimer -= Time.deltaTime;
+                    if (waitTimer <= 0)
+                    {
+                        Vector3 randomDir = Random.insideUnitSphere * 5f + startingPosition;
+                        NavMeshHit hit;
+                        if (NavMesh.SamplePosition(randomDir, out hit, 5f, 1))
+                        {
+                            agent.SetDestination(hit.position);
+                        }
+                        waitTimer = 3f; 
+                    }
+                }
+            }
+        }
+        #endregion
     }
-    #endregion
 }

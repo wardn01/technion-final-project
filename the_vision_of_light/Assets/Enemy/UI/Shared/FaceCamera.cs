@@ -1,27 +1,30 @@
 using UnityEngine;
 
-/// <summary>
-/// Keeps a world-space UI element facing the active camera each frame.
-/// </summary>
-public class FaceCamera : MonoBehaviour
+namespace VisionOfLight.Enemy
 {
-    public Camera myTargetCamera;
-
-    #region Unity Lifecycle
-    private void Start()
+    /// <summary>
+    /// Keeps a world-space UI element facing the active camera each frame.
+    /// </summary>
+    public class FaceCamera : MonoBehaviour
     {
-        if (myTargetCamera == null)
-        {
-            myTargetCamera = Camera.main;
-        }
-    }
+        public Camera myTargetCamera;
 
-    private void LateUpdate()
-    {
-        if (myTargetCamera != null)
+        #region Unity Lifecycle
+        private void Start()
         {
-            transform.forward = myTargetCamera.transform.forward;
+            if (myTargetCamera == null)
+            {
+                myTargetCamera = Camera.main;
+            }
         }
+
+        private void LateUpdate()
+        {
+            if (myTargetCamera != null)
+            {
+                transform.forward = myTargetCamera.transform.forward;
+            }
+        }
+        #endregion
     }
-    #endregion
 }

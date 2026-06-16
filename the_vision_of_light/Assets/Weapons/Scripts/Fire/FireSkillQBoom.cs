@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Fire Sword [Q] forward boom. Spawns in front of the player, travels forward,

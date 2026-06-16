@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// A persistent Singleton manager that handles loading and saving the current world's state, 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Ice Q projectile spawned from <see cref="IceCircleQZone"/>.

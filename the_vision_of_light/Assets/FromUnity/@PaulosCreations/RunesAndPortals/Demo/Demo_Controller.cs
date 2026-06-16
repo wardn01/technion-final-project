@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 public class Demo_Controller : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class Demo_Controller : MonoBehaviour
     [SerializeField] private PortalRound_Controller portalRoundScripts;
     [SerializeField] private PortalGate_Controller portalGateScript;
     [SerializeField] private Vortex_Controller vortexScript;
-    [SerializeField] private Rift_Controller riftScript;
+    [SerializeField] private RiftController riftScript;
     [SerializeField] private Transform camBaseTF;
     [SerializeField] private Light lightMain;
     [SerializeField] private GameObject[] SSCameras;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Fire Sword [E] skill hitbox. Damages each enemy once and applies a burning DoT

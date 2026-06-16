@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using VisionOfLight.Enemy;
 
 [DefaultExecutionOrder(-50)]
 public class PlayerCombat : MonoBehaviour

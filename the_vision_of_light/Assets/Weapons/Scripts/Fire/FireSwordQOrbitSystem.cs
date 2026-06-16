@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Fire Sword [Q] — spawns orbiting fireballs behind the player. While enemies are nearby,

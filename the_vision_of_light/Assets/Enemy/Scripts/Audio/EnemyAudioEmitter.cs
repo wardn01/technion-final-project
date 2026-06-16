@@ -1,51 +1,54 @@
 using UnityEngine;
 
-/// <summary>
-/// Plays one-shot SFX from an <see cref="EnemyAudioData"/> library.
-/// Wire animation events as <c>PlayEnemySound("Attack")</c> on the enemy root (via <see cref="EnemyBase"/>).
-/// </summary>
-[RequireComponent(typeof(AudioSource))]
-public class EnemyAudioEmitter : MonoBehaviour
+namespace VisionOfLight.Enemy
 {
-    public EnemyAudioData audioData;
-    private AudioSource audioSource;
-
-    private void Awake()
+    /// <summary>
+    /// Plays one-shot SFX from an <see cref="EnemyAudioData"/> library.
+    /// Wire animation events as <c>PlayEnemySound("Attack")</c> on the enemy root (via <see cref="EnemyBase"/>).
+    /// </summary>
+    [RequireComponent(typeof(AudioSource))]
+    public class EnemyAudioEmitter : MonoBehaviour
     {
-        audioSource = GetComponent<AudioSource>();
-        audioSource.spatialBlend = 1f;
-        audioSource.playOnAwake = false;
-    }
+        public EnemyAudioData audioData;
+        private AudioSource audioSource;
 
-    /// <summary>Plays a random clip for <paramref name="actionName"/>. Called from <see cref="EnemyBase.PlayEnemySound"/>.</summary>
-    public void PlayClip(string actionName)
-    {
-        if (audioData == null) return;
+        private void Awake()
+        {
+            audioSource = GetComponent<AudioSource>();
+            audioSource.spatialBlend = 1f;
+            audioSource.playOnAwake = false;
+        }
 
-        var entry = audioData.GetSound(actionName);
-        if (entry.clips == null || entry.clips.Length == 0)
-            return;
+        /// <summary>Plays a random clip for <paramref name="actionName"/>. Called from <see cref="EnemyBase.PlayEnemySound"/>.</summary>
+        public void PlayClip(string actionName)
+        {
+            if (audioData == null) return;
 
-        Object clipObject = entry.clips[Random.Range(0, entry.clips.Length)];
-        if (clipObject is not AudioClip clip)
-            return;
+            var entry = audioData.GetSound(actionName);
+            if (entry.clips == null || entry.clips.Length == 0)
+                return;
 
-        audioSource.PlayOneShot(clip, entry.volume);
-    }
+            Object clipObject = entry.clips[Random.Range(0, entry.clips.Length)];
+            if (clipObject is not AudioClip clip)
+                return;
 
-    /// <summary>3D one-shot at a world position (e.g. stone impact away from the enemy).</summary>
-    public void PlayClipAt(string actionName, Vector3 worldPosition)
-    {
-        if (audioData == null) return;
+            audioSource.PlayOneShot(clip, entry.volume);
+        }
 
-        var entry = audioData.GetSound(actionName);
-        if (entry.clips == null || entry.clips.Length == 0)
-            return;
+        /// <summary>3D one-shot at a world position (e.g. stone impact away from the enemy).</summary>
+        public void PlayClipAt(string actionName, Vector3 worldPosition)
+        {
+            if (audioData == null) return;
 
-        Object clipObject = entry.clips[Random.Range(0, entry.clips.Length)];
-        if (clipObject is not AudioClip clip)
-            return;
+            var entry = audioData.GetSound(actionName);
+            if (entry.clips == null || entry.clips.Length == 0)
+                return;
 
-        AudioSource.PlayClipAtPoint(clip, worldPosition, entry.volume);
+            Object clipObject = entry.clips[Random.Range(0, entry.clips.Length)];
+            if (clipObject is not AudioClip clip)
+                return;
+
+            AudioSource.PlayClipAtPoint(clip, worldPosition, entry.volume);
+        }
     }
 }

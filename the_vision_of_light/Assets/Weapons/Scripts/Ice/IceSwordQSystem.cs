@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Ice Sword [Q] manager on <c>q.prefab</c>.

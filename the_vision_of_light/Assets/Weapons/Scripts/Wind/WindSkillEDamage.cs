@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Wind Sword [E] skill hitbox on <c>e.prefab</c>.

@@ -1,58 +1,61 @@
 using UnityEngine;
 using TMPro;
 
-/// <summary>
-/// Floating damage number that rises, fades, and billboards toward the camera.
-/// </summary>
-public class DamageText : MonoBehaviour
+namespace VisionOfLight.Enemy
 {
-    #region Settings
-    [Header("Settings")]
-    public float moveSpeed = 2f;
-    public float lifetime = 1.5f;
-
-    private TextMeshPro textMesh;
-    private Color textColor;
-    private Camera targetCamera;
-    #endregion
-
-    #region Unity Lifecycle
-    private void Awake()
+    /// <summary>
+    /// Floating damage number that rises, fades, and billboards toward the camera.
+    /// </summary>
+    public class DamageText : MonoBehaviour
     {
-        textMesh = GetComponent<TextMeshPro>();
-        textColor = textMesh.color;
-    }
+        #region Settings
+        [Header("Settings")]
+        public float moveSpeed = 2f;
+        public float lifetime = 1.5f;
 
-    private void Start()
-    {
-        targetCamera = Camera.main;
+        private TextMeshPro textMesh;
+        private Color textColor;
+        private Camera targetCamera;
+        #endregion
 
-        if (targetCamera == null)
+        #region Unity Lifecycle
+        private void Awake()
         {
-            targetCamera = FindAnyObjectByType<Camera>();
-        }
-    }
-
-    private void LateUpdate()
-    {
-        transform.position += Vector3.up * moveSpeed * Time.deltaTime;
-
-        if (targetCamera != null)
-        {
-            transform.rotation = targetCamera.transform.rotation;
+            textMesh = GetComponent<TextMeshPro>();
+            textColor = textMesh.color;
         }
 
-        textColor.a -= (1f / lifetime) * Time.deltaTime;
-        textMesh.color = textColor;
-    }
-    #endregion
+        private void Start()
+        {
+            targetCamera = Camera.main;
 
-    #region Public API
-    /// <summary>Displays the damage value and schedules self-destruction.</summary>
-    public void Setup(float damageAmount)
-    {
-        textMesh.text = damageAmount.ToString("0");
-        Destroy(gameObject, lifetime);
+            if (targetCamera == null)
+            {
+                targetCamera = FindAnyObjectByType<Camera>();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            transform.position += Vector3.up * moveSpeed * Time.deltaTime;
+
+            if (targetCamera != null)
+            {
+                transform.rotation = targetCamera.transform.rotation;
+            }
+
+            textColor.a -= (1f / lifetime) * Time.deltaTime;
+            textMesh.color = textColor;
+        }
+        #endregion
+
+        #region Public API
+        /// <summary>Displays the damage value and schedules self-destruction.</summary>
+        public void Setup(float damageAmount)
+        {
+            textMesh.text = damageAmount.ToString("0");
+            Destroy(gameObject, lifetime);
+        }
+        #endregion
     }
-    #endregion
 }

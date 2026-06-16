@@ -28,15 +28,6 @@ public class GameData
     /// <summary>One-time challenge stones that were cleared (trialId per stone).</summary>
     public List<string> completedOneTimeTrials = new List<string>();
 
-    /// <summary>Repeatable training stones — cooldown + whether the linked quest was already cleared here.</summary>
-    public List<RepeatableTrialSaveEntry> repeatableTrials = new List<RepeatableTrialSaveEntry>();
-}
-
-[System.Serializable]
-public class RepeatableTrialSaveEntry
-{
-    public string trialId;
-    /// <summary>Utc ticks when F becomes available again. 0 = ready now.</summary>
-    public long nextAvailableUtcTicks;
-    public bool questClearClaimed;
+    /// <summary>Individual quest-gated challenge entries cleared (trialId:state:step).</summary>
+    public List<string> completedQuestChallenges = new List<string>();
 }

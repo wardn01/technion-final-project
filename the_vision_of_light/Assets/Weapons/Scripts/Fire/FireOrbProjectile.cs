@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Enemy;
 
 /// <summary>
 /// Homing fire orb launched from <see cref="FireSwordQOrbitSystem"/>.
