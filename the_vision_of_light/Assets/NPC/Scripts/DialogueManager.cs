@@ -102,6 +102,8 @@ public class DialogueManager : MonoBehaviour
         if (ShopManager.Instance != null)
             ShopManager.Instance.SetPlayerFreeze(true);
 
+        GameplayCursorPolicy.RequestApply();
+
         if (hudScreen != null)
             hudScreen.SetActive(false);
         if (quickSlotsBar != null)
@@ -277,6 +279,8 @@ public class DialogueManager : MonoBehaviour
 
         if (ShopManager.Instance != null && !ShopManager.Instance.shopPanel.activeSelf)
             ShopManager.Instance.SetPlayerFreeze(false);
+
+        GameplayCursorPolicy.RequestApply();
 
         if (onDialogueEndCallback != null)
         {

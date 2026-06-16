@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Materials required to upgrade a weapon to the next level.

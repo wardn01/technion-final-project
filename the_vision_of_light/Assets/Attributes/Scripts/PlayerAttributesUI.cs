@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Manages the user interface for player attributes, level progression, and the ascension system.
@@ -176,11 +177,13 @@ public class PlayerAttributesUI : MonoBehaviour
     /// </summary>
     private void SyncPlayerStats()
     {
-        PlayerHealth pHealth = FindAnyObjectByType<PlayerHealth>();
+        PlayerHealth pHealth = PlayerRegistry.Instance?.Health;
         if (pHealth != null)
-        {
-            pHealth.UpdateStatsFromData(); 
-        }
+            pHealth.UpdateStatsFromData();
+
+        PlayerStamina pStamina = PlayerRegistry.Instance?.Stamina;
+        if (pStamina != null)
+            pStamina.UpdateMaxStaminaFromData();
     }
 
     /// <summary>
@@ -195,10 +198,10 @@ public class PlayerAttributesUI : MonoBehaviour
         if (levelInfoText != null) levelInfoText.text = $"Level {data.currentLevel} / {data.maxLevelCap}";
         if (availablePointsText != null) availablePointsText.text = $"Stat Points: {data.availableStatPoints}";
 
-        int totalHP = data.baseMaxHealth + (data.investedHPPoints * data.healthPerPoint);
-        int totalAtk = data.baseAttack + (data.investedAtkPoints * data.attackPerPoint);
-        int totalDef = data.baseDefense + (data.investedDefPoints * data.defensePerPoint);
-        int totalStm = (int)(data.baseMaxStamina + (data.investedStaminaPoints * data.staminaPerPoint));
+        int totalHP = data.GetTotalMaxHealth();
+        int totalAtk = data.GetTotalAttack();
+        int totalDef = data.GetTotalDefense();
+        int totalStm = (int)data.GetTotalMaxStamina();
         
         if (hpText != null) hpText.text = $"Max HP: {totalHP} <color=#00FF00>(+{data.investedHPPoints})</color>";
         if (attackText != null) attackText.text = $"Attack: {totalAtk} <color=#00FF00>(+{data.investedAtkPoints})</color>";

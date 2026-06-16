@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using VisionOfLight.Player;
 
 /// <summary>
 /// The central controller for the player's Quick Access Bar (Hotbar).
@@ -85,7 +86,7 @@ public class QuickSlotManager : MonoBehaviour
     private void Start()
     {
         // Cache the player health component dynamically on startup
-        playerHp = FindAnyObjectByType<PlayerHealth>();
+        playerHp = PlayerRegistry.Instance?.Health;
         UpdateUI();
     }
 

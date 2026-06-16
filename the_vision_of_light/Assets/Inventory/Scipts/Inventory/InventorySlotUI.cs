@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using VisionOfLight.Player;
 
 /// <summary>
 /// A reusable UI component representing a single inventory grid slot.

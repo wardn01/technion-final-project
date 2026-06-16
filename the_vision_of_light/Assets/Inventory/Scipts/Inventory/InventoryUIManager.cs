@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using VisionOfLight.Player;
 
 /// <summary>
 /// The central orchestrator for the Inventory User Interface.

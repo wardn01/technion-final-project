@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Manages the character's header UI, displaying essential information such as level, experience progress, ascension stars, and world level.

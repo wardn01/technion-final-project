@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Manages the Play Menu UI, including creating, loading, deleting, and displaying world save slots.

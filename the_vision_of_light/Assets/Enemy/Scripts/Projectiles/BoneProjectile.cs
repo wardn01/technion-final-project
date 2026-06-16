@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Player;
 
 namespace VisionOfLight.Enemy
 {

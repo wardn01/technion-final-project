@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using VisionOfLight.Player;
 
 namespace VisionOfLight.Enemy
 {
@@ -36,8 +37,8 @@ namespace VisionOfLight.Enemy
 
             if (playerHealth == null)
             {
-                playerHealth = FindAnyObjectByType<PlayerHealth>();
-                if (playerHealth != null) target = playerHealth.transform; 
+                playerHealth = PlayerRegistry.Instance?.Health;
+                if (playerHealth != null) target = playerHealth.transform;
             }
 
             startingPosition = transform.position; 

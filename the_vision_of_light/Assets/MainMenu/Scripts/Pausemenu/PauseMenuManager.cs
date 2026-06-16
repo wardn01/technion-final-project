@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using VisionOfLight.Enemy;
+using VisionOfLight.Player;
 
 [DefaultExecutionOrder(100)]
 public class PauseMenuManager : MonoBehaviour
@@ -110,8 +111,7 @@ public class PauseMenuManager : MonoBehaviour
         Time.timeScale = 0f;
         isPaused = true;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        GameplayCursorPolicy.RequestApply();
     }
 
     public void Resume()
@@ -128,8 +128,7 @@ public class PauseMenuManager : MonoBehaviour
         isPaused = false;
         openedFromHotkey = false;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        GameplayCursorPolicy.RequestApply();
     }
 
     private void ToggleHUDElements(bool show)
@@ -158,8 +157,7 @@ public class PauseMenuManager : MonoBehaviour
             
             Time.timeScale = 0f;
             isPaused = true;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            GameplayCursorPolicy.RequestApply();
         }
     }
 
@@ -208,8 +206,7 @@ public class PauseMenuManager : MonoBehaviour
             
             Time.timeScale = 0f;
             isPaused = true;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            GameplayCursorPolicy.RequestApply();
         }
     }
 
@@ -228,8 +225,7 @@ public class PauseMenuManager : MonoBehaviour
 
             Time.timeScale = 0f;
             isPaused = true;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            GameplayCursorPolicy.RequestApply();
         }
     }
 
@@ -261,6 +257,13 @@ public class PauseMenuManager : MonoBehaviour
             {
                 data.hasSavedHealth = true;
                 data.savedCurrentHealth = playerHealth.currentHealth;
+            }
+
+            PlayerStamina playerStamina = playerTransform.GetComponent<PlayerStamina>();
+            if (playerStamina != null)
+            {
+                data.hasSavedStamina = true;
+                data.savedCurrentStamina = playerStamina.currentStamina;
             }
         }
 
@@ -345,26 +348,36 @@ public class PauseMenuManager : MonoBehaviour
                 playerProfile.LoadBuild(playerProfile.currentActiveLoadout);
             }
 
-            ApplyLoadedPlayerHealth(data);
+            ApplyLoadedPlayerVitals(data);
             ChallengeTrialRegistry.ApplyFromSave(data);
         }
         else
         {
-            ApplyLoadedPlayerHealth(null);
+            ApplyLoadedPlayerVitals(null);
             ChallengeTrialRegistry.ApplyFromSave(null);
         }
     }
 
-    private void ApplyLoadedPlayerHealth(GameData data)
+    private void ApplyLoadedPlayerVitals(GameData data)
     {
         if (playerTransform == null) return;
 
         PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
-        if (playerHealth == null) return;
+        if (playerHealth != null)
+        {
+            if (data != null && data.hasSavedHealth)
+                playerHealth.ApplyLoadedHealth(true, data.savedCurrentHealth);
+            else
+                playerHealth.ApplyLoadedHealth(false, 0);
+        }
 
-        if (data != null && data.hasSavedHealth)
-            playerHealth.ApplyLoadedHealth(true, data.savedCurrentHealth);
-        else
-            playerHealth.ApplyLoadedHealth(false, 0);
+        PlayerStamina playerStamina = playerTransform.GetComponent<PlayerStamina>();
+        if (playerStamina != null)
+        {
+            if (data != null && data.hasSavedStamina)
+                playerStamina.ApplyLoadedStamina(true, data.savedCurrentStamina);
+            else
+                playerStamina.ApplyLoadedStamina(false, 0f);
+        }
     }
 }

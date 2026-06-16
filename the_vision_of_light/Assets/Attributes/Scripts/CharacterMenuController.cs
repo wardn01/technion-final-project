@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Controls the Character Setup menu, handling tab navigation between Attributes and Weapons.
@@ -290,7 +291,7 @@ public class CharacterMenuController : MonoBehaviour
         if (weaponsSubPanel != null) weaponsSubPanel.GetComponent<WeaponUpgradeUI>()?.RefreshGrid();
 
         // Sync health system to reflect new stat allocations
-        PlayerHealth pHealth = FindAnyObjectByType<PlayerHealth>();
+        PlayerHealth pHealth = PlayerRegistry.Instance?.Health;
         if (pHealth != null) pHealth.UpdateStatsFromData();
     }
 

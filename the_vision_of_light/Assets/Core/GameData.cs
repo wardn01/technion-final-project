@@ -25,6 +25,9 @@ public class GameData
     public bool hasSavedHealth;
     public int savedCurrentHealth;
 
+    public bool hasSavedStamina;
+    public float savedCurrentStamina;
+
     /// <summary>One-time challenge stones that were cleared (trialId per stone).</summary>
     public List<string> completedOneTimeTrials = new List<string>();
 

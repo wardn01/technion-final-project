@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Weapon-specific E/Q skill HUD: cooldown fills, charge dots, ready LEDs, and ready sounds.

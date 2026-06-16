@@ -15,6 +15,10 @@ namespace VisionOfLight.Enemy
         public static ChallengeTimerUI Instance { get; private set; }
 
         #region Inspector
+        [Header("Root")]
+        [Tooltip("Optional parent object (e.g. WaveChallenge). Hidden while no timer or result is shown.")]
+        public GameObject rootContainer;
+
         [Header("Timer (top of screen)")]
         [Tooltip("Root panel for the countdown (hidden when no challenge is running).")]
         public GameObject timerPanel;
@@ -90,6 +94,8 @@ namespace VisionOfLight.Enemy
             Instance = this;
             EnsureAudioSource();
             CacheTimerTransforms();
+            ResolveRootContainer();
+            DisablePanelRaycasts();
             HideAllImmediate();
         }
 
@@ -143,6 +149,7 @@ namespace VisionOfLight.Enemy
 
             ResetTimerVisuals();
             UpdateTimerDisplay();
+            RefreshRootVisibility();
         }
 
         /// <summary>Stops the countdown without showing a result.</summary>
@@ -174,6 +181,7 @@ namespace VisionOfLight.Enemy
 
             PlayResultSound(success);
             resultRoutine = StartCoroutine(HideResultAfterDelay());
+            RefreshRootVisibility();
         }
 
         /// <summary>Hides timer and result immediately.</summary>
@@ -313,6 +321,8 @@ namespace VisionOfLight.Enemy
 
             if (timerPanel != null)
                 timerPanel.SetActive(false);
+
+            RefreshRootVisibility();
         }
 
         private IEnumerator HideResultAfterDelay()
@@ -320,6 +330,7 @@ namespace VisionOfLight.Enemy
             yield return new WaitForSeconds(resultDisplaySeconds);
             HideResultImmediate();
             resultRoutine = null;
+            RefreshRootVisibility();
         }
 
         private void HideResultImmediate()
@@ -329,6 +340,8 @@ namespace VisionOfLight.Enemy
 
             if (resultText != null)
                 resultText.gameObject.SetActive(false);
+
+            RefreshRootVisibility();
         }
 
         private void HideAllImmediate()
@@ -348,6 +361,44 @@ namespace VisionOfLight.Enemy
 
             StopCoroutine(resultRoutine);
             resultRoutine = null;
+        }
+
+        private void ResolveRootContainer()
+        {
+            if (rootContainer != null || timerPanel == null)
+                return;
+
+            Transform parent = timerPanel.transform.parent;
+            if (parent != null)
+                rootContainer = parent.gameObject;
+        }
+
+        /// <summary>Challenge HUD is display-only — it must never steal gameplay mouse clicks.</summary>
+        private void DisablePanelRaycasts()
+        {
+            SetPanelBlocksRaycasts(timerPanel, false);
+            SetPanelBlocksRaycasts(resultPanel, false);
+        }
+
+        private static void SetPanelBlocksRaycasts(GameObject panel, bool block)
+        {
+            if (panel == null)
+                return;
+
+            foreach (Graphic graphic in panel.GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = block;
+        }
+
+        private void RefreshRootVisibility()
+        {
+            if (rootContainer == null)
+                return;
+
+            bool shouldShow = (timerPanel != null && timerPanel.activeSelf)
+                              || (resultPanel != null && resultPanel.activeSelf);
+
+            if (rootContainer.activeSelf != shouldShow)
+                rootContainer.SetActive(shouldShow);
         }
         #endregion
     }

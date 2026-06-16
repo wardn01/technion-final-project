@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Manages the weapon and consumable loadout interface within the character setup screen.
@@ -406,8 +407,11 @@ public class WeaponUpgradeUI : MonoBehaviour
         if (QuickSlotManager.Instance.IsItemEquipped(item))
         {
             QuickSlotManager.Instance.ClearItemFromAllSlots(item);
-            if (item.type == ItemType.Weapon) 
-                FindAnyObjectByType<PlayerCombat>()?.UnequipCurrentWeapon();
+            if (item.type == ItemType.Weapon)
+            {
+                PlayerCombat combat = PlayerRegistry.Instance?.Combat;
+                combat?.UnequipCurrentWeapon();
+            }
         }
         else
         {

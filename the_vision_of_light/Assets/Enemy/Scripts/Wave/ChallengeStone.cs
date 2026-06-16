@@ -60,6 +60,9 @@ namespace VisionOfLight.Enemy
         [Tooltip("Root UI shown near the stone (e.g. Interact_F). Hidden while the player is away or cannot interact.")]
         public GameObject promptContainer;
 
+        [Tooltip("Optional parent of promptContainer (e.g. InteractPrompt). Hidden with the prompt so empty UI rects do not block clicks.")]
+        public GameObject promptRoot;
+
         [Tooltip("The key badge only (e.g. Interact_F/F). Stays hidden after a one-time clear or during repeatable cooldown.")]
         public GameObject interactKeyPrompt;
 
@@ -112,6 +115,8 @@ namespace VisionOfLight.Enemy
                 RefreshRiftIdleVisual();
 
             ApplyPermanentInteractKeyState();
+            ResolvePromptRoot();
+            HidePrompt();
         }
 
         private void Update()
@@ -191,6 +196,9 @@ namespace VisionOfLight.Enemy
 
         private void ShowPrompt()
         {
+            if (promptRoot != null && !promptRoot.activeSelf)
+                promptRoot.SetActive(true);
+
             if (promptContainer != null && !promptContainer.activeSelf)
                 promptContainer.SetActive(true);
 
@@ -207,6 +215,19 @@ namespace VisionOfLight.Enemy
         {
             if (promptContainer != null && promptContainer.activeSelf)
                 promptContainer.SetActive(false);
+
+            if (promptRoot != null && promptRoot.activeSelf)
+                promptRoot.SetActive(false);
+        }
+
+        private void ResolvePromptRoot()
+        {
+            if (promptRoot != null || promptContainer == null)
+                return;
+
+            Transform parent = promptContainer.transform.parent;
+            if (parent != null)
+                promptRoot = parent.gameObject;
         }
 
         private void SetInteractKeyVisible(bool visible)

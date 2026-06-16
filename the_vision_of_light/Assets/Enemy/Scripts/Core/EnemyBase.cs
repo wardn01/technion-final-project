@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using VisionOfLight.Player;
 
 namespace VisionOfLight.Enemy
 {

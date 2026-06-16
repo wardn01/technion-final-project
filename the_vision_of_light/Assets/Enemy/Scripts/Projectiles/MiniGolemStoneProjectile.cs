@@ -1,4 +1,5 @@
 using UnityEngine;
+using VisionOfLight.Player;
 
 namespace VisionOfLight.Enemy
 {
@@ -81,7 +82,7 @@ namespace VisionOfLight.Enemy
 
             if (playerHealth == null)
             {
-                playerHealth = FindAnyObjectByType<PlayerHealth>();
+                playerHealth = PlayerRegistry.Instance?.Health;
                 if (playerHealth != null)
                 {
                     playerTarget = playerHealth.transform;

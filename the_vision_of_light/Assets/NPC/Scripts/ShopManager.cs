@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Singleton shop UI: item list, buy flow, gold display, interact prompt, and player freeze.
@@ -40,7 +41,7 @@ public class ShopManager : MonoBehaviour
     private int currentAmount = 1;
 
     [Header("Player Reference")]
-    public MonoBehaviour playerMovementScript;
+    public PlayerMovement playerMovementScript;
     public Animator playerAnimator;
     public GameObject playerCameraObject;
 
@@ -223,8 +224,7 @@ public class ShopManager : MonoBehaviour
                     camInput.enabled = false;
             }
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            GameplayCursorPolicy.RequestApply();
         }
         else
         {
@@ -238,8 +238,7 @@ public class ShopManager : MonoBehaviour
                     camInput.enabled = true;
             }
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            GameplayCursorPolicy.RequestApply();
         }
     }
 

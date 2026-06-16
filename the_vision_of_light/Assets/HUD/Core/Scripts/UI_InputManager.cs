@@ -1,11 +1,10 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using TMPro;
+using VisionOfLight.Player;
 
 /// <summary>
 /// Global HUD input router: menu hotkeys (inventory, character, map, quests),
 /// Escape handling, and player input lock while UI is open.
+/// Cursor lock is enforced by <see cref="GameplayCursorPolicy"/>.
 /// Lives on the UIManager object in the scene.
 /// </summary>
 public class UI_InputManager : MonoBehaviour
@@ -21,6 +20,9 @@ public class UI_InputManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        if (GetComponent<GameplayCursorPolicy>() == null)
+            gameObject.AddComponent<GameplayCursorPolicy>();
     }
 
     private void Update()
@@ -28,12 +30,10 @@ public class UI_InputManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             HandleEscapeKey();
-            UpdatePlayerInputLock();
             return;
         }
 
         HandleHotkeys();
-        UpdatePlayerInputLock();
     }
 
     /// <summary>
@@ -157,21 +157,6 @@ public class UI_InputManager : MonoBehaviour
                 QuestUIController.Instance?.RefreshQuestUI();
             }
         }
-    }
-
-    /// <summary>Sets Player_InputManager.isInputLocked when any blocking UI is open.</summary>
-    private void UpdatePlayerInputLock()
-    {
-        if (Player_InputManager.Instance == null)
-            return;
-
-        bool isPauseMenuOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused;
-        bool isInvOpen = InventoryUIManager.Instance != null && InventoryUIManager.Instance.inventoryWindow.activeSelf;
-        bool isCharOpen = CharacterMenuController.Instance != null && CharacterMenuController.Instance.attributesScreen.activeSelf;
-        bool isMapOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.mapScreen != null && PauseMenuManager.Instance.mapScreen.activeSelf;
-        bool isQuestOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.questScreen != null && PauseMenuManager.Instance.questScreen.activeSelf;
-
-        Player_InputManager.Instance.isInputLocked = IsShopOrDialogueOpen() || isInvOpen || isCharOpen || isMapOpen || isQuestOpen || isPauseMenuOpen;
     }
 
     private bool IsShopOrDialogueOpen()
