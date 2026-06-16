@@ -64,6 +64,7 @@ public class WorldSaveManager : MonoBehaviour
 
         if (data != null)
         {
+            ChallengeTrialRegistry.ApplyFromSave(data);
             ApplyQuestProgress(data.mainQuestState, data.questStepIndex);
 
             // Restore Player Data
@@ -83,6 +84,7 @@ public class WorldSaveManager : MonoBehaviour
         }
         else
         {
+            ChallengeTrialRegistry.ApplyFromSave(null);
             ApplyQuestProgress(0, 0);
 
             if (activePlayerData != null)

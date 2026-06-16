@@ -282,6 +282,8 @@ public class PauseMenuManager : MonoBehaviour
             data.questStepIndex = QuestManager.Instance.questStepIndex;
         }
 
+        ChallengeTrialRegistry.WriteToSave(data);
+
         SaveManager.SaveGame(currentSlot, data);
     }
 
@@ -319,7 +321,8 @@ public class PauseMenuManager : MonoBehaviour
                 ItemData[] allItems = Resources.LoadAll<ItemData>("");
                 foreach (SavedItem savedItem in data.inventoryItems)
                     foreach (ItemData item in allItems)
-                        if (item.name == savedItem.itemName)
+                        if (item.name == savedItem.itemName
+                            || (savedItem.itemName == "Gold Coin" && item.name == "Gold coin 0"))
                         {
                             InventoryManager.Instance.AddItem(item, savedItem.amount, silent: true);
                             break;
@@ -342,10 +345,12 @@ public class PauseMenuManager : MonoBehaviour
             }
 
             ApplyLoadedPlayerHealth(data);
+            ChallengeTrialRegistry.ApplyFromSave(data);
         }
         else
         {
             ApplyLoadedPlayerHealth(null);
+            ChallengeTrialRegistry.ApplyFromSave(null);
         }
     }
 

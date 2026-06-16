@@ -25,13 +25,13 @@ MonoBehaviour:
   rotationSpeed: 8
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    minAmount: 3
-    maxAmount: 7
+    minAmount: 4
+    maxAmount: 8
     dropChance: 100
   - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
     minAmount: 1
     maxAmount: 1
-    dropChance: 35
+    dropChance: 50
   xpReward: 22
   normalDamage: 65
   normalAttackRange: 1.2

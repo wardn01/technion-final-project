@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Pristine Golem Core
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Pristine Golem Core
-  description: An intact magical core extracted from a massive Golem. It radiates
-    immense terrestrial energy and is highly sought after for advanced weapon ascension.
+  description: An intact magical core extracted from a Golem. Required for advanced
+    Ice Sword ascensions and endgame weapon upgrades.
   itemIcon: {fileID: 21300000, guid: 34e207f36b557e546b6905857332994c, type: 3}
   value: 75
   type: 0

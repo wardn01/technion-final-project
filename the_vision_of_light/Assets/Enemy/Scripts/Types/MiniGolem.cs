@@ -24,7 +24,7 @@ public class MiniGolem : NormalEnemy
 
     private MiniGolemStats RangedStats => stats as MiniGolemStats;
 
-    private const float PeerSeparationRadius = 2.4f;
+    private const float PeerSeparationRadius = 1.15f;
 
     protected override IEnumerator Start()
     {

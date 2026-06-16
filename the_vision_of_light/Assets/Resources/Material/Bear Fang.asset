@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: Bear Fang
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Bear Fang
-  description: A sharp claw dropped by bears. Can be sold to merchants or used to
-    upgrade your equipment.
+  description: A sharp fang dropped by Bears. Used to upgrade the Fire and Ice Swords.
   itemIcon: {fileID: 21300000, guid: b2cd87f40d7b44d47ad2eb75083a1f48, type: 3}
   value: 30
   type: 0

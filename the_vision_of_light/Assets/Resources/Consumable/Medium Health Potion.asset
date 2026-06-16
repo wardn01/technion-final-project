@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Medium Health Potion
   m_EditorClassIdentifier: Assembly-CSharp::ConsumableItemData
   itemName: Medium Health Potion
-  description: 'Restores 100 Health instantly, and mends wounds for an additional
-    100 Health over 20 seconds. (Total Heal: 200 HP).'
+  description: 'Restores 70 Health instantly, then mends 15 Health every 2 seconds
+    for 4 ticks. (Total Heal: 130 HP).'
   itemIcon: {fileID: 21300000, guid: d8ba4079930afbe4fa0b1aeb789e36a0, type: 3}
   value: 60
   type: 1

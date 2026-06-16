@@ -26,12 +26,12 @@ MonoBehaviour:
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
     minAmount: 2
-    maxAmount: 6
+    maxAmount: 5
     dropChance: 100
   - item: {fileID: 11400000, guid: e03af66cc75852644b34937dbd0fa9a6, type: 2}
     minAmount: 1
-    maxAmount: 2
-    dropChance: 35
+    maxAmount: 1
+    dropChance: 50
   xpReward: 20
   normalDamage: 62
   normalAttackRange: 1.2

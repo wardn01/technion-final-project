@@ -19661,17 +19661,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c025c949fb71f84f89d64df7aba81ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChallengeStone
-  interactionKey: 102
-  interactionRange: 4
+  trialId: mountain_trial
+  stoneType: 1
+  trainingRespawnSeconds: 300
+  promptText: Start Trial
   questChallenges:
   - challengeName: 
     targetQuestState: 0
     nextQuestState: 0
     waves: []
-  allowDefaultTraining: 1
-  defaultWaves: []
   riftVisualController: {fileID: 7087117950930903844}
-  riftBaseMesh: {fileID: 6454051807261424648}
   currentWaveIndex: 0
   challengeActive: 0
   isSpawning: 0

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -52,7 +53,8 @@ public class PlayerAttributesUI : MonoBehaviour
     public Color unlitStarColor = new Color(0.5f, 0.5f, 0.5f, 0.3f); 
     public GameObject ascendGroup; 
     public Button ascendBtn;
-    public AscensionItemSlotUI[] requiredItemSlots; 
+    public AscensionItemSlotUI[] requiredItemSlots;
+    [SerializeField] private int ascensionMaterialSlotCount = 4;
 
     [Header("Stat Buttons (Plus & Minus)")]
     public Button hpPlusBtn;
@@ -70,6 +72,71 @@ public class PlayerAttributesUI : MonoBehaviour
     #endregion
 
     #region Unity Lifecycle
+
+    private void Awake()
+    {
+        EnsureAscensionMaterialSlots();
+    }
+
+    /// <summary>
+    /// Wires icon/text on existing slots and clones a template slot until four ascension slots exist.
+    /// </summary>
+    private void EnsureAscensionMaterialSlots()
+    {
+        if (requiredItemSlots == null || requiredItemSlots.Length == 0)
+            return;
+
+        var slots = new List<AscensionItemSlotUI>(requiredItemSlots);
+        AscensionItemSlotUI template = null;
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i]?.slotObject == null)
+                continue;
+
+            AutoWireAscensionSlot(slots[i]);
+
+            if (template == null)
+                template = slots[i];
+        }
+
+        if (template?.slotObject == null)
+            return;
+
+        Transform container = template.slotObject.transform.parent;
+
+        while (slots.Count < ascensionMaterialSlotCount)
+        {
+            GameObject clone = Instantiate(template.slotObject, container);
+            clone.name = $"ItemSlot ({slots.Count})";
+
+            var entry = new AscensionItemSlotUI { slotObject = clone };
+            AutoWireAscensionSlot(entry);
+            slots.Add(entry);
+        }
+
+        requiredItemSlots = slots.ToArray();
+    }
+
+    private static void AutoWireAscensionSlot(AscensionItemSlotUI slot)
+    {
+        if (slot?.slotObject == null)
+            return;
+
+        if (slot.itemIcon == null)
+        {
+            Transform iconTransform = slot.slotObject.transform.Find("ItemIcon");
+            if (iconTransform != null)
+                slot.itemIcon = iconTransform.GetComponent<Image>();
+        }
+
+        if (slot.amountText == null)
+        {
+            Transform amountTransform = slot.slotObject.transform.Find("ItemAmountText");
+            if (amountTransform != null)
+                slot.amountText = amountTransform.GetComponent<TextMeshProUGUI>();
+        }
+    }
 
     /// <summary>
     /// Delays the UI refresh slightly to ensure all dependent data components have finished initialization.

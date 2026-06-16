@@ -25,12 +25,16 @@ MonoBehaviour:
   rotationSpeed: 7
   lootTable:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    minAmount: 100
-    maxAmount: 150
+    minAmount: 120
+    maxAmount: 180
     dropChance: 100
   - item: {fileID: 11400000, guid: bb5a17c1c18b7844abf0a05151dc5c86, type: 2}
     minAmount: 1
     maxAmount: 1
+    dropChance: 100
+  - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
+    minAmount: 2
+    maxAmount: 4
     dropChance: 100
   xpReward: 90
   phase1Damage: 100

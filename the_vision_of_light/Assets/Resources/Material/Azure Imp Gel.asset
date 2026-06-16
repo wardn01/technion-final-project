@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: Azure Imp Gel
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Azure Imp Gel
-  description: A glowing, gelatinous substance left behind by a Blue Imp. It pulses
-    with a cold, magical energy. Highly valued by alchemists and used to upgrade
-    mystic equipment.
+  description: A glowing, gelatinous substance left behind by Imps. It pulses with
+    cold magical energy and is used to upgrade the Wind Sword.
   itemIcon: {fileID: 21300000, guid: 670207a6c8c15dd4c9f7d4bc282937ae, type: 3}
   value: 20
   type: 0

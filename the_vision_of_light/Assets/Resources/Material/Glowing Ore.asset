@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Glowing Ore
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Glowing Ore
-  description: A glowing cluster of magical ore dropped by orcs. Can be sold to merchants
-    or used to upgrade your equipment.
+  description: A glowing cluster of magical ore dropped by Orcs. Used to upgrade
+    the Fire Sword and late Wind Sword ascensions.
   itemIcon: {fileID: 21300000, guid: f432afa6cee774649a6f798022876776, type: 3}
   value: 50
   type: 0
