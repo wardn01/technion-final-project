@@ -1,6 +1,7 @@
 using UnityEngine;
 using VisionOfLight.Enemy;
 using VisionOfLight.Player;
+using VisionOfLight.Chest;
 
 /// <summary>
 /// A persistent Singleton manager that handles loading and saving the current world's state, 
@@ -67,6 +68,7 @@ public class WorldSaveManager : MonoBehaviour
         if (data != null)
         {
             ChallengeTrialRegistry.ApplyFromSave(data);
+            ChestRegistry.ApplyFromSave(data);
             ApplyQuestProgress(data.mainQuestState, data.questStepIndex);
 
             // Restore Player Data
@@ -87,6 +89,7 @@ public class WorldSaveManager : MonoBehaviour
         else
         {
             ChallengeTrialRegistry.ApplyFromSave(null);
+            ChestRegistry.ApplyFromSave(null);
             ApplyQuestProgress(0, 0);
 
             if (activePlayerData != null)

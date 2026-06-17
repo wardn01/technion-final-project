@@ -33,4 +33,7 @@ public class GameData
 
     /// <summary>Individual quest-gated challenge entries cleared (trialId:state:step).</summary>
     public List<string> completedQuestChallenges = new List<string>();
+
+    /// <summary>World chests that were opened once (chestId per chest).</summary>
+    public List<string> openedChestIds = new List<string>();
 }

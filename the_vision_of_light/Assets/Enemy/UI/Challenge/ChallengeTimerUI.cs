@@ -110,6 +110,8 @@ namespace VisionOfLight.Enemy
             if (!isRunning)
                 return;
 
+            EnsureHudVisible();
+
             remainingSeconds -= Time.deltaTime;
             if (remainingSeconds <= 0f)
             {
@@ -394,11 +396,22 @@ namespace VisionOfLight.Enemy
             if (rootContainer == null)
                 return;
 
-            bool shouldShow = (timerPanel != null && timerPanel.activeSelf)
+            bool shouldShow = isRunning
+                              || (timerPanel != null && timerPanel.activeSelf)
                               || (resultPanel != null && resultPanel.activeSelf);
 
             if (rootContainer.activeSelf != shouldShow)
                 rootContainer.SetActive(shouldShow);
+        }
+
+        /// <summary>Re-shows HUD if another system disabled WaveChallenge while the countdown runs.</summary>
+        private void EnsureHudVisible()
+        {
+            if (rootContainer != null && !rootContainer.activeSelf)
+                rootContainer.SetActive(true);
+
+            if (timerPanel != null && !timerPanel.activeSelf)
+                timerPanel.SetActive(true);
         }
         #endregion
     }

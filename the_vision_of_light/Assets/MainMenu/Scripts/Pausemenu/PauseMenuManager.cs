@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using VisionOfLight.Enemy;
 using VisionOfLight.Player;
+using VisionOfLight.Chest;
 
 [DefaultExecutionOrder(100)]
 public class PauseMenuManager : MonoBehaviour
@@ -287,6 +288,7 @@ public class PauseMenuManager : MonoBehaviour
         }
 
         ChallengeTrialRegistry.WriteToSave(data);
+        ChestRegistry.WriteToSave(data);
 
         SaveManager.SaveGame(currentSlot, data);
     }
@@ -350,11 +352,13 @@ public class PauseMenuManager : MonoBehaviour
 
             ApplyLoadedPlayerVitals(data);
             ChallengeTrialRegistry.ApplyFromSave(data);
+            ChestRegistry.ApplyFromSave(data);
         }
         else
         {
             ApplyLoadedPlayerVitals(null);
             ChallengeTrialRegistry.ApplyFromSave(null);
+            ChestRegistry.ApplyFromSave(null);
         }
     }
 

@@ -19769,6 +19769,7 @@ Transform:
   - {fileID: 8063418775161429188}
   - {fileID: 629475467483047221}
   - {fileID: 5409927322972010406}
+  - {fileID: 4598803820050760630}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 7.972, y: 120.665, z: -7.816}
 --- !u!114 &7087117950930903844
@@ -19809,24 +19810,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c025c949fb71f84f89d64df7aba81ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChallengeStone
-  trialId: mountain_trial_test10
+  trialId: id
   stoneType: 0
   promptContainer: {fileID: 0}
+  promptRoot: {fileID: 0}
   interactKeyPrompt: {fileID: 0}
   promptTextUI: {fileID: 0}
   promptText: Start Trial
-  challengeTimeLimit: 15
+  challengeTimeLimit: 99
   successMessage: Challenge Complete
   failMessage: Challenge Failed
   questChallenges: []
-  trialWaves:
-  - waveName: wa
-    enemiesToSpawn:
-    - enemyPrefab: {fileID: 8858051749441068820, guid: ae13b6b658f004841abb9e08706c0848, type: 3}
-      count: 11
-      spawnPoints:
-      - {fileID: 7530611714527149237}
-    delayBetweenSpawns: 0
+  trialWaves: []
   riftVisualController: {fileID: 7087117950930903844}
   currentWaveIndex: 0
   challengeActive: 0
@@ -19852,6 +19847,74 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 4
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &6321676966667884249
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4598803820050760630}
+  - component: {fileID: 8843970201440976218}
+  - component: {fileID: 6568200836889272189}
+  m_Layer: 7
+  m_Name: ArenaBounds
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4598803820050760630
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6321676966667884249}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7529318389051928049}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &8843970201440976218
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6321676966667884249}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 25
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6568200836889272189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6321676966667884249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a56b9618ba89f648aee9d71585159b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VisionOfLight.Enemy.ChallengeArenaFailZone
+  challengeStone: {fileID: 3379795020038569889}
+  failGraceSeconds: 0.35
 --- !u!1 &6389102392503446636
 GameObject:
   m_ObjectHideFlags: 0

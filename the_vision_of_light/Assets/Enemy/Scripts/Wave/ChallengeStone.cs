@@ -93,6 +93,8 @@ namespace VisionOfLight.Enemy
         [SerializeField] private int currentWaveIndex;
         [SerializeField] private bool challengeActive;
         [SerializeField] private bool isSpawning;
+
+        public bool IsChallengeActive => challengeActive;
         #endregion
 
         #region Runtime State
@@ -102,6 +104,7 @@ namespace VisionOfLight.Enemy
         private readonly List<GameObject> spawnedEnemyObjects = new List<GameObject>();
         private Transform player;
         private bool isPlayerNear;
+        private float challengeStartedAt;
         #endregion
 
         #region Unity Lifecycle
@@ -147,7 +150,7 @@ namespace VisionOfLight.Enemy
                 return;
 
             isPlayerNear = false;
-            HidePrompt();
+            HideInteractPrompt();
         }
         #endregion
 
@@ -213,11 +216,22 @@ namespace VisionOfLight.Enemy
 
         private void HidePrompt()
         {
-            if (promptContainer != null && promptContainer.activeSelf)
-                promptContainer.SetActive(false);
+            HideInteractPrompt();
+
+            if (challengeActive)
+                return;
 
             if (promptRoot != null && promptRoot.activeSelf)
                 promptRoot.SetActive(false);
+        }
+
+        /// <summary>Hides the F key / label only. Never touches the challenge HUD (WaveChallenge).</summary>
+        private void HideInteractPrompt()
+        {
+            if (promptContainer != null && promptContainer.activeSelf)
+                promptContainer.SetActive(false);
+
+            SetInteractKeyVisible(false);
         }
 
         private void ResolvePromptRoot()
@@ -277,6 +291,18 @@ namespace VisionOfLight.Enemy
         #endregion
 
         #region Challenge Flow
+        /// <summary>Called by <see cref="ChallengeArenaFailZone"/> when the player leaves the arena trigger.</summary>
+        public void NotifyPlayerLeftArena(float graceSeconds)
+        {
+            if (!challengeActive)
+                return;
+
+            if (graceSeconds > 0f && Time.time - challengeStartedAt < graceSeconds)
+                return;
+
+            FinishChallenge(success: false);
+        }
+
         private void TryStartChallenge()
         {
             if (!CanShowPrompt())
@@ -289,6 +315,7 @@ namespace VisionOfLight.Enemy
                 return;
 
             challengeActive = true;
+            challengeStartedAt = Time.time;
             currentWaveIndex = 0;
             aliveEnemies.Clear();
             spawnedEnemyObjects.Clear();
