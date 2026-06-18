@@ -31,7 +31,7 @@ public class FireSkillQBoom : MonoBehaviour
 
     #region State
     private float damageAmount;
-    private readonly List<EnemyBase> enemiesHit = new List<EnemyBase>();
+    private readonly HashSet<EnemyBase> enemiesHit = new HashSet<EnemyBase>();
     private AudioSource audioSource;
     private BoxCollider hitbox;
     #endregion
@@ -61,31 +61,18 @@ public class FireSkillQBoom : MonoBehaviour
     private void Update()
     {
         transform.position += transform.forward * speed * Time.deltaTime;
-        CheckForEnemies();
     }
     #endregion
 
     #region Hit Detection
     private void OnTriggerEnter(Collider other) => DamageEnemy(other);
 
-    private void CheckForEnemies()
-    {
-        if (hitbox == null) return;
-
-        Vector3 center = transform.TransformPoint(hitbox.center);
-        Vector3 halfExtents = Vector3.Scale(hitbox.size * 0.5f, transform.lossyScale);
-
-        foreach (Collider col in Physics.OverlapBox(center, halfExtents, transform.rotation))
-            DamageEnemy(col);
-    }
-
     private void DamageEnemy(Collider other)
     {
         EnemyBase enemy = other.GetComponentInParent<EnemyBase>();
-        if (enemy == null || enemy.IsDead || enemiesHit.Contains(enemy)) return;
+        if (enemy == null || enemy.IsDead || !enemiesHit.Add(enemy)) return;
 
         enemy.TakeDamage(damageAmount);
-        enemiesHit.Add(enemy);
     }
     #endregion
 

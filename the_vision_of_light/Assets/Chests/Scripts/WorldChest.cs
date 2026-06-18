@@ -9,7 +9,7 @@ namespace VisionOfLight.Chest
     /// <summary>
     /// One-time world loot chest. Supports immediate open or defeat-guardians-first unlock.
     /// Fades out after opening and persists via <see cref="ChestRegistry"/>.
-    /// Assign a <see cref="ChestLootTable"/> for loot; UI auto-finds Canvas/InteractPrompt at runtime.
+    /// Assign a <see cref="ChestLootTable"/> for loot. Wire <see cref="promptRoot"/> on each chest instance in the scene.
     /// </summary>
     public class WorldChest : MonoBehaviour
     {
@@ -52,9 +52,11 @@ namespace VisionOfLight.Chest
         public ChestLootTable lootTable;
 
         [Header("UI")]
-        [Tooltip("Optional. Left empty on prefabs — auto-finds InteractPrompt / Interact_F in the loaded scene.")]
+        [Tooltip("Shared InteractPrompt root from the scene. Assign on each placed chest — no runtime scene scan.")]
+        [SerializeField] private GameObject promptRoot;
+
+        [Tooltip("Optional. Child prompt panel (Interact_F). Resolved from promptRoot when empty.")]
         public GameObject promptContainer;
-        public GameObject promptRoot;
         public GameObject interactKeyPrompt;
 
         public TextMeshProUGUI promptTextUI;
@@ -255,13 +257,6 @@ namespace VisionOfLight.Chest
 
         private void ResolveSharedInteractUi()
         {
-            if (promptRoot == null)
-            {
-                GameObject interactPrompt = FindSceneObjectByName("InteractPrompt");
-                if (interactPrompt != null)
-                    promptRoot = interactPrompt;
-            }
-
             if (promptContainer == null && promptRoot != null)
             {
                 foreach (Transform descendant in promptRoot.GetComponentsInChildren<Transform>(true))
@@ -277,13 +272,6 @@ namespace VisionOfLight.Chest
                 }
             }
 
-            if (promptContainer == null)
-            {
-                GameObject interactF = FindSceneObjectByName("Interact_F");
-                if (interactF != null && interactF.transform.Find("btn") != null)
-                    promptContainer = interactF;
-            }
-
             if (interactKeyPrompt == null && promptContainer != null)
             {
                 Transform btn = promptContainer.transform.Find("btn");
@@ -293,24 +281,6 @@ namespace VisionOfLight.Chest
 
             if (promptTextUI == null && promptContainer != null)
                 promptTextUI = promptContainer.GetComponentInChildren<TextMeshProUGUI>(true);
-        }
-
-        private static GameObject FindSceneObjectByName(string objectName)
-        {
-            Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
-
-            foreach (Transform transform in transforms)
-            {
-                if (transform.name != objectName)
-                    continue;
-
-                if (!transform.gameObject.scene.IsValid())
-                    continue;
-
-                return transform.gameObject;
-            }
-
-            return null;
         }
 
         private static bool IsUiBlockingInteraction()

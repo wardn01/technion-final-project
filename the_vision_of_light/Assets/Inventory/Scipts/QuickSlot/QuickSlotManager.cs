@@ -533,6 +533,12 @@ public class QuickSlotManager : MonoBehaviour
         // --- Weapon Execution Logic ---
         if (item is WeaponItemData weapon)
         {
+            if ((InventoryManager.Instance?.GetItemAmount(weapon) ?? 0) <= 0)
+            {
+                AssignItem(null, index);
+                return;
+            }
+
             if (playerCombat != null && playerCombat.IsSafeToEquip())
             {
                 playerCombat.EquipWeapon(weapon);

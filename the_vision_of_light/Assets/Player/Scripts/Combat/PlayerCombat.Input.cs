@@ -30,7 +30,7 @@ namespace VisionOfLight.Player
 
         private void HandleInput()
         {
-            if (EventSystem.current.IsPointerOverGameObject()) return;
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
             if (PlayerInputManager.Instance != null && PlayerInputManager.Instance.isInputLocked) return;
 

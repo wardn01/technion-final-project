@@ -15,6 +15,8 @@ public class GameplayCursorPolicy : MonoBehaviour
 
     private InputSystemUIInputModule uiInputModule;
     private InputActionMap uiActionMap;
+    private bool lastFreeCursor;
+    private bool hasCachedCursorState;
 
     private void Awake()
     {
@@ -42,6 +44,12 @@ public class GameplayCursorPolicy : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
     private void Start()
     {
         Apply();
@@ -55,7 +63,7 @@ public class GameplayCursorPolicy : MonoBehaviour
     private void OnApplicationFocus(bool hasFocus)
     {
         if (hasFocus)
-            Apply();
+            Apply(force: true);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -64,7 +72,8 @@ public class GameplayCursorPolicy : MonoBehaviour
             return;
 
         ResetMenuStateForWorldEntry();
-        Apply();
+        hasCachedCursorState = false;
+        Apply(force: true);
     }
 
     /// <summary>True when menus, dialogue, shop, or death screen need a free cursor.</summary>
@@ -103,9 +112,15 @@ public class GameplayCursorPolicy : MonoBehaviour
         return false;
     }
 
-    public void Apply()
+    public void Apply(bool force = false)
     {
         bool freeCursor = RequiresFreeCursor();
+
+        if (!force && hasCachedCursorState && freeCursor == lastFreeCursor)
+            return;
+
+        hasCachedCursorState = true;
+        lastFreeCursor = freeCursor;
 
         if (VisionOfLight.Player.PlayerInputManager.Instance != null)
             VisionOfLight.Player.PlayerInputManager.Instance.isInputLocked = freeCursor;
@@ -145,7 +160,7 @@ public class GameplayCursorPolicy : MonoBehaviour
     public static void RequestApply()
     {
         if (Instance != null)
-            Instance.Apply();
+            Instance.Apply(force: true);
     }
 
     private static void ResetMenuStateForWorldEntry()

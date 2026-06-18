@@ -25,6 +25,12 @@ public class UI_InputManager : MonoBehaviour
             gameObject.AddComponent<GameplayCursorPolicy>();
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))

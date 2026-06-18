@@ -42,6 +42,7 @@ public class PauseMenuManager : MonoBehaviour
     [HideInInspector] public bool openedFromHotkey = false;
 
     private GameObject currentActiveSubScreen = null;
+    private bool worldDataLoadedOnce;
 
     private void Awake()
     {
@@ -50,10 +51,35 @@ public class PauseMenuManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance != this)
         {
+            Instance.InheritSceneReferences(this);
             Destroy(gameObject);
             return;
+        }
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "World" || Instance != this)
+            return;
+
+        ResolveWorldReferences();
+
+        if (worldDataLoadedOnce)
+        {
+            Resume();
+            LoadPlayerData();
         }
     }
 
@@ -64,6 +90,7 @@ public class PauseMenuManager : MonoBehaviour
 
         Resume();
         LoadPlayerData();
+        worldDataLoadedOnce = true;
     }
 
     public void HandleBackButton()
@@ -383,5 +410,125 @@ public class PauseMenuManager : MonoBehaviour
             else
                 playerStamina.ApplyLoadedStamina(false, 0f);
         }
+    }
+
+    /// <summary>
+    /// Copies serialized World-scene bindings from a scene-local manager into this persistent instance.
+    /// </summary>
+    private void InheritSceneReferences(PauseMenuManager sceneSource)
+    {
+        if (sceneSource == null)
+            return;
+
+        pauseMainPanel = sceneSource.pauseMainPanel;
+        settingsMenuUI = sceneSource.settingsMenuUI;
+        mapScreen = sceneSource.mapScreen;
+        inventoryScreen = sceneSource.inventoryScreen;
+        setupScreen = sceneSource.setupScreen;
+        questScreen = sceneSource.questScreen;
+        playerStatsScreen = sceneSource.playerStatsScreen;
+        hudElementsToHide = sceneSource.hudElementsToHide;
+        quickSlotBar = sceneSource.quickSlotBar;
+        fullMapCamera = sceneSource.fullMapCamera;
+        backBtn = sceneSource.backBtn;
+        playerTransform = sceneSource.playerTransform;
+
+        if (sceneSource.playerProfile != null)
+            playerProfile = sceneSource.playerProfile;
+
+        RebindBackButton();
+    }
+
+    /// <summary>
+    /// Rebinds scene objects when re-entering World after DontDestroyOnLoad persistence.
+    /// </summary>
+    private void ResolveWorldReferences()
+    {
+        PauseMenuManager sceneBinding = FindScenePauseMenuBinding();
+        if (sceneBinding != null && sceneBinding != this)
+        {
+            InheritSceneReferences(sceneBinding);
+            Destroy(sceneBinding.gameObject);
+        }
+
+        if (playerTransform == null)
+        {
+            if (PlayerRegistry.Instance != null)
+                playerTransform = PlayerRegistry.Instance.transform;
+            else
+            {
+                GameObject player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null)
+                    playerTransform = player.transform;
+            }
+        }
+
+        if (pauseMainPanel == null)
+            pauseMainPanel = FindSceneGameObject("PauseMenuScreen");
+
+        if (mapScreen == null)
+            mapScreen = FindSceneGameObject("FullMapScreen");
+
+        if (quickSlotBar == null)
+            quickSlotBar = FindSceneGameObject("QuickSlotsBar");
+
+        if (settingsMenuUI == null)
+            settingsMenuUI = FindSceneGameObject("SettingsScreen");
+
+        if (questScreen == null)
+            questScreen = FindSceneGameObject("QuestScreen");
+
+        if (playerStatsScreen == null)
+            playerStatsScreen = FindSceneGameObject("AttributesScreen");
+
+        if (fullMapCamera == null)
+            fullMapCamera = FindSceneGameObject("FullMapCamera");
+
+        RebindBackButton();
+    }
+
+    private PauseMenuManager FindScenePauseMenuBinding()
+    {
+        PauseMenuManager[] managers = FindObjectsByType<PauseMenuManager>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        foreach (PauseMenuManager manager in managers)
+        {
+            if (manager == this)
+                continue;
+
+            if (manager.gameObject.scene.IsValid())
+                return manager;
+        }
+
+        return null;
+    }
+
+    private static GameObject FindSceneGameObject(string objectName)
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!activeScene.IsValid())
+            return null;
+
+        foreach (GameObject root in activeScene.GetRootGameObjects())
+        {
+            foreach (Transform descendant in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (descendant.name == objectName)
+                    return descendant.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private void RebindBackButton()
+    {
+        if (backBtn == null)
+            return;
+
+        backBtn.onClick.RemoveListener(HandleBackButton);
+        backBtn.onClick.AddListener(HandleBackButton);
     }
 }

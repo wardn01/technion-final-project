@@ -185,7 +185,22 @@ namespace VisionOfLight.Enemy
         #region Combat Behavior
         protected void ReturnToCampBehavior()
         {
-            if (agent == null || !agent.isOnNavMesh) return;
+            if (agent == null)
+                return;
+
+            if (!agent.isOnNavMesh)
+            {
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+                {
+                    agent.Warp(hit.position);
+                }
+                else
+                {
+                    isReturningToCamp = false;
+                    agent.ResetPath();
+                    return;
+                }
+            }
 
             agent.isStopped = false;
             agent.speed = stats.RunSpeed;

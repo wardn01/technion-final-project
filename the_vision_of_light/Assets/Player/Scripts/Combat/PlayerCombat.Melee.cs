@@ -41,7 +41,7 @@ namespace VisionOfLight.Player
 
             foreach (Collider enemy in hitEnemies)
             {
-                EnemyBase enemyBase = enemy.GetComponent<EnemyBase>();
+                EnemyBase enemyBase = enemy.GetComponent<EnemyBase>() ?? enemy.GetComponentInParent<EnemyBase>();
 
                 if (enemyBase != null && !enemyBase.IsDead)
                 {

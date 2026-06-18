@@ -27,6 +27,12 @@ namespace VisionOfLight.Enemy
 
         protected override void Update()
         {
+            if (playerHealth != null && playerHealth.isDead)
+            {
+                TriggerCampReset();
+                return;
+            }
+
             if (isDead || target == null)
                 return;
 

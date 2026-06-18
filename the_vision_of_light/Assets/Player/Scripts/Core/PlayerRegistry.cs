@@ -35,6 +35,12 @@ namespace VisionOfLight.Player
         #region Unity Lifecycle
         void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             Health = GetComponentInChildren<PlayerHealth>();
             Stamina = GetComponentInChildren<PlayerStamina>();
             Movement = GetComponentInChildren<PlayerMovement>();

@@ -63,6 +63,12 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
     #endregion
 
     #region Inventory Management

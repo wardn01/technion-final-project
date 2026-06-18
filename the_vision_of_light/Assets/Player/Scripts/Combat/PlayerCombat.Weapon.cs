@@ -11,7 +11,7 @@ namespace VisionOfLight.Player
         {
             if (newWeaponData == null) return;
 
-            ReleaseActiveQSystemReferences();
+            ClearActiveQSystems();
 
             if (currentWeaponModel != null)
             {

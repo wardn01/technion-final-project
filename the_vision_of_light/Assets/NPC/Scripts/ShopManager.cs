@@ -68,6 +68,12 @@ public class ShopManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
     private void Start()
     {
         if (shopPromptUI != null)

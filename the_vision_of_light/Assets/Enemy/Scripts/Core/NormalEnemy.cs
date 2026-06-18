@@ -121,15 +121,31 @@ namespace VisionOfLight.Enemy
 
         protected void ReturnToCampBehavior()
         {
-            if (agent != null && agent.isOnNavMesh)
+            if (agent != null)
             {
-                agent.isStopped = false;
-                agent.speed = stats.RunSpeed;
-                agent.SetDestination(startingPosition);
-
-                if (Vector3.Distance(transform.position, startingPosition) <= agent.stoppingDistance + 0.5f)
+                if (!agent.isOnNavMesh)
                 {
-                    isReturningToCamp = false;
+                    if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+                    {
+                        agent.Warp(hit.position);
+                    }
+                    else
+                    {
+                        isReturningToCamp = false;
+                        agent.ResetPath();
+                    }
+                }
+
+                if (agent.isOnNavMesh)
+                {
+                    agent.isStopped = false;
+                    agent.speed = stats.RunSpeed;
+                    agent.SetDestination(startingPosition);
+
+                    if (Vector3.Distance(transform.position, startingPosition) <= agent.stoppingDistance + 0.5f)
+                    {
+                        isReturningToCamp = false;
+                    }
                 }
             }
         }

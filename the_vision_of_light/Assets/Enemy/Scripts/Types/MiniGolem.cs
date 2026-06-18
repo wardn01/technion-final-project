@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace VisionOfLight.Enemy
 {
@@ -9,6 +10,8 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(EnemyAudioEmitter))]
     public class MiniGolem : NormalEnemy
     {
+        public static readonly List<MiniGolem> activeGolems = new List<MiniGolem>();
+
         [Header("Ranged Attack")]
         [SerializeField] private GameObject stonePrefab;
         [SerializeField] private Transform throwPoint;
@@ -27,6 +30,17 @@ namespace VisionOfLight.Enemy
         private MiniGolemStats RangedStats => stats as MiniGolemStats;
 
         private const float PeerSeparationRadius = 1.15f;
+
+        private void OnEnable()
+        {
+            if (!activeGolems.Contains(this))
+                activeGolems.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            activeGolems.Remove(this);
+        }
 
         protected override IEnumerator Start()
         {
@@ -188,7 +202,7 @@ namespace VisionOfLight.Enemy
             Vector3 push = Vector3.zero;
             int neighbors = 0;
 
-            foreach (MiniGolem other in FindObjectsByType<MiniGolem>(FindObjectsSortMode.None))
+            foreach (MiniGolem other in activeGolems)
             {
                 if (other == null || other == this)
                     continue;

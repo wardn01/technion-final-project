@@ -168,6 +168,9 @@ namespace VisionOfLight.Player
             else
                 currentHealth = maxHealth;
 
+            if (currentHealth > 0 && isDead)
+                Revive();
+
             UpdateHealthUI();
 
             if (currentHealth <= 0 && !isDead)
