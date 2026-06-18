@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2738683600175288546}
   - component: {fileID: 8890038341520676885}
   m_Layer: 0
-  m_Name: Gold Chest
+  m_Name: Stone Chest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 862193888439646769}
-  m_Mesh: {fileID: 113154512780115299, guid: afb0c1499fe9b3543b2ff9a4432caac4, type: 3}
+  m_Mesh: {fileID: -8694435419783438243, guid: 90e9ad6d51d817045ad02b3d1108038e, type: 3}
 --- !u!23 &8890038341520676885
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 5181524394000796870}
   - component: {fileID: 8574990178446388607}
   m_Layer: 0
-  m_Name: Gold ChestRoof
+  m_Name: Stone Chest Roof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -130,7 +130,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1924515721642459049}
-  m_Mesh: {fileID: -2570497019786778186, guid: afb0c1499fe9b3543b2ff9a4432caac4, type: 3}
+  m_Mesh: {fileID: -2698011697255498295, guid: 90e9ad6d51d817045ad02b3d1108038e, type: 3}
 --- !u!23 &8574990178446388607
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -209,7 +209,7 @@ Transform:
   m_GameObject: {fileID: 4150729518734284287}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 182.15, y: 83.52, z: -177.72327}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -231,10 +231,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VisionOfLight.Chest.WorldChest
   chestId: chest_stone_001
   visualType: 1
-  unlockMode: 1
+  unlockMode: 0
   assignedGuardians: []
   guardSpawns: []
-  lootContents: []
+  lootTable: {fileID: 11400000, guid: 5ced13f54d074b349feb73aca926b748, type: 2}
   promptContainer: {fileID: 0}
   promptRoot: {fileID: 0}
   interactKeyPrompt: {fileID: 0}

@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 555133621666883522}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 187.44, y: 83.22, z: -177.7761}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -49,12 +49,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdb5f917c2ffacb41bbd5cf54a3f4bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisionOfLight.Chest.WorldChest
-  chestId: chest_wood_test_004
+  chestId: chest_wood_001
   visualType: 0
   unlockMode: 0
   assignedGuardians: []
   guardSpawns: []
-  lootContents: []
+  lootTable: {fileID: 11400000, guid: f60fc943b13349efbc559741eb7ec8b5, type: 2}
   promptContainer: {fileID: 0}
   promptRoot: {fileID: 0}
   interactKeyPrompt: {fileID: 0}
@@ -218,7 +218,7 @@ GameObject:
   - component: {fileID: 3952425206856803606}
   - component: {fileID: 3940867359665126697}
   m_Layer: 0
-  m_Name: 'chest '
+  m_Name: Chest Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -309,7 +309,7 @@ GameObject:
   - component: {fileID: 8187517042728229358}
   - component: {fileID: 1525212474817653984}
   m_Layer: 0
-  m_Name: chest cover
+  m_Name: Chest Lid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

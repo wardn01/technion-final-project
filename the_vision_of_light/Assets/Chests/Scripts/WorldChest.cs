@@ -9,7 +9,7 @@ namespace VisionOfLight.Chest
     /// <summary>
     /// One-time world loot chest. Supports immediate open or defeat-guardians-first unlock.
     /// Fades out after opening and persists via <see cref="ChestRegistry"/>.
-    /// Wire UI on the scene instance, or leave empty — <see cref="ResolveSharedInteractUi"/> finds Canvas/InteractPrompt at runtime.
+    /// Assign a <see cref="ChestLootTable"/> for loot; UI auto-finds Canvas/InteractPrompt at runtime.
     /// </summary>
     public class WorldChest : MonoBehaviour
     {
@@ -21,21 +21,7 @@ namespace VisionOfLight.Chest
             DefeatEnemies
         }
 
-        public enum ChestVisualType
-        {
-            Wood,
-            Stone,
-            Gold
-        }
-
         #region Data Types
-        [System.Serializable]
-        public class ChestLootEntry
-        {
-            public ItemData item;
-            public int amount = 1;
-        }
-
         [System.Serializable]
         public class GuardSpawnInfo
         {
@@ -62,7 +48,8 @@ namespace VisionOfLight.Chest
         public GuardSpawnInfo[] guardSpawns;
 
         [Header("Loot")]
-        public ChestLootEntry[] lootContents;
+        [Tooltip("Reusable loot table. Fill entries on the asset when placing chests in the world.")]
+        public ChestLootTable lootTable;
 
         [Header("UI")]
         [Tooltip("Optional. Left empty on prefabs — auto-finds InteractPrompt / Interact_F in the loaded scene.")]
@@ -70,7 +57,6 @@ namespace VisionOfLight.Chest
         public GameObject promptRoot;
         public GameObject interactKeyPrompt;
 
-        [Tooltip("Shared label such as InteractTeleport.")]
         public TextMeshProUGUI promptTextUI;
 
         public string openPromptText = "Open Chest";
@@ -78,10 +64,11 @@ namespace VisionOfLight.Chest
 
         [Header("Open Feedback")]
         public AudioClip openSound;
+
         [Range(0f, 1f)] public float openSoundVolume = 1f;
 
         [Header("Lid Open")]
-        [Tooltip("Optional. Auto-finds chest cover / roof child when empty.")]
+        [Tooltip("Optional. Auto-finds chest cover / roof / lid child when empty.")]
         public Transform lidTransform;
 
         public float lidOpenAngle = -105f;
@@ -177,6 +164,22 @@ namespace VisionOfLight.Chest
             isPlayerNear = false;
             HideInteractPrompt();
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (unlockMode != ChestUnlockMode.DefeatEnemies)
+                return;
+
+            bool hasAssigned = assignedGuardians != null && assignedGuardians.Length > 0;
+            bool hasSpawns = guardSpawns != null && guardSpawns.Length > 0;
+
+            if (!hasAssigned && !hasSpawns)
+                Debug.LogWarning(
+                    $"[{nameof(WorldChest)}] '{name}' uses DefeatEnemies but has no guardians or spawn waves.",
+                    this);
+        }
+#endif
         #endregion
 
         #region Interaction
@@ -250,9 +253,6 @@ namespace VisionOfLight.Chest
                 promptRoot = parent.gameObject;
         }
 
-        /// <summary>
-        /// Prefab assets cannot reference scene UI. Finds the shared HUD Interact prompt when fields are empty.
-        /// </summary>
         private void ResolveSharedInteractUi()
         {
             if (promptRoot == null)
@@ -464,16 +464,10 @@ namespace VisionOfLight.Chest
 
         private void GrantLoot()
         {
-            if (lootContents == null || InventoryManager.Instance == null)
+            if (lootTable == null)
                 return;
 
-            foreach (ChestLootEntry entry in lootContents)
-            {
-                if (entry == null || entry.item == null || entry.amount <= 0)
-                    continue;
-
-                InventoryManager.Instance.AddItem(entry.item, entry.amount);
-            }
+            lootTable.GrantToPlayer();
         }
 
         private void PlayOpenSound()

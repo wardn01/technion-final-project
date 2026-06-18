@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 2918856425992379746}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 176.6, y: 84.19, z: -177.23018}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -54,7 +54,7 @@ MonoBehaviour:
   unlockMode: 0
   assignedGuardians: []
   guardSpawns: []
-  lootContents: []
+  lootTable: {fileID: 11400000, guid: 7dac735e00ea4f89a775c04bf9ed57cf, type: 2}
   promptContainer: {fileID: 0}
   promptRoot: {fileID: 0}
   interactKeyPrompt: {fileID: 0}
@@ -218,7 +218,7 @@ GameObject:
   - component: {fileID: 8340928965105472913}
   - component: {fileID: 4658014297132087092}
   m_Layer: 0
-  m_Name: Stone Chest
+  m_Name: Gold Chest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -246,7 +246,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6422763027157245655}
-  m_Mesh: {fileID: -8694435419783438243, guid: 90e9ad6d51d817045ad02b3d1108038e, type: 3}
+  m_Mesh: {fileID: 113154512780115299, guid: afb0c1499fe9b3543b2ff9a4432caac4, type: 3}
 --- !u!23 &4658014297132087092
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -308,7 +308,7 @@ GameObject:
   - component: {fileID: 79212149909298947}
   - component: {fileID: 5210683457215621969}
   m_Layer: 0
-  m_Name: Stone Chest.Roof
+  m_Name: Gold Chest Roof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -336,7 +336,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8651839352465368413}
-  m_Mesh: {fileID: -2698011697255498295, guid: 90e9ad6d51d817045ad02b3d1108038e, type: 3}
+  m_Mesh: {fileID: -2570497019786778186, guid: afb0c1499fe9b3543b2ff9a4432caac4, type: 3}
 --- !u!23 &5210683457215621969
 MeshRenderer:
   m_ObjectHideFlags: 0
