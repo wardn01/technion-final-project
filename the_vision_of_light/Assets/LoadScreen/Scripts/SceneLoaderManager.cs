@@ -49,6 +49,9 @@ public class SceneLoaderManager : MonoBehaviour
     /// <param name="sceneName">The exact name of the scene to load.</param>
     public void LoadWorldScene(string sceneName)
     {
+        if (SceneManager.GetActiveScene().name == "World" && PauseMenuManager.Instance != null)
+            PauseMenuManager.Instance.SaveGameSilently();
+
         loadingScreenPanel.SetActive(true);
         
         if (fillImage != null) fillImage.fillAmount = 0f;

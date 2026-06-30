@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07c2323e1d3ccc546995906328ab3c14, type: 3}
   m_Name: Wind Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemData
-  itemName: Wind sword
+  itemName: Wind Sword
   description: 'A blade forged in the heart of the storm. This lightweight sword
     grants its wielder absolute control over the winds.
 

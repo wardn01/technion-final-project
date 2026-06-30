@@ -12,6 +12,7 @@ public class SavedItem
 public class GameData
 {
     public float[] playerPos = new float[3];
+    public bool hasSavedPlayerPosition;
     public float currentTime;
     public string worldName;
     public List<SavedItem> inventoryItems = new List<SavedItem>();
@@ -20,6 +21,9 @@ public class GameData
 
     public int mainQuestState;
     public int questStepIndex;
+
+    /// <summary>Chapter 1 bed cinematic finished — skip intro/awakening on reload.</summary>
+    public bool hasCompletedChapter01Awakening;
 
     /// <summary>True when this save includes a health value (false for older saves).</summary>
     public bool hasSavedHealth;

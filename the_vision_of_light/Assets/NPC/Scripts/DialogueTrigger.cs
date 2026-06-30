@@ -20,8 +20,16 @@ public class DialogueTrigger : MonoBehaviour
     public CinemachineCamera playerFocusCamera;
 
     [Header("Navigation")]
-    [Tooltip("After quest state 2, this NPC moves here (e.g. Albedo outside).")]
+    [Tooltip("Optional world position for this NPC after a quest milestone (e.g. Villager outside the house).")]
     public Transform outsideLocation;
+
+    [Tooltip("Move to Outside Location when mainQuestState matches this chapter.")]
+    public int moveOutsideAtState = 0;
+
+    [Tooltip("Move once questStepIndex reaches this value within moveOutsideAtState.")]
+    public int moveOutsideAtMinStep = 2;
+
+    private bool hasMovedOutside;
 
     public enum QuestDialogueAction
     {
@@ -49,12 +57,57 @@ public class DialogueTrigger : MonoBehaviour
 
     private void Start()
     {
-        if (QuestManager.Instance != null && QuestManager.Instance.mainQuestState >= 2
-            && outsideLocation != null)
-        {
-            transform.position = outsideLocation.position;
-            transform.rotation = outsideLocation.rotation;
-        }
+        TryMoveToOutsideLocation();
+    }
+
+    private void Update()
+    {
+        TryMoveToOutsideLocation();
+    }
+
+    private void TryMoveToOutsideLocation()
+    {
+        if (hasMovedOutside || outsideLocation == null || QuestManager.Instance == null)
+            return;
+
+        if (!ShouldMoveOutside())
+            return;
+
+        transform.position = outsideLocation.position;
+        transform.rotation = outsideLocation.rotation;
+
+        StoryNPC storyNPC = GetComponent<StoryNPC>();
+        if (storyNPC != null)
+            storyNPC.ApplyStandingPoseAfterRelocation();
+        else
+            ApplyStandingPoseFallback();
+
+        hasMovedOutside = true;
+    }
+
+    private void ApplyStandingPoseFallback()
+    {
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim == null)
+            return;
+
+        anim.SetBool("IsStanding", true);
+        anim.SetBool("IsTalk", false);
+        anim.SetBool("IsWalking", false);
+        anim.Play("Idle", 0, 0f);
+        anim.Update(0f);
+    }
+
+    private bool ShouldMoveOutside()
+    {
+        int state = QuestManager.Instance.mainQuestState;
+        int step = QuestManager.Instance.questStepIndex;
+
+        if (state == moveOutsideAtState && step >= moveOutsideAtMinStep)
+            return true;
+
+        // Legacy quests that used state 2+ before chapter-based state ids.
+        return moveOutsideAtState == 0 && moveOutsideAtMinStep == 2 && state >= 2;
     }
 
     private void ApplyDialogueProfile()

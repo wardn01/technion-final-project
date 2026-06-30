@@ -420,6 +420,35 @@ public class QuickSlotManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Story quest weapon rewards: bind to the quick bar and equip immediately.
+    /// </summary>
+    public void EquipStoryRewardWeapon(WeaponItemData weapon)
+    {
+        if (weapon == null)
+            return;
+
+        if ((InventoryManager.Instance?.GetItemAmount(weapon) ?? 0) <= 0)
+            return;
+
+        if (!IsItemEquipped(weapon))
+        {
+            if (!TryAssignToFirstEmptySlot(weapon))
+                AssignItem(weapon, 0);
+        }
+
+        if (playerCombat == null)
+            playerCombat = PlayerRegistry.Instance?.Combat;
+
+        if (playerCombat == null)
+            return;
+
+        playerCombat.EquipWeapon(weapon);
+
+        if (InventoryUIManager.Instance != null)
+            InventoryUIManager.Instance.UpdateSkillHUD(weapon);
+    }
+
+    /// <summary>
     /// Directly assigns an item to a specific slot index.
     /// Enforces gameplay rules, such as limiting the player to a maximum of 2 equipped weapons.
     /// </summary>

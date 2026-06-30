@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -6,7 +7,7 @@ using VisionOfLight.Enemy;
 using VisionOfLight.Player;
 using VisionOfLight.Chest;
 
-[DefaultExecutionOrder(100)]
+[DefaultExecutionOrder(200)]
 public class PauseMenuManager : MonoBehaviour
 {
     public static PauseMenuManager Instance { get; private set; }
@@ -43,6 +44,7 @@ public class PauseMenuManager : MonoBehaviour
 
     private GameObject currentActiveSubScreen = null;
     private bool worldDataLoadedOnce;
+    private bool worldRestoreScheduled;
 
     private void Awake()
     {
@@ -79,7 +81,7 @@ public class PauseMenuManager : MonoBehaviour
         if (worldDataLoadedOnce)
         {
             Resume();
-            LoadPlayerData();
+            ScheduleWorldRestore();
         }
     }
 
@@ -89,8 +91,36 @@ public class PauseMenuManager : MonoBehaviour
             backBtn.onClick.AddListener(HandleBackButton);
 
         Resume();
-        LoadPlayerData();
+
+        if (SceneManager.GetActiveScene().name == "World")
+            ScheduleWorldRestore();
+
         worldDataLoadedOnce = true;
+    }
+
+    private void ScheduleWorldRestore()
+    {
+        if (worldRestoreScheduled)
+            return;
+
+        worldRestoreScheduled = true;
+        StartCoroutine(RestorePlayerAfterWorldReady());
+    }
+
+    private IEnumerator RestorePlayerAfterWorldReady()
+    {
+        yield return null;
+
+        worldRestoreScheduled = false;
+
+        if (SceneManager.GetActiveScene().name != "World" || Instance != this)
+            yield break;
+
+        if (!CanRestorePersistedWorldState())
+            yield break;
+
+        ResolveWorldReferences();
+        LoadPlayerData();
     }
 
     public void HandleBackButton()
@@ -268,6 +298,8 @@ public class PauseMenuManager : MonoBehaviour
 
     public void SaveGameSilently()
     {
+        ResolveWorldReferences();
+
         int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
         GameData data = SaveManager.LoadGame(currentSlot) ?? new GameData();
 
@@ -279,6 +311,7 @@ public class PauseMenuManager : MonoBehaviour
             data.playerPos[0] = playerTransform.position.x;
             data.playerPos[1] = playerTransform.position.y;
             data.playerPos[2] = playerTransform.position.z;
+            data.hasSavedPlayerPosition = true;
 
             PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
             if (playerHealth != null)
@@ -314,6 +347,9 @@ public class PauseMenuManager : MonoBehaviour
             data.questStepIndex = QuestManager.Instance.questStepIndex;
         }
 
+        if (WorldSaveManager.Instance != null)
+            data.hasCompletedChapter01Awakening = WorldSaveManager.Instance.HasCompletedChapter01Awakening;
+
         ChallengeTrialRegistry.WriteToSave(data);
         ChestRegistry.WriteToSave(data);
 
@@ -328,10 +364,50 @@ public class PauseMenuManager : MonoBehaviour
         else SceneManager.LoadScene("MainMenu");
     }
 
+    /// <summary>
+    /// Restores only position and vitals — used when skipping the bed cinematic on reload.
+    /// Returns true when a saved world position was applied.
+    /// </summary>
+    public bool TryRestorePlayerTransformFromSave()
+    {
+        if (!CanRestorePersistedWorldState())
+            return false;
+
+        ResolveWorldReferences();
+
+        int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
+        GameData data = SaveManager.LoadGame(currentSlot);
+        if (data == null || playerTransform == null)
+            return false;
+
+        bool appliedPosition = HasStoredPlayerPosition(data);
+        if (appliedPosition)
+            ApplySavedPlayerPosition(data);
+
+        ApplyLoadedPlayerVitals(data);
+        return appliedPosition;
+    }
+
+    private bool CanRestorePersistedWorldState()
+    {
+        if (WorldSaveManager.Instance != null && WorldSaveManager.Instance.HasCompletedChapter01Awakening)
+            return true;
+
+        int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
+        GameData data = SaveManager.LoadGame(currentSlot);
+        return data != null && data.hasCompletedChapter01Awakening;
+    }
+
     private void LoadPlayerData()
     {
         int currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
         GameData data = SaveManager.LoadGame(currentSlot);
+
+        if (QuestManager.Instance != null && data != null)
+        {
+            QuestManager.Instance.mainQuestState = data.mainQuestState;
+            QuestManager.Instance.questStepIndex = data.questStepIndex;
+        }
 
         playerProfile?.ResetToDefault();
         InventoryManager.Instance?.ClearInventory();
@@ -339,13 +415,8 @@ public class PauseMenuManager : MonoBehaviour
 
         if (data != null)
         {
-            if (playerTransform != null)
-            {
-                CharacterController cc = playerTransform.GetComponent<CharacterController>();
-                if (cc != null) cc.enabled = false;
-                playerTransform.position = new Vector3(data.playerPos[0], data.playerPos[1], data.playerPos[2]);
-                if (cc != null) cc.enabled = true;
-            }
+            if (playerTransform != null && HasStoredPlayerPosition(data))
+                ApplySavedPlayerPosition(data);
 
             if (DayNightCycle.Instance != null) DayNightCycle.Instance.currentTime = data.currentTime;
 
@@ -397,7 +468,13 @@ public class PauseMenuManager : MonoBehaviour
         if (playerHealth != null)
         {
             if (data != null && data.hasSavedHealth)
-                playerHealth.ApplyLoadedHealth(true, data.savedCurrentHealth);
+            {
+                int healthToLoad = data.savedCurrentHealth;
+                if (healthToLoad <= 0)
+                    healthToLoad = playerHealth.maxHealth > 0 ? playerHealth.maxHealth : 100;
+
+                playerHealth.ApplyLoadedHealth(true, healthToLoad);
+            }
             else
                 playerHealth.ApplyLoadedHealth(false, 0);
         }
@@ -410,6 +487,37 @@ public class PauseMenuManager : MonoBehaviour
             else
                 playerStamina.ApplyLoadedStamina(false, 0f);
         }
+    }
+
+    private static bool HasStoredPlayerPosition(GameData data)
+    {
+        if (data?.playerPos == null || data.playerPos.Length < 3)
+            return false;
+
+        if (data.hasSavedPlayerPosition)
+            return true;
+
+        return Mathf.Abs(data.playerPos[0]) > 0.01f
+            || Mathf.Abs(data.playerPos[1]) > 0.01f
+            || Mathf.Abs(data.playerPos[2]) > 0.01f;
+    }
+
+    private void ApplySavedPlayerPosition(GameData data)
+    {
+        CharacterController cc = playerTransform.GetComponent<CharacterController>();
+        if (cc != null)
+            cc.enabled = false;
+
+        playerTransform.position = new Vector3(data.playerPos[0], data.playerPos[1], data.playerPos[2]);
+
+        if (cc != null)
+            cc.enabled = true;
+
+        PlayerMovement movement = playerTransform.GetComponent<PlayerMovement>();
+        if (movement != null)
+            movement.ResetFallDamage();
+        else
+            playerTransform.SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
     }
 
     /// <summary>
@@ -453,14 +561,22 @@ public class PauseMenuManager : MonoBehaviour
 
         if (playerTransform == null)
         {
-            if (PlayerRegistry.Instance != null)
-                playerTransform = PlayerRegistry.Instance.transform;
+            PlayerRegistry registry = FindFirstObjectByType<PlayerRegistry>(FindObjectsInactive.Include);
+            if (registry != null)
+                playerTransform = registry.transform;
             else
             {
-                GameObject player = GameObject.FindGameObjectWithTag("Player");
-                if (player != null)
-                    playerTransform = player.transform;
+                PlayerHealth health = FindFirstObjectByType<PlayerHealth>(FindObjectsInactive.Include);
+                if (health != null)
+                    playerTransform = health.transform;
             }
+        }
+
+        if (playerTransform == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                playerTransform = player.transform;
         }
 
         if (pauseMainPanel == null)

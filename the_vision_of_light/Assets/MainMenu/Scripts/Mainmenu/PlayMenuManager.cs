@@ -311,6 +311,8 @@ public class PlayMenuManager : MonoBehaviour
     {
         PlayerPrefs.SetInt("SelectedSlot", slotIndex);
         PlayerPrefs.Save();
+
+        WorldSaveManager.Instance?.ReloadSelectedSlot();
         
         if (SceneLoaderManager.Instance != null)
         {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using VisionOfLight.Enemy;
 using VisionOfLight.Player;
 using VisionOfLight.Chest;
@@ -7,6 +8,7 @@ using VisionOfLight.Chest;
 /// A persistent Singleton manager that handles loading and saving the current world's state, 
 /// including player data and quest progress across scene loads.
 /// </summary>
+[DefaultExecutionOrder(-500)]
 public class WorldSaveManager : MonoBehaviour
 {
     #region Singleton
@@ -26,7 +28,10 @@ public class WorldSaveManager : MonoBehaviour
     private bool hasPendingQuestProgress;
     private int pendingQuestState;
     private int pendingQuestStep;
+    private bool pendingChapter01AwakeningComplete;
     #endregion
+
+    public bool HasCompletedChapter01Awakening { get; private set; }
 
     #region Unity Lifecycle
     /// <summary>
@@ -54,6 +59,32 @@ public class WorldSaveManager : MonoBehaviour
 
         LoadWorldData();
     }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "World")
+            ReloadSelectedSlot();
+    }
+
+    /// <summary>Reloads save data for the slot selected in the play menu.</summary>
+    public void ReloadSelectedSlot()
+    {
+        currentSlot = PlayerPrefs.GetInt("SelectedSlot", 1);
+        if (currentSlot <= 0)
+            currentSlot = 1;
+
+        LoadWorldData();
+    }
     #endregion
 
     #region Save & Load Logic
@@ -69,7 +100,7 @@ public class WorldSaveManager : MonoBehaviour
         {
             ChallengeTrialRegistry.ApplyFromSave(data);
             ChestRegistry.ApplyFromSave(data);
-            ApplyQuestProgress(data.mainQuestState, data.questStepIndex);
+            ApplyQuestProgress(data.mainQuestState, data.questStepIndex, data.hasCompletedChapter01Awakening);
 
             // Restore Player Data
             if (activePlayerData != null && !string.IsNullOrEmpty(data.playerDataJson))
@@ -90,7 +121,7 @@ public class WorldSaveManager : MonoBehaviour
         {
             ChallengeTrialRegistry.ApplyFromSave(null);
             ChestRegistry.ApplyFromSave(null);
-            ApplyQuestProgress(0, 0);
+            ApplyQuestProgress(0, 0, false);
 
             if (activePlayerData != null)
             {
@@ -102,8 +133,10 @@ public class WorldSaveManager : MonoBehaviour
     /// <summary>
     /// Applies saved quest progress immediately, or stores it until <see cref="QuestManager"/> is ready.
     /// </summary>
-    private void ApplyQuestProgress(int state, int step)
+    private void ApplyQuestProgress(int state, int step, bool chapter01AwakeningComplete)
     {
+        HasCompletedChapter01Awakening = chapter01AwakeningComplete;
+
         if (QuestManager.Instance != null)
         {
             QuestManager.Instance.mainQuestState = state;
@@ -114,7 +147,30 @@ public class WorldSaveManager : MonoBehaviour
 
         pendingQuestState = state;
         pendingQuestStep = step;
+        pendingChapter01AwakeningComplete = chapter01AwakeningComplete;
         hasPendingQuestProgress = true;
+    }
+
+    public void MarkChapter01AwakeningComplete()
+    {
+        HasCompletedChapter01Awakening = true;
+
+        if (PauseMenuManager.Instance != null)
+        {
+            SaveCurrentWorld();
+            return;
+        }
+
+        GameData data = SaveManager.LoadGame(currentSlot) ?? new GameData();
+        data.hasCompletedChapter01Awakening = true;
+
+        if (QuestManager.Instance != null)
+        {
+            data.mainQuestState = QuestManager.Instance.mainQuestState;
+            data.questStepIndex = QuestManager.Instance.questStepIndex;
+        }
+
+        SaveManager.SaveGame(currentSlot, data);
     }
 
     /// <summary>
@@ -126,6 +182,7 @@ public class WorldSaveManager : MonoBehaviour
 
         QuestManager.Instance.mainQuestState = pendingQuestState;
         QuestManager.Instance.questStepIndex = pendingQuestStep;
+        HasCompletedChapter01Awakening = pendingChapter01AwakeningComplete;
         hasPendingQuestProgress = false;
     }
 

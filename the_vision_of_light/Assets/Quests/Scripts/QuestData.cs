@@ -23,6 +23,13 @@ public class QuestStep
 
     public bool hasTargetLocation;
     public Vector3 targetLocation;
+
+    [Header("Tutorial")]
+    [Tooltip("When enabled, TutorialUIManager shows this hint for this objective.")]
+    public bool showTutorial;
+
+    [TextArea(2, 4)]
+    public string tutorialText;
 }
 
 /// <summary>
@@ -43,6 +50,10 @@ public class QuestData : ScriptableObject
     public List<QuestStep> steps = new List<QuestStep>();
 
     public List<QuestReward> rewards;
+
+    [Header("Completion UI")]
+    [Tooltip("Center-screen message when this quest finishes. Empty = \"Quest Complete\".")]
+    public string completionMessage;
 
     public bool hasTargetLocation;
     public Vector3 targetLocation;
@@ -71,5 +82,20 @@ public class QuestData : ScriptableObject
             return steps[stepIndex].targetLocation;
 
         return targetLocation;
+    }
+
+    public bool TryGetTutorialForStep(int stepIndex, out string text)
+    {
+        text = string.Empty;
+
+        if (steps == null || stepIndex < 0 || stepIndex >= steps.Count)
+            return false;
+
+        QuestStep step = steps[stepIndex];
+        if (!step.showTutorial || string.IsNullOrWhiteSpace(step.tutorialText))
+            return false;
+
+        text = step.tutorialText;
+        return true;
     }
 }

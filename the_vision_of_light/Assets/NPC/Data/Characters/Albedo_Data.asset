@@ -15,5 +15,5 @@ MonoBehaviour:
   npcName: Albedo
   npcIcon: {fileID: -575667097, guid: 8505df3e433245f48ab4c963bcd7a0e0, type: 3}
   welcomeDialogue:
-  - The wind feels colder today, Xiao. Be careful out there.
+  - "The village is quiet again... for now. Stay sharp, Xiao."
   itemsToSell: []

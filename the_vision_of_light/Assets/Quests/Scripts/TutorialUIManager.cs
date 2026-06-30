@@ -26,7 +26,8 @@ public class TutorialUIManager : MonoBehaviour
     }
 
     #region Tutorials Setup
-    [Header("Tutorials Setup")]
+    [Header("Tutorials Setup (legacy)")]
+    [Tooltip("Optional fallback. Tutorial text on Quest Data steps takes priority.")]
     public TutorialStep[] tutorials;
     #endregion
 
@@ -64,6 +65,7 @@ public class TutorialUIManager : MonoBehaviour
         { "Skill", KeyCode.E },
         { "Burst", KeyCode.Q },
         { "OpenInventory", KeyCode.I },
+        { "Interact", KeyCode.F },
     };
     #endregion
 
@@ -123,7 +125,24 @@ public class TutorialUIManager : MonoBehaviour
     private bool TryResolveTutorial(int state, int step, out string formattedText)
     {
         formattedText = string.Empty;
-        if (tutorials == null) return false;
+        if (!CanShowTutorial(state, step))
+            return false;
+
+        QuestData quest = QuestManager.Instance?.GetActiveQuest();
+        if (quest != null)
+        {
+            if (quest.TryGetTutorialForStep(step, out string questTutorial))
+            {
+                formattedText = FormatTutorialText(questTutorial);
+                return !string.IsNullOrEmpty(formattedText);
+            }
+
+            if (quest.steps != null && step >= 0 && step < quest.steps.Count)
+                return false;
+        }
+
+        if (tutorials == null)
+            return false;
 
         TutorialStep chapterFallback = null;
 
@@ -148,6 +167,17 @@ public class TutorialUIManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    private static bool CanShowTutorial(int state, int step)
+    {
+        if (state != 0)
+            return true;
+
+        if (!IntroCutsceneManager.HasFinishedIntro)
+            return false;
+
+        return AwakeningManager.HasCompletedAwakening;
     }
     #endregion
 

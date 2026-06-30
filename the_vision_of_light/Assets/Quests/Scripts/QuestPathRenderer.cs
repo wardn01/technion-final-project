@@ -63,6 +63,12 @@ public class QuestPathRenderer : MonoBehaviour
             return;
         }
 
+        if (QuestPathSuppression.IsSuppressed)
+        {
+            lineRenderer.positionCount = 0;
+            return;
+        }
+
         Vector3 targetPos = QuestManager.Instance.GetCurrentObjectiveTarget();
         float distance = Vector3.Distance(player.position, targetPos);
 

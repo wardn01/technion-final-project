@@ -113,6 +113,13 @@ public class StoryNPC : MonoBehaviour
             return;
 
         ShopManager.Instance?.HideInteractPrompt();
+        ShopManager.Instance?.SetPlayerFreeze(true);
+
+        if (!hasStoodUp)
+        {
+            StartCoroutine(InteractionSequence());
+            return;
+        }
 
         if (isStaticNPC)
         {
@@ -121,13 +128,8 @@ public class StoryNPC : MonoBehaviour
             return;
         }
 
-        if (!hasStoodUp)
-            StartCoroutine(InteractionSequence());
-        else
-        {
-            FaceEachOtherInstantly();
-            questTrigger?.TriggerDialogue();
-        }
+        FaceEachOtherInstantly();
+        questTrigger?.TriggerDialogue();
     }
 
     private void FaceEachOtherInstantly()
@@ -152,13 +154,14 @@ public class StoryNPC : MonoBehaviour
 
         if (myAnimator != null)
         {
+            myAnimator.SetBool("IsTalk", false);
+            myAnimator.SetBool("IsWalking", false);
+            myAnimator.ResetTrigger("StandUp");
             myAnimator.SetTrigger("StandUp");
-            myAnimator.SetBool("IsStanding", true);
-            myAnimator.SetInteger("TalkIndex", Random.Range(0, 3));
-            myAnimator.SetBool("IsTalk", true);
         }
 
-        yield return new WaitForSeconds(standUpDuration);
+        yield return WaitForStandUpAnimation();
+        SnapToStandingIdle();
 
         if (npcCollider != null)
             npcCollider.enabled = false;
@@ -169,10 +172,55 @@ public class StoryNPC : MonoBehaviour
         if (npcCollider != null)
             npcCollider.enabled = true;
 
+        SnapToStandingIdle();
+
         hasStoodUp = true;
         isBusy = false;
 
         questTrigger?.TriggerDialogue();
+    }
+
+    private IEnumerator WaitForStandUpAnimation()
+    {
+        if (myAnimator == null)
+        {
+            yield return new WaitForSeconds(standUpDuration);
+            yield break;
+        }
+
+        float timeout = Mathf.Max(standUpDuration, 0.5f) + 1.5f;
+        float elapsed = 0f;
+
+        while (elapsed < timeout)
+        {
+            AnimatorStateInfo state = myAnimator.GetCurrentAnimatorStateInfo(0);
+            if (state.IsName("SitToStand"))
+                break;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        while (myAnimator != null)
+        {
+            AnimatorStateInfo state = myAnimator.GetCurrentAnimatorStateInfo(0);
+            if (!state.IsName("SitToStand") || state.normalizedTime >= 0.98f)
+                break;
+
+            yield return null;
+        }
+    }
+
+    private void SnapToStandingIdle()
+    {
+        if (myAnimator == null)
+            return;
+
+        myAnimator.SetBool("IsStanding", true);
+        myAnimator.SetBool("IsTalk", false);
+        myAnimator.SetBool("IsWalking", false);
+        myAnimator.Play("Idle", 0, 0f);
+        myAnimator.Update(0f);
     }
 
     private IEnumerator LookAtEachOther()
@@ -249,7 +297,35 @@ public class StoryNPC : MonoBehaviour
         isPlayerInRange = false;
         ShopManager.Instance?.HideInteractPrompt();
 
+        if (isBusy)
+        {
+            StopAllCoroutines();
+            isBusy = false;
+            ReleasePlayerIfNotInDialogue();
+        }
+
         if (DialogueManager.Instance != null)
             DialogueManager.Instance.EndDialogue();
+    }
+
+    private static void ReleasePlayerIfNotInDialogue()
+    {
+        if (DialogueManager.Instance != null && DialogueManager.Instance.isDialogueOpen)
+            return;
+
+        ShopManager.Instance?.SetPlayerFreeze(false);
+    }
+
+    /// <summary>
+    /// Called after quest relocation — snap to standing idle (no sit pose at the new spot).
+    /// </summary>
+    public void ApplyStandingPoseAfterRelocation()
+    {
+        hasStoodUp = true;
+
+        if (myAnimator == null)
+            myAnimator = GetComponentInChildren<Animator>();
+
+        SnapToStandingIdle();
     }
 }

@@ -47,6 +47,7 @@ namespace VisionOfLight.Player
         void Start()
         {
             UpdateMaxHealthFromData();
+            EnsureFullHealthIfUnset();
             UpdateHealthUI();
 
             healthBarUI?.ShowAlive();
@@ -155,6 +156,28 @@ namespace VisionOfLight.Player
                 animator.SetFloat("Speed", 0f);
             }
         }
+        /// <summary>Forces full HP after spawn/awakening when no valid health was set yet.</summary>
+        public void EnsureFullHealthAtSpawn()
+        {
+            isDead = false;
+            UpdateMaxHealthFromData();
+            currentHealth = maxHealth;
+            UpdateHealthUI();
+            healthBarUI?.ShowAlive();
+            SetRagdollState(false);
+
+            if (playerMovementScript != null)
+                playerMovementScript.enabled = true;
+
+            if (characterController != null)
+                characterController.enabled = true;
+
+            if (animator != null)
+            {
+                animator.enabled = true;
+                animator.SetFloat("Speed", 0f);
+            }
+        }
         #endregion
 
         #region Save/Load
@@ -196,6 +219,8 @@ namespace VisionOfLight.Player
                 else
                 {
                     maxHealth = newMaxHealth;
+                    if (currentHealth <= 0)
+                        currentHealth = maxHealth;
                 }
 
                 currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
@@ -204,7 +229,15 @@ namespace VisionOfLight.Player
             else
             {
                 maxHealth = 100;
+                if (currentHealth <= 0)
+                    currentHealth = maxHealth;
             }
+        }
+
+        private void EnsureFullHealthIfUnset()
+        {
+            if (currentHealth <= 0 && maxHealth > 0)
+                currentHealth = maxHealth;
         }
         #endregion
 

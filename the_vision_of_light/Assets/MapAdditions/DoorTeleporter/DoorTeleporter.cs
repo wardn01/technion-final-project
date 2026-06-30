@@ -11,6 +11,13 @@ public class DoorTeleporter : MonoBehaviour
     public TextMeshProUGUI promptTextUI;
     public string promptText = "Enter House";
 
+    [Header("Quest Path")]
+    [Tooltip("Hide the ground quest guide after teleporting here (e.g. house interior).")]
+    public bool hideQuestPathAtDestination;
+
+    [Tooltip("Show the ground quest guide after teleporting here (e.g. leaving the house).")]
+    public bool showQuestPathAtDestination;
+
     private bool isPlayerNear = false;
     private GameObject playerObj;
     
@@ -72,6 +79,11 @@ public class DoorTeleporter : MonoBehaviour
 
         if (cc != null) cc.enabled = true;
         if (agent != null) agent.enabled = true;
+
+        if (hideQuestPathAtDestination)
+            QuestPathSuppression.SetForcedInterior(true);
+        else if (showQuestPathAtDestination)
+            QuestPathSuppression.SetForcedInterior(false);
         
         if (promptContainer != null) promptContainer.SetActive(false);
         

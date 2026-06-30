@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afaf71966ea65643a2583b7ff0771a3, type: 3}
+  m_Name: Dialogue_Villager_Quest01_Awakening
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcName: Albedo
+  dialogueLines:
+  - "Xiao... you're awake. I was afraid you wouldn't open your eyes again."
+  - "The Shadow Entity struck the village last night. The Magic Stone was stolen, and the Great Tree withered."
+  - "Your friends didn't make it through the night. We buried them on the hill, beneath the broken branches."
+  - "The monster fled into the forest — but that can wait. Go to the hill first."
+  - "Stand with them one last time. When you're ready, come back to me."
