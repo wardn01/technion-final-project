@@ -31,32 +31,26 @@ public class DialogueTrigger : MonoBehaviour
 
     private bool hasMovedOutside;
 
-    public enum QuestDialogueAction
-    {
-        None,
-        AdvanceStep,
-        CompleteQuest
-    }
-
-    [System.Serializable]
-    public class QuestDialogueEntry
-    {
-        public int stateId;
-        public int requiredStep;
-        public DialogueData dialogue;
-        public QuestData questData;
-
-        [Tooltip("What happens when the player finishes this dialogue.")]
-        public QuestDialogueAction onComplete = QuestDialogueAction.None;
-    }
-
     private void Awake()
     {
         ApplyDialogueProfile();
     }
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        ApplyDialogueProfile();
+    }
+#endif
+
     private void Start()
     {
+        StartCoroutine(TryMoveOutsideWhenReady());
+    }
+
+    private System.Collections.IEnumerator TryMoveOutsideWhenReady()
+    {
+        yield return null;
         TryMoveToOutsideLocation();
     }
 
@@ -103,6 +97,10 @@ public class DialogueTrigger : MonoBehaviour
         int state = QuestManager.Instance.mainQuestState;
         int step = QuestManager.Instance.questStepIndex;
 
+        // Chapter 1 finished — Albedo stays outside permanently (also fixes reload saves).
+        if (state >= 1)
+            return true;
+
         if (state == moveOutsideAtState && step >= moveOutsideAtMinStep)
             return true;
 
@@ -112,16 +110,31 @@ public class DialogueTrigger : MonoBehaviour
 
     private void ApplyDialogueProfile()
     {
-        if (dialogueProfile == null)
-            dialogueProfile = TryLoadProfileFromResources();
-
-        if (dialogueProfile == null || dialogueProfile.entries == null)
+        StoryNPC storyNPC = GetComponent<StoryNPC>();
+        if (storyNPC == null || storyNPC.myData == null)
             return;
 
         if (dialogueStates == null)
             dialogueStates = new List<QuestDialogueEntry>();
 
-        foreach (QuestDialogueEntry entry in dialogueProfile.entries)
+        MergeProfile(dialogueProfile);
+
+        NPCDialogueProfile[] profiles = Resources.LoadAll<NPCDialogueProfile>("DialogueProfiles");
+        foreach (NPCDialogueProfile profile in profiles)
+        {
+            if (profile == null || profile.npcName != storyNPC.myData.npcName)
+                continue;
+
+            MergeProfile(profile);
+        }
+    }
+
+    private void MergeProfile(NPCDialogueProfile profile)
+    {
+        if (profile == null || profile.entries == null)
+            return;
+
+        foreach (QuestDialogueEntry entry in profile.entries)
         {
             if (entry == null)
                 continue;

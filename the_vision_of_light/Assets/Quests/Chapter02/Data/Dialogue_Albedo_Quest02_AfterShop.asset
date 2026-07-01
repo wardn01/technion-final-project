@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afaf71966ea65643a2583b7ff0771a3, type: 3}
+  m_Name: Dialogue_Albedo_Quest02_AfterShop
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcName: Albedo
+  dialogueLines:
+  - "Good. Keep that potion close — the village isn't safe yet."
+  - "More monsters have been spotted near the old mill, east of here."
+  - "Go there and eliminate them. I'll be waiting for your return."

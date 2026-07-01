@@ -293,23 +293,13 @@ public class ShopManager : MonoBehaviour
             InventoryManager.Instance.RemoveItem(goldItemData, totalCost);
             InventoryManager.Instance.AddItem(selectedItem, currentAmount);
             UpdateGoldUI();
+            QuestShopObjective.NotifyPurchase(selectedItem, currentAmount);
 
             if (amountSlider != null)
                 amountSlider.value = 1;
 
             if (currentShopkeeperAnim != null)
                 currentShopkeeperAnim.SetTrigger("ThankYou");
-
-            if (QuestManager.Instance != null && QuestManager.Instance.mainQuestState == 5
-                && selectedItem.itemName == "Small Health Potion")
-            {
-                QuestManager.Instance.AdvanceToState(6);
-                Debug.Log("Quest 5 Completed: Small Health Potion Purchased!");
-                InventoryManager.Instance.AddItem(selectedItem, 1);
-
-                if (NotificationManager.Instance != null)
-                    NotificationManager.Instance.ShowWarning("Quest Completed! +1 Free Potion Gift!");
-            }
         }
         else if (NotificationManager.Instance != null)
         {

@@ -27,7 +27,7 @@ MonoBehaviour:
       {Interact} to interact.'
   - description: Visit your friends' graves on the hill
     hasTargetLocation: 1
-    targetLocation: {x: 265, y: 10, z: 22}
+    targetLocation: {x: 267.6, y: 10.6, z: 20.6}
     showTutorial: 1
     tutorialText: 'Use {MoveForward} {MoveLeft} {MoveBackward} {MoveRight} to move.
 
@@ -35,7 +35,7 @@ MonoBehaviour:
       {Interact} to interact.'
   - description: Return to Albedo outside the house
     hasTargetLocation: 1
-    targetLocation: {x: 183, y: 10, z: -7}
+    targetLocation: {x: 181.9, y: 10.9, z: 0.5}
     showTutorial: 1
     tutorialText: 'Use {MoveForward} {MoveLeft} {MoveBackward} {MoveRight} to move.
 

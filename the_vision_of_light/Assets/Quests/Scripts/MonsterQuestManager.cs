@@ -41,10 +41,9 @@ public class MonsterQuestManager : MonoBehaviour
             return;
         }
 
-        if (monstersGroup != null)
-        {
+        // Chapter 2+ uses QuestKillObjective on children; disabling the parent would prevent those scripts from running.
+        if (monstersGroup != null && !UsesPerStepKillObjectives())
             monstersGroup.SetActive(false);
-        }
     }
 
     /// <summary>
@@ -52,13 +51,20 @@ public class MonsterQuestManager : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        if (monstersGroup == null || UsesPerStepKillObjectives())
+            return;
+
         if (QuestManager.Instance != null && IsObjectiveActive())
         {
-            if (monstersGroup != null && !monstersGroup.activeSelf && currentKills < monstersToKill)
-            {
+            if (!monstersGroup.activeSelf && currentKills < monstersToKill)
                 monstersGroup.SetActive(true);
-            }
         }
+    }
+
+    private bool UsesPerStepKillObjectives()
+    {
+        return monstersGroup != null &&
+               monstersGroup.GetComponentInChildren<QuestKillObjective>(true) != null;
     }
     #endregion
 

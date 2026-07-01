@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ca99df06d122fc4988fd9133f1303bb, type: 3}
+  m_Name: Quest_02_FallOfTheVillage
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  stateId: 1
+  questTitle: 'Chapter 2: Fall of the Village'
+  questDescription: Monsters still lurk near the village. Clear the beach, buy a
+    Health Potion from the merchant, then stop the pack near the mill.
+  steps:
+  - description: Speak with Albedo about the beach monsters
+    hasTargetLocation: 1
+    targetLocation: {x: 181.9, y: 10.9, z: 0.5}
+    showTutorial: 1
+    tutorialText: Press {Interact} to speak with Albedo.
+  - description: Defeat the monsters on the beach
+    hasTargetLocation: 1
+    targetLocation: {x: 239.2, y: 0.5, z: 64.6}
+    showTutorial: 1
+    tutorialText: 'Press {OpenInventory} to open your bag.
+
+      Select the Wind
+      Sword, then click Equip.
+
+      Press {NormalAttack} to attack. Defeat all
+      monsters on the beach.'
+  - description: Return to Albedo
+    hasTargetLocation: 1
+    targetLocation: {x: 181.9, y: 10.9, z: 0.5}
+    showTutorial: 1
+    tutorialText: Return to Albedo and press {Interact}.
+  - description: Buy a Health Potion from the merchant
+    hasTargetLocation: 1
+    targetLocation: {x: 192.2, y: 10.9, z: 12.6}
+    showTutorial: 1
+    tutorialText: 'Press {Interact} near the merchant to open the shop.
+
+      Buy
+      any Health Potion, then return to Albedo.'
+  - description: Return to Albedo after buying supplies
+    hasTargetLocation: 1
+    targetLocation: {x: 181.9, y: 10.9, z: 0.5}
+    showTutorial: 1
+    tutorialText: Press {Interact} to speak with Albedo.
+  - description: Defeat the monsters near the mill
+    hasTargetLocation: 1
+    targetLocation: {x: 154.5, y: 23.1, z: 30}
+    showTutorial: 1
+    tutorialText: 'Press {NormalAttack} to attack.
+
+      Use {Skill} and {Burst}
+      when ready. Clear the mill area.'
+  - description: Return to Albedo to finish the chapter
+    hasTargetLocation: 1
+    targetLocation: {x: 181.9, y: 10.9, z: 0.5}
+    showTutorial: 1
+    tutorialText: Press {Interact} to complete the chapter with Albedo.
+  rewards:
+  - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+    amount: 200
+  - item: {fileID: 11400000, guid: 3146fad4d46f1c047bf2b89d08d7fe8e, type: 2}
+    amount: 2
+  completionMessage: Quest Complete
+  hasTargetLocation: 0
+  targetLocation: {x: 0, y: 0, z: 0}

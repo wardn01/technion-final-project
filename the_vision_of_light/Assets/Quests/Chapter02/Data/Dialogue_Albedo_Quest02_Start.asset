@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afaf71966ea65643a2583b7ff0771a3, type: 3}
+  m_Name: Dialogue_Albedo_Quest02_Start
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcName: Albedo
+  dialogueLines:
+  - "You have your Wind Sword now. Good — you'll need it."
+  - "Some of the monsters that attacked the village never fled. They're still lurking nearby."
+  - "A pack of them gathered on the beach, south of the village."
+  - "Go there and cut them down. Come back to me when the shore is clear."

@@ -17,9 +17,14 @@ public class QuestMonster : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
-        if (MonsterQuestManager.Instance != null)
+        QuestKillObjective objective = GetComponentInParent<QuestKillObjective>();
+        if (objective != null)
         {
-            MonsterQuestManager.Instance.MonsterKilled();
+            objective.RegisterKill();
+            return;
         }
+
+        if (MonsterQuestManager.Instance != null)
+            MonsterQuestManager.Instance.MonsterKilled();
     }
 }

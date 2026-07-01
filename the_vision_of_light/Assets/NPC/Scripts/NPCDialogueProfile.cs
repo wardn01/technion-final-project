@@ -12,5 +12,5 @@ public class NPCDialogueProfile : ScriptableObject
     [Tooltip("Must match NPCData.npcName (e.g. Albedo).")]
     public string npcName;
 
-    public List<DialogueTrigger.QuestDialogueEntry> entries = new List<DialogueTrigger.QuestDialogueEntry>();
+    public List<QuestDialogueEntry> entries = new List<QuestDialogueEntry>();
 }
