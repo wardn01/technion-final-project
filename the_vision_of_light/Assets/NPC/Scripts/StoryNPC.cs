@@ -115,11 +115,14 @@ public class StoryNPC : MonoBehaviour
         ShopManager.Instance?.HideInteractPrompt();
         ShopManager.Instance?.SetPlayerFreeze(true);
 
-        if (!hasStoodUp)
+        if (!hasStoodUp && !isStaticNPC)
         {
             StartCoroutine(InteractionSequence());
             return;
         }
+
+        if (!hasStoodUp)
+            hasStoodUp = true;
 
         if (isStaticNPC)
         {

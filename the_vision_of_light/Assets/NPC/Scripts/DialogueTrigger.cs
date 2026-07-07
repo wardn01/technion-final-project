@@ -244,12 +244,6 @@ public class DialogueTrigger : MonoBehaviour
             case QuestDialogueAction.CompleteQuest:
                 return () => QuestManager.Instance.CompleteCurrentQuest(entry.questData);
 
-            case QuestDialogueAction.None when entry.questData != null:
-                return () => QuestManager.Instance.CompleteCurrentQuest(entry.questData);
-
-            case QuestDialogueAction.None when currentState == 2:
-                return () => QuestManager.Instance.AdvanceToState(3);
-
             default:
                 return null;
         }

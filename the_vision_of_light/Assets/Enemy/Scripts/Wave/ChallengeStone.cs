@@ -45,6 +45,8 @@ namespace VisionOfLight.Enemy
             [Tooltip("-1 = any step within the quest state.")]
             public int targetQuestStep = -1;
             public int nextQuestState = 7;
+            [Tooltip("When enabled, clears the wave during the current quest step and calls AdvanceStep instead of CompleteCurrentQuest.")]
+            public bool advanceQuestStepOnSuccess;
             public Wave[] waves;
         }
         #endregion
@@ -500,7 +502,13 @@ namespace VisionOfLight.Enemy
 
             if (activeQuestChallenge != null && QuestManager.Instance != null)
             {
-                if (activeQuestChallenge.nextQuestState > QuestManager.Instance.mainQuestState)
+                if (activeQuestChallenge.advanceQuestStepOnSuccess)
+                {
+                    QuestManager.Instance.AdvanceStep(
+                        activeQuestChallenge.targetQuestState,
+                        activeQuestChallenge.targetQuestStep);
+                }
+                else if (activeQuestChallenge.nextQuestState > QuestManager.Instance.mainQuestState)
                     QuestManager.Instance.AdvanceToState(activeQuestChallenge.nextQuestState);
                 else
                     QuestManager.Instance.CompleteCurrentQuest();

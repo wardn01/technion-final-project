@@ -86,6 +86,31 @@ namespace VisionOfLight.Enemy
 
             completedQuestChallenges.Add(BuildQuestChallengeKey(trialId, questState, questStep));
         }
+
+        /// <summary>Clears one quest-gated wave entry so the stone can be retried (testing).</summary>
+        public static void ClearQuestChallenge(string trialId, int questState, int questStep)
+        {
+            if (string.IsNullOrEmpty(trialId))
+                return;
+
+            completedQuestChallenges.Remove(BuildQuestChallengeKey(trialId, questState, questStep));
+        }
+
+        /// <summary>Clears a one-time trial id so the stone can be retried (testing).</summary>
+        public static void ClearOneTimeTrial(string trialId)
+        {
+            if (string.IsNullOrEmpty(trialId))
+                return;
+
+            completedOneTime.Remove(trialId);
+        }
+
+        /// <summary>Clears all remembered trial progress in this play session.</summary>
+        public static void ClearAll()
+        {
+            completedOneTime.Clear();
+            completedQuestChallenges.Clear();
+        }
         #endregion
     }
 }

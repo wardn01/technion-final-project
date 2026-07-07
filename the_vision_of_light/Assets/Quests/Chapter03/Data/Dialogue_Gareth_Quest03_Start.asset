@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afaf71966ea65643a2583b7ff0771a3, type: 3}
+  m_Name: Dialogue_Gareth_Quest03_Start
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcName: Gareth
+  dialogueLines:
+  - "You made it through the village trials. Good."
+  - "But the Shadow left a rift open on the ridge. Monsters keep pouring through."
+  - "I guard this path so they do not reach the village again."
+  - "Stand at the stone, survive the wave, then return to me."
