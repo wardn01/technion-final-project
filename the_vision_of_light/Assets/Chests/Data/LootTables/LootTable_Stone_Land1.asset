@@ -14,10 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VisionOfLight.Chest.ChestLootTable
   entries:
   - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-    amount: 45
+    dropChancePercent: 100
+    amount: 50
+    maxAmount: 100
   - item: {fileID: 11400000, guid: 810f70194f580d9498de997fa380619a, type: 2}
-    amount: 2
-  - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
-    amount: 2
-  - item: {fileID: 11400000, guid: e03af66cc75852644b34937dbd0fa9a6, type: 2}
+    dropChancePercent: 50
     amount: 1
+    maxAmount: 3
+  - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+    dropChancePercent: 80
+    amount: 2
+    maxAmount: 4
+  - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+    dropChancePercent: 30
+    amount: 1
+    maxAmount: 2
