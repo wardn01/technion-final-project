@@ -58,6 +58,12 @@ namespace VisionOfLight.Chest
         [Tooltip("Respawn all guardians this many real-world seconds after they were last defeated. 3600 = 1 hour.")]
         public float guardianRespawnIntervalSeconds = 3600f;
 
+        [Tooltip("0 = guardians always present. Above 0 = guardians only exist while the player is within this distance (spawn on approach, despawn when far).")]
+        public float guardianActivationRadius = 0f;
+
+        [Tooltip("Extra distance beyond the activation radius before guardians despawn (prevents flicker at the edge).")]
+        public float guardianActivationBuffer = 5f;
+
         [Tooltip("Fallback prefab used only if a guardian below has no matching entry. Each guardian normally respawns from Guardian Respawn Prefabs.")]
         public GameObject assignedGuardianRespawnPrefab;
 
@@ -109,6 +115,9 @@ namespace VisionOfLight.Chest
         private bool isOpening;
         private bool chestVisuallyOpened;
         private bool guardiansWereCleared;
+        private bool proximityGuardiansActive;
+        private bool proximityDefeated;
+        private Transform playerTransform;
         private readonly List<GuardianPlacement> assignedGuardianPlacements = new List<GuardianPlacement>();
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -139,6 +148,13 @@ namespace VisionOfLight.Chest
                 ResolvePromptRoot();
             }
 
+            if (IsProximityGuardianMode())
+            {
+                InitProximityGuardians();
+                HidePrompt();
+                return;
+            }
+
             RegisterAssignedGuardians();
             HidePrompt();
             guardiansWereCleared = AreGuardiansCleared();
@@ -147,7 +163,10 @@ namespace VisionOfLight.Chest
 
         private void Update()
         {
-            UpdateGuardianRespawnTimer();
+            if (IsProximityGuardianMode())
+                UpdateProximityGuardians();
+            else
+                UpdateGuardianRespawnTimer();
 
             if (isOpening || chestVisuallyOpened || ChestRegistry.IsOpened(chestId))
                 return;
@@ -183,7 +202,7 @@ namespace VisionOfLight.Chest
 
             isPlayerNear = true;
 
-            if (unlockMode == ChestUnlockMode.DefeatEnemies)
+            if (unlockMode == ChestUnlockMode.DefeatEnemies && !IsProximityGuardianMode())
                 TrySpawnGuards();
         }
 
@@ -197,6 +216,18 @@ namespace VisionOfLight.Chest
         }
 
 #if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            if (guardianActivationRadius <= 0f)
+                return;
+
+            Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.9f);
+            Gizmos.DrawWireSphere(transform.position, guardianActivationRadius);
+
+            Gizmos.color = new Color(1f, 0.8f, 0.2f, 0.4f);
+            Gizmos.DrawWireSphere(transform.position, guardianActivationRadius + guardianActivationBuffer);
+        }
+
         private void OnValidate()
         {
             TryAutoFillGuardianRespawnPrefabs();
@@ -442,6 +473,9 @@ namespace VisionOfLight.Chest
             if (unlockMode != ChestUnlockMode.DefeatEnemies)
                 return true;
 
+            if (IsProximityGuardianMode())
+                return proximityDefeated;
+
             bool hasAssigned = assignedGuardians != null && assignedGuardians.Length > 0;
             bool hasSpawnWave = guardSpawns != null && guardSpawns.Length > 0;
 
@@ -461,6 +495,142 @@ namespace VisionOfLight.Chest
             bool hasSpawnWave = guardSpawns != null && guardSpawns.Length > 0;
             return hasAssigned || hasSpawnWave;
         }
+
+        #region Proximity Guardians
+        private bool IsProximityGuardianMode()
+        {
+            return unlockMode == ChestUnlockMode.DefeatEnemies && guardianActivationRadius > 0f;
+        }
+
+        /// <summary>Sets up proximity mode: removes always-present scene guardians and restores defeated cooldown from save.</summary>
+        private void InitProximityGuardians()
+        {
+            if (assignedGuardians != null)
+            {
+                foreach (EnemyBase guardian in assignedGuardians)
+                {
+                    if (guardian != null)
+                        Destroy(guardian.gameObject);
+                }
+            }
+
+            trackedGuardians.Clear();
+            guardsSpawned = false;
+            proximityGuardiansActive = false;
+            proximityDefeated = false;
+
+            if (ChestGuardianRespawnRegistry.TryGetDefeatedTime(chestId, out double defeatedAtUtc))
+            {
+                double elapsed = ChestGuardianRespawnRegistry.GetUtcNow() - defeatedAtUtc;
+                if (guardianRespawnIntervalSeconds <= 0f || elapsed < guardianRespawnIntervalSeconds)
+                    proximityDefeated = true;
+                else
+                    ChestGuardianRespawnRegistry.ClearDefeatedTime(chestId);
+            }
+        }
+
+        private void UpdateProximityGuardians()
+        {
+            if (!HasGuardianSetup())
+                return;
+
+            if (proximityDefeated)
+            {
+                TryClearDefeatCooldown();
+                return;
+            }
+
+            if (!EnsurePlayerTransform())
+                return;
+
+            float distance = Vector3.Distance(playerTransform.position, transform.position);
+
+            if (distance <= guardianActivationRadius)
+            {
+                if (!proximityGuardiansActive)
+                {
+                    SpawnProximityGuardians();
+                    return;
+                }
+
+                trackedGuardians.RemoveAll(enemy => enemy == null || enemy.IsDead);
+                if (trackedGuardians.Count == 0)
+                    MarkProximityDefeated();
+            }
+            else if (distance > guardianActivationRadius + guardianActivationBuffer && proximityGuardiansActive)
+            {
+                DespawnProximityGuardians();
+            }
+        }
+
+        private void TryClearDefeatCooldown()
+        {
+            if (guardianRespawnIntervalSeconds <= 0f)
+                return;
+
+            if (!ChestGuardianRespawnRegistry.TryGetDefeatedTime(chestId, out double defeatedAtUtc))
+            {
+                proximityDefeated = false;
+                return;
+            }
+
+            double elapsed = ChestGuardianRespawnRegistry.GetUtcNow() - defeatedAtUtc;
+            if (elapsed >= guardianRespawnIntervalSeconds)
+            {
+                proximityDefeated = false;
+                ChestGuardianRespawnRegistry.ClearDefeatedTime(chestId);
+            }
+        }
+
+        private void SpawnProximityGuardians()
+        {
+            trackedGuardians.Clear();
+            guardsSpawned = false;
+
+            if (assignedGuardianPlacements.Count > 0)
+                RespawnAssignedGuardians();
+
+            if (guardSpawns != null && guardSpawns.Length > 0)
+                SpawnGuardsFromWaves();
+
+            proximityGuardiansActive = trackedGuardians.Count > 0;
+        }
+
+        private void DespawnProximityGuardians()
+        {
+            foreach (EnemyBase enemy in trackedGuardians)
+            {
+                if (enemy != null)
+                    Destroy(enemy.gameObject);
+            }
+
+            trackedGuardians.Clear();
+            guardsSpawned = false;
+            proximityGuardiansActive = false;
+        }
+
+        private void MarkProximityDefeated()
+        {
+            proximityDefeated = true;
+            proximityGuardiansActive = false;
+            ChestGuardianRespawnRegistry.MarkAllDefeated(chestId);
+
+            if (PauseMenuManager.Instance != null)
+                PauseMenuManager.Instance.SaveGameSilently();
+        }
+
+        private bool EnsurePlayerTransform()
+        {
+            if (playerTransform != null)
+                return true;
+
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                playerTransform = player.transform;
+
+            return playerTransform != null;
+        }
+        #endregion
 
         private void UpdateGuardianRespawnTimer()
         {
