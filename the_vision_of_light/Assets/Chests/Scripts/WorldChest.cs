@@ -8,7 +8,7 @@ namespace VisionOfLight.Chest
 {
     /// <summary>
     /// One-time world loot chest. Supports immediate open or defeat-guardians-first unlock.
-    /// Fades out after opening and persists via <see cref="ChestRegistry"/>.
+    /// Guardians respawn on a real-world timer even after the chest was opened. The chest itself never returns.
     /// Assign a <see cref="ChestLootTable"/> for loot. Wire <see cref="promptRoot"/> on each chest instance in the scene.
     /// </summary>
     public class WorldChest : MonoBehaviour
@@ -29,6 +29,13 @@ namespace VisionOfLight.Chest
             public int count = 1;
             public Transform[] spawnPoints;
         }
+
+        private struct GuardianPlacement
+        {
+            public Vector3 position;
+            public Quaternion rotation;
+            public GameObject prefab;
+        }
         #endregion
 
         #region Inspector
@@ -46,6 +53,16 @@ namespace VisionOfLight.Chest
 
         [Tooltip("Optional enemies spawned when the player first enters range.")]
         public GuardSpawnInfo[] guardSpawns;
+
+        [Header("Guardian Respawn")]
+        [Tooltip("Respawn all guardians this many real-world seconds after they were last defeated. 3600 = 1 hour.")]
+        public float guardianRespawnIntervalSeconds = 3600f;
+
+        [Tooltip("Fallback prefab used only if a guardian below has no matching entry. Each guardian normally respawns from Guardian Respawn Prefabs.")]
+        public GameObject assignedGuardianRespawnPrefab;
+
+        [Tooltip("Drag the enemy PREFAB (from Project) for each guardian, in the SAME order as Assigned Guardians. Each guardian respawns as its own type.")]
+        public List<GameObject> guardianRespawnPrefabs = new List<GameObject>();
 
         [Header("Loot")]
         [Tooltip("Reusable loot table. Fill entries on the asset when placing chests in the world.")]
@@ -90,6 +107,9 @@ namespace VisionOfLight.Chest
         private bool isPlayerNear;
         private bool guardsSpawned;
         private bool isOpening;
+        private bool chestVisuallyOpened;
+        private bool guardiansWereCleared;
+        private readonly List<GuardianPlacement> assignedGuardianPlacements = new List<GuardianPlacement>();
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
         #endregion
@@ -106,21 +126,30 @@ namespace VisionOfLight.Chest
 
         private void Start()
         {
+            CacheAssignedGuardianPlacements();
+
             if (ChestRegistry.IsOpened(chestId))
             {
-                gameObject.SetActive(false);
-                return;
+                chestVisuallyOpened = true;
+                ApplyOpenedVisualState();
+            }
+            else
+            {
+                ResolveSharedInteractUi();
+                ResolvePromptRoot();
             }
 
-            ResolveSharedInteractUi();
-            ResolvePromptRoot();
             RegisterAssignedGuardians();
             HidePrompt();
+            guardiansWereCleared = AreGuardiansCleared();
+            TryRespawnGuardiansIfDue();
         }
 
         private void Update()
         {
-            if (isOpening || ChestRegistry.IsOpened(chestId))
+            UpdateGuardianRespawnTimer();
+
+            if (isOpening || chestVisuallyOpened || ChestRegistry.IsOpened(chestId))
                 return;
 
             if (!isPlayerNear)
@@ -170,6 +199,8 @@ namespace VisionOfLight.Chest
 #if UNITY_EDITOR
         private void OnValidate()
         {
+            TryAutoFillGuardianRespawnPrefabs();
+
             if (unlockMode != ChestUnlockMode.DefeatEnemies)
                 return;
 
@@ -180,6 +211,33 @@ namespace VisionOfLight.Chest
                 Debug.LogWarning(
                     $"[{nameof(WorldChest)}] '{name}' uses DefeatEnemies but has no guardians or spawn waves.",
                     this);
+        }
+
+        /// <summary>Best-effort: fills empty respawn-prefab slots from each guardian's source prefab. Never overwrites manual entries.</summary>
+        private void TryAutoFillGuardianRespawnPrefabs()
+        {
+            if (assignedGuardians == null || assignedGuardians.Length == 0)
+                return;
+
+            if (guardianRespawnPrefabs == null)
+                guardianRespawnPrefabs = new List<GameObject>();
+
+            while (guardianRespawnPrefabs.Count < assignedGuardians.Length)
+                guardianRespawnPrefabs.Add(null);
+
+            for (int i = 0; i < assignedGuardians.Length; i++)
+            {
+                if (guardianRespawnPrefabs[i] != null)
+                    continue;
+
+                EnemyBase guardian = assignedGuardians[i];
+                if (guardian == null)
+                    continue;
+
+                GameObject source = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(guardian.gameObject);
+                if (source != null)
+                    guardianRespawnPrefabs[i] = source;
+            }
         }
 #endif
         #endregion
@@ -299,6 +357,32 @@ namespace VisionOfLight.Chest
         #endregion
 
         #region Guards
+        private void CacheAssignedGuardianPlacements()
+        {
+            assignedGuardianPlacements.Clear();
+
+            if (assignedGuardians == null)
+                return;
+
+            for (int i = 0; i < assignedGuardians.Length; i++)
+            {
+                EnemyBase guardian = assignedGuardians[i];
+                if (guardian == null)
+                    continue;
+
+                GameObject sourcePrefab = null;
+                if (guardianRespawnPrefabs != null && i < guardianRespawnPrefabs.Count)
+                    sourcePrefab = guardianRespawnPrefabs[i];
+
+                assignedGuardianPlacements.Add(new GuardianPlacement
+                {
+                    position = guardian.transform.position,
+                    rotation = guardian.transform.rotation,
+                    prefab = sourcePrefab
+                });
+            }
+        }
+
         private void RegisterAssignedGuardians()
         {
             trackedGuardians.Clear();
@@ -316,6 +400,14 @@ namespace VisionOfLight.Chest
         private void TrySpawnGuards()
         {
             if (guardsSpawned || guardSpawns == null || guardSpawns.Length == 0)
+                return;
+
+            SpawnGuardsFromWaves();
+        }
+
+        private void SpawnGuardsFromWaves()
+        {
+            if (guardSpawns == null || guardSpawns.Length == 0)
                 return;
 
             guardsSpawned = true;
@@ -361,6 +453,116 @@ namespace VisionOfLight.Chest
 
             trackedGuardians.RemoveAll(enemy => enemy == null || enemy.IsDead);
             return trackedGuardians.Count == 0;
+        }
+
+        private bool HasGuardianSetup()
+        {
+            bool hasAssigned = assignedGuardianPlacements.Count > 0;
+            bool hasSpawnWave = guardSpawns != null && guardSpawns.Length > 0;
+            return hasAssigned || hasSpawnWave;
+        }
+
+        private void UpdateGuardianRespawnTimer()
+        {
+            if (unlockMode != ChestUnlockMode.DefeatEnemies || !HasGuardianSetup())
+                return;
+
+            if (guardianRespawnIntervalSeconds <= 0f)
+                return;
+
+            bool guardiansCleared = AreGuardiansCleared();
+
+            if (guardiansCleared && !guardiansWereCleared)
+            {
+                ChestGuardianRespawnRegistry.MarkAllDefeated(chestId);
+
+                if (PauseMenuManager.Instance != null)
+                    PauseMenuManager.Instance.SaveGameSilently();
+            }
+
+            guardiansWereCleared = guardiansCleared;
+
+            if (!guardiansCleared)
+                return;
+
+            if (!ChestGuardianRespawnRegistry.TryGetDefeatedTime(chestId, out double defeatedAtUtc))
+                return;
+
+            double elapsed = ChestGuardianRespawnRegistry.GetUtcNow() - defeatedAtUtc;
+            if (elapsed < guardianRespawnIntervalSeconds)
+                return;
+
+            RespawnAllGuardians();
+        }
+
+        private void TryRespawnGuardiansIfDue()
+        {
+            if (unlockMode != ChestUnlockMode.DefeatEnemies || !HasGuardianSetup())
+                return;
+
+            if (guardianRespawnIntervalSeconds <= 0f)
+                return;
+
+            if (!ChestGuardianRespawnRegistry.TryGetDefeatedTime(chestId, out double defeatedAtUtc))
+                return;
+
+            double elapsed = ChestGuardianRespawnRegistry.GetUtcNow() - defeatedAtUtc;
+            if (elapsed < guardianRespawnIntervalSeconds)
+                return;
+
+            RespawnAllGuardians();
+        }
+
+        private void RespawnAllGuardians()
+        {
+            trackedGuardians.Clear();
+            guardsSpawned = false;
+            guardiansWereCleared = false;
+            ChestGuardianRespawnRegistry.ClearDefeatedTime(chestId);
+
+            if (assignedGuardianPlacements.Count > 0)
+                RespawnAssignedGuardians();
+
+            if (guardSpawns != null && guardSpawns.Length > 0)
+                SpawnGuardsFromWaves();
+
+            if (PauseMenuManager.Instance != null)
+                PauseMenuManager.Instance.SaveGameSilently();
+        }
+
+        private void RespawnAssignedGuardians()
+        {
+            GameObject fallbackPrefab = ResolveAssignedGuardianPrefab();
+
+            foreach (GuardianPlacement placement in assignedGuardianPlacements)
+            {
+                GameObject prefab = placement.prefab != null ? placement.prefab : fallbackPrefab;
+                if (prefab == null)
+                    continue;
+
+                Vector3 spawnPos = placement.position + Vector3.up * 1.5f;
+                GameObject enemyObj = Instantiate(prefab, spawnPos, placement.rotation);
+
+                if (enemyObj.TryGetComponent(out EnemyBase enemy))
+                    trackedGuardians.Add(enemy);
+            }
+        }
+
+        private GameObject ResolveAssignedGuardianPrefab()
+        {
+            if (assignedGuardianRespawnPrefab != null)
+                return assignedGuardianRespawnPrefab;
+
+            if (guardSpawns == null)
+                return null;
+
+            foreach (GuardSpawnInfo info in guardSpawns)
+            {
+                if (info != null && info.enemyPrefab != null)
+                    return info.enemyPrefab;
+            }
+
+            return null;
         }
         #endregion
 
@@ -475,7 +677,28 @@ namespace VisionOfLight.Chest
             }
 
             ApplyFadeAlpha(0f);
-            gameObject.SetActive(false);
+            HideChestVisuals();
+            chestVisuallyOpened = true;
+        }
+
+        private void ApplyOpenedVisualState()
+        {
+            DisableInteractionColliders();
+            ApplyFadeAlpha(0f);
+            HideChestVisuals();
+        }
+
+        /// <summary>Hides the chest meshes after opening while keeping this GameObject active for guardian respawns.</summary>
+        private void HideChestVisuals()
+        {
+            if (cachedFadeRenderers == null)
+                return;
+
+            foreach (Renderer renderer in cachedFadeRenderers)
+            {
+                if (renderer != null)
+                    renderer.enabled = false;
+            }
         }
         #endregion
 

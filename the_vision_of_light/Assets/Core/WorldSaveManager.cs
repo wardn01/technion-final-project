@@ -100,6 +100,7 @@ public class WorldSaveManager : MonoBehaviour
         {
             ChallengeTrialRegistry.ApplyFromSave(data);
             ChestRegistry.ApplyFromSave(data);
+            ChestGuardianRespawnRegistry.ApplyFromSave(data);
             ApplyQuestProgress(data.mainQuestState, data.questStepIndex, data.hasCompletedChapter01Awakening);
 
             // Restore Player Data
@@ -121,6 +122,7 @@ public class WorldSaveManager : MonoBehaviour
         {
             ChallengeTrialRegistry.ApplyFromSave(null);
             ChestRegistry.ApplyFromSave(null);
+            ChestGuardianRespawnRegistry.ApplyFromSave(null);
             ApplyQuestProgress(0, 0, false);
 
             if (activePlayerData != null)

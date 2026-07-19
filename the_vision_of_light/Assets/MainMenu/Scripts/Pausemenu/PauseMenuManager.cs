@@ -352,6 +352,7 @@ public class PauseMenuManager : MonoBehaviour
 
         ChallengeTrialRegistry.WriteToSave(data);
         ChestRegistry.WriteToSave(data);
+        ChestGuardianRespawnRegistry.WriteToSave(data);
 
         SaveManager.SaveGame(currentSlot, data);
     }
@@ -451,12 +452,14 @@ public class PauseMenuManager : MonoBehaviour
             ApplyLoadedPlayerVitals(data);
             ChallengeTrialRegistry.ApplyFromSave(data);
             ChestRegistry.ApplyFromSave(data);
+            ChestGuardianRespawnRegistry.ApplyFromSave(data);
         }
         else
         {
             ApplyLoadedPlayerVitals(null);
             ChallengeTrialRegistry.ApplyFromSave(null);
             ChestRegistry.ApplyFromSave(null);
+            ChestGuardianRespawnRegistry.ApplyFromSave(null);
         }
     }
 

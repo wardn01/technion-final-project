@@ -40,4 +40,14 @@ public class GameData
 
     /// <summary>World chests that were opened once (chestId per chest).</summary>
     public List<string> openedChestIds = new List<string>();
+
+    /// <summary>When all guardians were defeated per chest (UTC seconds) for hourly respawn.</summary>
+    public List<ChestGuardianDefeatTime> chestGuardianDefeatTimes = new List<ChestGuardianDefeatTime>();
+}
+
+[System.Serializable]
+public class ChestGuardianDefeatTime
+{
+    public string chestId;
+    public double defeatedAtUtc;
 }
