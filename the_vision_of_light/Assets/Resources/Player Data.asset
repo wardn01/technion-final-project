@@ -101,7 +101,7 @@ MonoBehaviour:
   investedAtkPoints: 0
   investedDefPoints: 0
   investedStaminaPoints: 0
-  baseAttack: 15
+  baseAttack: 13
   baseDefense: 10
   baseMaxHealth: 150
   baseMaxStamina: 100

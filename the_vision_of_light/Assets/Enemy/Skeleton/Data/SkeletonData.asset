@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: SkeletonData
   m_EditorClassIdentifier: Assembly-CSharp::SkeletonStats
   enemyName: Skeleton
-  baseMaxHealth: 40
-  baseAttack: 4.5
-  baseDefense: 1
-  hpScale: 2
-  atkScale: 0.35
-  defScale: 0.12
+  baseMaxHealth: 95
+  baseAttack: 8
+  baseDefense: 2
+  hpScale: 5.5
+  atkScale: 0.85
+  defScale: 0.22
   walkSpeed: 1.1
   runSpeed: 3
   chaseRange: 10
@@ -32,8 +32,8 @@ MonoBehaviour:
     minAmount: 1
     maxAmount: 1
     dropChance: 50
-  xpReward: 22
-  normalDamage: 65
+  xpReward: 35
+  normalDamage: 85
   normalAttackRange: 1.2
   normalAttackCooldown: 2.5
   maxLeashDistance: 18

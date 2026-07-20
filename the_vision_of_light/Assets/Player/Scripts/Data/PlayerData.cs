@@ -112,7 +112,7 @@ namespace VisionOfLight.Player
         public int investedStaminaPoints = 0;
 
         [Header("Base Stats (Level 1)")]
-        public int baseAttack = 15;
+        public int baseAttack = 13;
         public int baseDefense = 10;
         public int baseMaxHealth = 150;
         public float baseMaxStamina = 100f;

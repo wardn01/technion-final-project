@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: BearData
   m_EditorClassIdentifier: Assembly-CSharp::BearStats
   enemyName: Bear
-  baseMaxHealth: 85
-  baseAttack: 10
-  baseDefense: 3.5
-  hpScale: 3.8
-  atkScale: 0.65
-  defScale: 0.35
+  baseMaxHealth: 110
+  baseAttack: 12.5
+  baseDefense: 4.2
+  hpScale: 4.6
+  atkScale: 0.82
+  defScale: 0.42
   walkSpeed: 2.2
   runSpeed: 5
   chaseRange: 16
@@ -32,8 +32,8 @@ MonoBehaviour:
     minAmount: 1
     maxAmount: 2
     dropChance: 65
-  xpReward: 45
-  animalDamage: 95
+  xpReward: 75
+  animalDamage: 100
   attackRange: 2.1
   attackCooldown: 2.5
   sleepDuration: 12

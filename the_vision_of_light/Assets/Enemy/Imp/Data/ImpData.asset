@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: ImpData
   m_EditorClassIdentifier: Assembly-CSharp::ImpStats
   enemyName: Imp
-  baseMaxHealth: 38
-  baseAttack: 4.8
-  baseDefense: 1
-  hpScale: 2
-  atkScale: 0.35
-  defScale: 0.12
+  baseMaxHealth: 85
+  baseAttack: 7.5
+  baseDefense: 1.8
+  hpScale: 5.2
+  atkScale: 0.8
+  defScale: 0.2
   walkSpeed: 1
   runSpeed: 2.4
   chaseRange: 10
@@ -32,8 +32,8 @@ MonoBehaviour:
     minAmount: 1
     maxAmount: 1
     dropChance: 50
-  xpReward: 20
-  normalDamage: 62
+  xpReward: 30
+  normalDamage: 82
   normalAttackRange: 1.2
   normalAttackCooldown: 2.2
   maxLeashDistance: 18

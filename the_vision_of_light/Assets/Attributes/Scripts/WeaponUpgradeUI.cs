@@ -329,7 +329,8 @@ public class WeaponUpgradeUI : MonoBehaviour
             if (detailStatsText != null)
                 detailStatsText.text = $"Damage: {currentDamage} -> <color=#00FF00>{nextDamage}</color>";
 
-            bool isAscensionLocked = currentLvl > playerData.currentAscensionIndex;
+            // Weapon level cannot run ahead of the character level.
+            bool isLevelLocked = currentLvl > playerData.currentLevel;
 
             SetupUpgradeUI(upgradeData);
 
@@ -338,10 +339,11 @@ public class WeaponUpgradeUI : MonoBehaviour
                 ascendBtn.onClick.RemoveAllListeners();
                 ascendBtn.onClick.AddListener(() =>
                 {
-                    if (isAscensionLocked)
+                    if (isLevelLocked)
                     {
                         if (NotificationManager.Instance != null)
-                            NotificationManager.Instance.ShowWarning($"Requires Ascension {currentLvl} to unlock!");
+                            NotificationManager.Instance.ShowWarning(
+                                $"Raise your character to level {currentLvl} first!");
                     }
                     else
                     {

@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: GolemData
   m_EditorClassIdentifier: Assembly-CSharp::GolemStats
   enemyName: Golem
-  baseMaxHealth: 240
-  baseAttack: 26
-  baseDefense: 11
-  hpScale: 10
-  atkScale: 1.6
-  defScale: 0.8
+  baseMaxHealth: 255
+  baseAttack: 27
+  baseDefense: 11.5
+  hpScale: 9.8
+  atkScale: 1.65
+  defScale: 0.82
   walkSpeed: 2.2
   runSpeed: 4.8
   chaseRange: 24
@@ -36,7 +36,7 @@ MonoBehaviour:
     minAmount: 2
     maxAmount: 4
     dropChance: 100
-  xpReward: 90
+  xpReward: 350
   phase1Damage: 100
   attackRange: 2
   phase1AttackCooldown: 2.6
