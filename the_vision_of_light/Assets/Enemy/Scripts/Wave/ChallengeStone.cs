@@ -151,14 +151,35 @@ namespace VisionOfLight.Enemy
             if (!other.CompareTag("Player"))
                 return;
 
+            ClearPlayerProximity();
+        }
+
+        /// <summary>Call when the player warps away without OnTriggerExit (map teleport).</summary>
+        public void ClearPlayerProximity()
+        {
             isPlayerNear = false;
             HideInteractPrompt();
+        }
+
+        private void RefreshPlayerNearByDistance()
+        {
+            if (!isPlayerNear)
+                return;
+
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            Transform playerTransform = player != null ? player.transform : null;
+
+            if (SharedInteractPromptUtility.IsPlayerBeyondRange(
+                    transform.position, playerTransform, SharedInteractPromptUtility.DefaultLeaveDistance))
+                ClearPlayerProximity();
         }
         #endregion
 
         #region Interaction
         private void HandleIdleInteraction()
         {
+            RefreshPlayerNearByDistance();
+
             if (!isPlayerNear)
                 return;
 
@@ -194,6 +215,9 @@ namespace VisionOfLight.Enemy
                 return true;
 
             if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen)
+                return true;
+
+            if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
                 return true;
 
             return false;

@@ -99,7 +99,9 @@ public class TeleportManager : MonoBehaviour
     /// </summary>
     private IEnumerator TeleportSequence(TeleportPoint destination)
     {
-        // 1. Activate loading UI
+        // 1. Activate loading UI — clear world interact prompts (teleport skips OnTriggerExit).
+        SharedInteractPromptUtility.ClearAllProximityPrompts();
+
         if (loadingScreen != null) loadingScreen.SetActive(true);
         if (loadingFill != null) loadingFill.fillAmount = 0f;
         if (percentageText != null) percentageText.text = "0%";

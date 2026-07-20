@@ -66,10 +66,13 @@ public class TeleportPoint : MonoBehaviour
 
     private void Update()
     {
+        RefreshPlayerNearByDistance();
+
         bool isMenuOpen =
             (ShopManager.Instance != null && ShopManager.Instance.shopPanel != null &&
              ShopManager.Instance.shopPanel.activeSelf) ||
-            (UIManager.Instance != null && UIManager.Instance.isDialogueOpen);
+            (UIManager.Instance != null && UIManager.Instance.isDialogueOpen) ||
+            (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused);
 
         if (!isPlayerNear || isUnlocked)
             return;
@@ -87,6 +90,26 @@ public class TeleportPoint : MonoBehaviour
         {
             HideInteractPrompt();
         }
+    }
+
+    /// <summary>Call when the player warps away without OnTriggerExit (map teleport).</summary>
+    public void ClearPlayerProximity()
+    {
+        isPlayerNear = false;
+        HideInteractPrompt();
+    }
+
+    private void RefreshPlayerNearByDistance()
+    {
+        if (!isPlayerNear)
+            return;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        Transform playerTransform = player != null ? player.transform : null;
+
+        if (SharedInteractPromptUtility.IsPlayerBeyondRange(
+                transform.position, playerTransform, SharedInteractPromptUtility.DefaultLeaveDistance))
+            ClearPlayerProximity();
     }
     #endregion
 
@@ -110,7 +133,6 @@ public class TeleportPoint : MonoBehaviour
         if (!promptTextUI.gameObject.activeSelf)
             promptTextUI.gameObject.SetActive(true);
 
-        promptTextUI.color = Color.white;
         promptTextUI.text = string.IsNullOrEmpty(promptText) ? "Open Teleport" : promptText;
     }
 
@@ -191,8 +213,7 @@ public class TeleportPoint : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        isPlayerNear = false;
-        HideInteractPrompt();
+        ClearPlayerProximity();
     }
     #endregion
 }

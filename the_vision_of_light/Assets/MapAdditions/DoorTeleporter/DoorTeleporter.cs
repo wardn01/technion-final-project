@@ -44,10 +44,13 @@ public class DoorTeleporter : MonoBehaviour
         if (activeDoor != this)
             return;
 
+        RefreshPlayerNearByDistance();
+
         bool isMenuOpen =
             (ShopManager.Instance != null && ShopManager.Instance.shopPanel != null &&
              ShopManager.Instance.shopPanel.activeSelf) ||
-            (UIManager.Instance != null && UIManager.Instance.isDialogueOpen);
+            (UIManager.Instance != null && UIManager.Instance.isDialogueOpen) ||
+            (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused);
 
         bool shouldShow = isPlayerNear && !isMenuOpen && Time.timeScale != 0f;
 
@@ -62,6 +65,36 @@ public class DoorTeleporter : MonoBehaviour
         {
             HideInteractPrompt();
         }
+    }
+
+    /// <summary>Call when the player warps away without OnTriggerExit (map teleport).</summary>
+    public void ClearPlayerProximity()
+    {
+        isPlayerNear = false;
+        playerObj = null;
+
+        if (activeDoor == this)
+            activeDoor = null;
+
+        HideInteractPrompt();
+    }
+
+    private void RefreshPlayerNearByDistance()
+    {
+        if (!isPlayerNear)
+            return;
+
+        Transform player = playerObj != null ? playerObj.transform : null;
+        if (player == null)
+        {
+            GameObject tagged = GameObject.FindGameObjectWithTag("Player");
+            if (tagged != null)
+                player = tagged.transform;
+        }
+
+        if (SharedInteractPromptUtility.IsPlayerBeyondRange(
+                transform.position, player, SharedInteractPromptUtility.DefaultLeaveDistance))
+            ClearPlayerProximity();
     }
 
     private void ShowInteractPrompt()
@@ -85,7 +118,6 @@ public class DoorTeleporter : MonoBehaviour
         if (!promptTextUI.gameObject.activeSelf)
             promptTextUI.gameObject.SetActive(true);
 
-        promptTextUI.color = Color.white;
         promptTextUI.text = string.IsNullOrEmpty(promptText) ? "Enter" : promptText;
     }
 
@@ -132,11 +164,8 @@ public class DoorTeleporter : MonoBehaviour
         else if (showQuestPathAtDestination)
             QuestPathSuppression.SetForcedInterior(false);
 
-        HideInteractPrompt();
-
-        isPlayerNear = false;
-        playerObj = null;
-        activeDoor = null;
+        ClearPlayerProximity();
+        SharedInteractPromptUtility.ClearAllProximityPrompts();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -154,14 +183,6 @@ public class DoorTeleporter : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        isPlayerNear = false;
-
-        if (activeDoor == this)
-        {
-            HideInteractPrompt();
-            activeDoor = null;
-        }
-
-        playerObj = null;
+        ClearPlayerProximity();
     }
 }

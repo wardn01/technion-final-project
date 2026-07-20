@@ -174,6 +174,8 @@ namespace VisionOfLight.Chest
             if (isOpening || chestVisuallyOpened || ChestRegistry.IsOpened(chestId))
                 return;
 
+            RefreshPlayerNearByDistance();
+
             if (!isPlayerNear)
                 return;
 
@@ -185,7 +187,14 @@ namespace VisionOfLight.Chest
 
             if (unlockMode == ChestUnlockMode.DefeatEnemies && !AreGuardiansCleared())
             {
-                ShowLockedPrompt();
+                ShowOpenPrompt();
+
+                if (Input.GetKeyDown(ShopManager.GetInteractKey()))
+                {
+                    if (NotificationManager.Instance != null)
+                        NotificationManager.Instance.ShowWarning(lockedPromptText);
+                }
+
                 return;
             }
 
@@ -196,6 +205,50 @@ namespace VisionOfLight.Chest
                 HidePrompt();
                 TryOpenChest();
             }
+        }
+
+        /// <summary>Call when the player warps away without OnTriggerExit (map teleport).</summary>
+        public void ClearPlayerProximity()
+        {
+            if (!isPlayerNear)
+            {
+                HidePrompt();
+                return;
+            }
+
+            isPlayerNear = false;
+            HidePrompt();
+        }
+
+        private void RefreshPlayerNearByDistance()
+        {
+            if (!isPlayerNear)
+                return;
+
+            if (!EnsurePlayerTransform())
+                return;
+
+            if (SharedInteractPromptUtility.IsPlayerBeyondRange(
+                    transform.position, playerTransform, GetInteractLeaveDistance()))
+                ClearPlayerProximity();
+        }
+
+        private float GetInteractLeaveDistance()
+        {
+            float maxExtent = SharedInteractPromptUtility.DefaultLeaveDistance;
+
+            if (interactionColliders == null)
+                return maxExtent;
+
+            foreach (Collider col in interactionColliders)
+            {
+                if (col == null || !col.enabled)
+                    continue;
+
+                maxExtent = Mathf.Max(maxExtent, col.bounds.extents.magnitude + 1.5f);
+            }
+
+            return maxExtent;
         }
 
         private void OnTriggerEnter(Collider other)
@@ -214,8 +267,7 @@ namespace VisionOfLight.Chest
             if (!other.CompareTag("Player"))
                 return;
 
-            isPlayerNear = false;
-            HideInteractPrompt();
+            ClearPlayerProximity();
         }
 
 #if UNITY_EDITOR
@@ -279,6 +331,8 @@ namespace VisionOfLight.Chest
         #region Interaction
         private void ShowOpenPrompt()
         {
+            ResolveSharedInteractUi();
+
             if (promptRoot != null && !promptRoot.activeSelf)
                 promptRoot.SetActive(true);
 
@@ -286,19 +340,8 @@ namespace VisionOfLight.Chest
                 promptContainer.SetActive(true);
 
             SetInteractKeyVisible(true);
+            SetLetterBadgeVisible(true);
             SetPromptText(openPromptText);
-        }
-
-        private void ShowLockedPrompt()
-        {
-            if (promptRoot != null && !promptRoot.activeSelf)
-                promptRoot.SetActive(true);
-
-            if (promptContainer != null && !promptContainer.activeSelf)
-                promptContainer.SetActive(true);
-
-            SetInteractKeyVisible(false);
-            SetPromptText(lockedPromptText);
         }
 
         private void HidePrompt()
@@ -337,6 +380,35 @@ namespace VisionOfLight.Chest
                 interactKeyPrompt.SetActive(visible);
         }
 
+        private void SetLetterBadgeVisible(bool visible)
+        {
+            Transform letter = FindLetterBadge();
+            if (letter == null)
+                return;
+
+            if (letter.gameObject.activeSelf != visible)
+                letter.gameObject.SetActive(visible);
+        }
+
+        private Transform FindLetterBadge()
+        {
+            if (promptContainer != null)
+            {
+                Transform letter = promptContainer.transform.Find("F");
+                if (letter != null)
+                    return letter;
+            }
+
+            if (promptRoot != null)
+            {
+                Transform letter = promptRoot.transform.Find("F");
+                if (letter != null)
+                    return letter;
+            }
+
+            return null;
+        }
+
         private void ResolvePromptRoot()
         {
             if (promptRoot != null || promptContainer == null)
@@ -349,6 +421,8 @@ namespace VisionOfLight.Chest
 
         private void ResolveSharedInteractUi()
         {
+            FixSwappedPromptReferences();
+
             if (promptContainer == null && promptRoot != null)
             {
                 foreach (Transform descendant in promptRoot.GetComponentsInChildren<Transform>(true))
@@ -364,6 +438,9 @@ namespace VisionOfLight.Chest
                 }
             }
 
+            if (promptRoot == null && promptContainer != null && promptContainer.transform.parent != null)
+                promptRoot = promptContainer.transform.parent.gameObject;
+
             if (interactKeyPrompt == null && promptContainer != null)
             {
                 Transform btn = promptContainer.transform.Find("btn");
@@ -375,6 +452,28 @@ namespace VisionOfLight.Chest
                 promptTextUI = promptContainer.GetComponentInChildren<TextMeshProUGUI>(true);
         }
 
+        /// <summary>
+        /// Common inspector mistake: Prompt Root / Prompt Container swapped
+        /// (Interact_F assigned as root, InteractPrompt as container).
+        /// </summary>
+        private void FixSwappedPromptReferences()
+        {
+            if (promptRoot == null || promptContainer == null)
+                return;
+
+            bool rootIsInteractF = promptRoot.name.IndexOf("Interact_F", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                   || promptRoot.transform.Find("btn") != null;
+            bool containerIsPromptRoot = promptContainer.name.IndexOf("InteractPrompt", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                         || promptContainer.transform.Find("Interact_F") != null;
+
+            if (!rootIsInteractF || !containerIsPromptRoot)
+                return;
+
+            GameObject swap = promptRoot;
+            promptRoot = promptContainer;
+            promptContainer = swap;
+        }
+
         private static bool IsUiBlockingInteraction()
         {
             if (Time.timeScale == 0f)
@@ -384,6 +483,9 @@ namespace VisionOfLight.Chest
                 return true;
 
             if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen)
+                return true;
+
+            if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.isPaused)
                 return true;
 
             return false;
