@@ -41,6 +41,9 @@ public class GameData
     /// <summary>World chests that were opened once (chestId per chest).</summary>
     public List<string> openedChestIds = new List<string>();
 
+    /// <summary>Unlocked world teleport point IDs for this save slot.</summary>
+    public List<int> unlockedTeleportIds = new List<int>();
+
     /// <summary>When all guardians were defeated per chest (UTC seconds) for hourly respawn.</summary>
     public List<ChestGuardianDefeatTime> chestGuardianDefeatTimes = new List<ChestGuardianDefeatTime>();
 }

@@ -211,7 +211,9 @@ namespace VisionOfLight.Enemy
             if (Time.timeScale == 0f)
                 return true;
 
-            if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
+            if (ShopManager.Instance != null
+                && ShopManager.Instance.shopPanel != null
+                && ShopManager.Instance.shopPanel.activeSelf)
                 return true;
 
             if (UIManager.Instance != null && UIManager.Instance.isDialogueOpen)

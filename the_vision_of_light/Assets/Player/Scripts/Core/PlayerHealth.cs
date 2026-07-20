@@ -125,36 +125,129 @@ namespace VisionOfLight.Player
             }
         }
 
-        /// <summary>Restores the player to full health and re-enables movement and animation.</summary>
+        /// <summary>Restores the player to full health, plays the teleport loading screen, and respawns at the nearest unlocked teleport.</summary>
         public void Revive()
         {
-            isDead = false;
+            if (!isDead)
+                return;
 
+            // Stay "dead" for input until travel finishes — menus stay blocked.
             UpdateMaxHealthFromData();
             currentHealth = maxHealth;
             UpdateHealthUI();
-
             healthBarUI?.ShowAlive();
 
-            if (playerMovementScript != null)
-            {
-                playerMovementScript.enabled = true;
-            }
-
-            GameplayCursorPolicy.RequestApply();
-
             SetRagdollState(false);
-
-            if (characterController != null)
-            {
-                characterController.enabled = true;
-            }
 
             if (animator != null)
             {
                 animator.enabled = true;
                 animator.SetFloat("Speed", 0f);
             }
+
+            if (playerMovementScript != null)
+                playerMovementScript.enabled = false;
+
+            if (characterController != null)
+                characterController.enabled = false;
+
+            Vector3 deathPosition = transform.position;
+            if (!TeleportUnlockRegistry.TryGetNearestUnlockedSpawn(
+                    deathPosition, out Vector3 spawnPosition, out Quaternion spawnRotation))
+            {
+                // No unlocked teleport — revive in place without loading travel.
+                FinishReviveAtCurrentPlace();
+                return;
+            }
+
+            if (TeleportManager.Instance != null)
+            {
+                TeleportManager.Instance.TravelWithLoadingScreen(
+                    spawnPosition,
+                    spawnRotation,
+                    FinishReviveAfterTravel);
+            }
+            else
+            {
+                ApplySpawnTransform(spawnPosition, spawnRotation);
+                FinishReviveAfterTravel();
+            }
+        }
+
+        private void FinishReviveAtCurrentPlace()
+        {
+            isDead = false;
+
+            if (playerMovementScript != null)
+                playerMovementScript.enabled = true;
+
+            if (characterController != null)
+                characterController.enabled = true;
+
+            GameplayCursorPolicy.RequestApply();
+            SharedInteractPromptUtility.ClearAllProximityPrompts();
+            SendMessage("ResetVelocity", SendMessageOptions.DontRequireReceiver);
+            SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
+            SendMessage("CancelAttack", SendMessageOptions.DontRequireReceiver);
+
+            if (PauseMenuManager.Instance != null)
+                PauseMenuManager.Instance.SaveGameSilently();
+        }
+
+        private void FinishReviveAfterTravel()
+        {
+            isDead = false;
+
+            if (playerMovementScript != null)
+                playerMovementScript.enabled = true;
+
+            if (characterController != null)
+                characterController.enabled = true;
+
+            GameplayCursorPolicy.RequestApply();
+            SharedInteractPromptUtility.ClearAllProximityPrompts();
+            SendMessage("ResetVelocity", SendMessageOptions.DontRequireReceiver);
+            SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
+            SendMessage("CancelAttack", SendMessageOptions.DontRequireReceiver);
+
+            if (PauseMenuManager.Instance != null)
+                PauseMenuManager.Instance.SaveGameSilently();
+        }
+
+        private void ApplySpawnTransform(Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            bool ccWasEnabled = characterController != null && characterController.enabled;
+            if (characterController != null)
+                characterController.enabled = false;
+
+            UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+            bool agentWasEnabled = agent != null && agent.enabled;
+            if (agent != null)
+                agent.enabled = false;
+
+            transform.SetPositionAndRotation(spawnPosition, spawnRotation);
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            if (characterController != null && ccWasEnabled)
+                characterController.enabled = true;
+
+            if (agent != null && agentWasEnabled)
+                agent.enabled = true;
+        }
+
+        private void RespawnAtNearestTeleport()
+        {
+            if (!TeleportUnlockRegistry.TryGetNearestUnlockedSpawn(
+                    transform.position, out Vector3 spawnPosition, out Quaternion spawnRotation))
+                return;
+
+            ApplySpawnTransform(spawnPosition, spawnRotation);
         }
         /// <summary>Forces full HP after spawn/awakening when no valid health was set yet.</summary>
         public void EnsureFullHealthAtSpawn()

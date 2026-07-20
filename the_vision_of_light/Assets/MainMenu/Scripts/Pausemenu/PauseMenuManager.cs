@@ -353,6 +353,7 @@ public class PauseMenuManager : MonoBehaviour
         ChallengeTrialRegistry.WriteToSave(data);
         ChestRegistry.WriteToSave(data);
         ChestGuardianRespawnRegistry.WriteToSave(data);
+        TeleportUnlockRegistry.WriteToSave(data);
 
         SaveManager.SaveGame(currentSlot, data);
     }
@@ -453,6 +454,7 @@ public class PauseMenuManager : MonoBehaviour
             ChallengeTrialRegistry.ApplyFromSave(data);
             ChestRegistry.ApplyFromSave(data);
             ChestGuardianRespawnRegistry.ApplyFromSave(data);
+            TeleportUnlockRegistry.ApplyFromSave(data);
         }
         else
         {
@@ -460,6 +462,7 @@ public class PauseMenuManager : MonoBehaviour
             ChallengeTrialRegistry.ApplyFromSave(null);
             ChestRegistry.ApplyFromSave(null);
             ChestGuardianRespawnRegistry.ApplyFromSave(null);
+            TeleportUnlockRegistry.ApplyFromSave(null);
         }
     }
 

@@ -48,6 +48,9 @@ public class UI_InputManager : MonoBehaviour
     /// </summary>
     private void HandleHotkeys()
     {
+        if (IsPlayerDead())
+            return;
+
         bool inventoryKey = false;
         bool characterKey = false;
         bool mapKey = false;
@@ -167,9 +170,24 @@ public class UI_InputManager : MonoBehaviour
 
     private bool IsShopOrDialogueOpen()
     {
-        bool isShop = ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf;
+        bool isShop = ShopManager.Instance != null
+                      && ShopManager.Instance.shopPanel != null
+                      && ShopManager.Instance.shopPanel.activeSelf;
         bool isDialogue = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
         return isShop || isDialogue;
+    }
+
+    private static bool IsPlayerDead()
+    {
+        if (PlayerRegistry.Instance != null && PlayerRegistry.Instance.Health != null)
+            return PlayerRegistry.Instance.Health.isDead;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+            return false;
+
+        PlayerHealth health = player.GetComponent<PlayerHealth>();
+        return health != null && health.isDead;
     }
 
     /// <summary>
@@ -177,7 +195,12 @@ public class UI_InputManager : MonoBehaviour
     /// </summary>
     private void HandleEscapeKey()
     {
-        if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
+        if (IsPlayerDead())
+            return;
+
+        if (ShopManager.Instance != null
+            && ShopManager.Instance.shopPanel != null
+            && ShopManager.Instance.shopPanel.activeSelf)
         {
             ShopManager.Instance.BackToDialogue();
             return;

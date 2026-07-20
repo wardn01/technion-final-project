@@ -54,9 +54,7 @@ public class TeleportPoint : MonoBehaviour
     private void Start()
     {
         ResolveSharedInteractUi();
-
-        if (PlayerPrefs.GetInt("UnlockedTP_" + teleportID, 0) == 1)
-            isUnlocked = true;
+        ApplyUnlockStateFromSave();
 
         if (isUnlocked && portalController != null)
             portalController.TogglePortal(true);
@@ -168,8 +166,13 @@ public class TeleportPoint : MonoBehaviour
     {
         isUnlocked = true;
 
-        PlayerPrefs.SetInt("UnlockedTP_" + teleportID, 1);
+        TeleportUnlockRegistry.MarkUnlocked(teleportID);
+        // Clear legacy global key so it cannot leak across new save slots.
+        PlayerPrefs.DeleteKey("UnlockedTP_" + teleportID);
         PlayerPrefs.Save();
+
+        if (PauseMenuManager.Instance != null)
+            PauseMenuManager.Instance.SaveGameSilently();
 
         if (portalController != null)
             portalController.TogglePortal(true);
@@ -178,6 +181,26 @@ public class TeleportPoint : MonoBehaviour
         HideInteractPrompt();
 
         Debug.Log($"Teleport Point [{teleportID}] successfully unlocked.");
+    }
+
+    private void ApplyUnlockStateFromSave()
+    {
+        if (TeleportUnlockRegistry.IsUnlocked(teleportID))
+        {
+            isUnlocked = true;
+            return;
+        }
+
+        if (!TeleportUnlockRegistry.AllowLegacyPlayerPrefsFallback)
+            return;
+
+        if (PlayerPrefs.GetInt("UnlockedTP_" + teleportID, 0) != 1)
+            return;
+
+        isUnlocked = true;
+        TeleportUnlockRegistry.MarkUnlocked(teleportID);
+        PlayerPrefs.DeleteKey("UnlockedTP_" + teleportID);
+        PlayerPrefs.Save();
     }
 
     /// <summary>

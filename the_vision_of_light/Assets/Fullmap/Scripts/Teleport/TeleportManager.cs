@@ -7,14 +7,17 @@ using TMPro;
 /// <summary>
 /// Handles the map UI interaction for selecting and executing teleportation to unlocked points.
 /// Manages the loading screen visuals, including progress bar, percentage text, and animated loading status.
+/// Also plays the same loading overlay when the player revives at a teleport.
 /// </summary>
 public class TeleportManager : MonoBehaviour
 {
+    public static TeleportManager Instance { get; private set; }
+
     #region Settings & References
     [Header("Teleportation Settings")]
     [Tooltip("Time in seconds to simulate the loading process.")]
     public float loadingDuration = 1.5f;
-    
+
     [Tooltip("Extra delay after repositioning the player before hiding the loading screen. Helps smooth out visual hitches.")]
     public float postTeleportDelay = 0.2f;
 
@@ -36,11 +39,28 @@ public class TeleportManager : MonoBehaviour
 
     private TeleportPoint selectedDestination;
     private Coroutine textAnimationCoroutine;
+    private Coroutine activeTravelCoroutine;
 
     #region Unity Lifecycle
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
     private void Start()
     {
-        // Initialize UI states to ensure a clean start
         if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(false);
         if (mapSelectionGlow != null) mapSelectionGlow.SetActive(false);
         if (loadingScreen != null) loadingScreen.SetActive(false);
@@ -80,7 +100,7 @@ public class TeleportManager : MonoBehaviour
             if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(false);
             if (mapSelectionGlow != null) mapSelectionGlow.SetActive(false);
 
-            StartCoroutine(TeleportSequence(selectedDestination));
+            StartTravelCoroutine(TeleportSequence(selectedDestination));
         }
     }
 
@@ -90,24 +110,51 @@ public class TeleportManager : MonoBehaviour
         if (teleportConfirmPanel != null) teleportConfirmPanel.SetActive(false);
         if (mapSelectionGlow != null) mapSelectionGlow.SetActive(false);
     }
+
+    /// <summary>
+    /// Same loading screen as map teleport — moves the player then invokes <paramref name="onComplete"/>.
+    /// Used by death revive.
+    /// </summary>
+    public void TravelWithLoadingScreen(Vector3 targetPosition, Quaternion targetRotation, System.Action onComplete = null)
+    {
+        StartTravelCoroutine(TravelToPositionSequence(targetPosition, targetRotation, onComplete));
+    }
     #endregion
 
     #region Teleport Execution
-    /// <summary>
-    /// Executes the teleportation, animates the loading screen, and safely relocates the player.
-    /// Includes a post-teleport buffer to ensure visual smoothness.
-    /// </summary>
+    private void StartTravelCoroutine(IEnumerator routine)
+    {
+        if (activeTravelCoroutine != null)
+            StopCoroutine(activeTravelCoroutine);
+
+        activeTravelCoroutine = StartCoroutine(routine);
+    }
+
     private IEnumerator TeleportSequence(TeleportPoint destination)
     {
-        // 1. Activate loading UI — clear world interact prompts (teleport skips OnTriggerExit).
+        Vector3 targetPosition = (destination.spawnLocation != null)
+            ? destination.spawnLocation.position
+            : destination.transform.position + new Vector3(2f, 1f, 0f);
+
+        Quaternion targetRotation = destination.spawnLocation != null
+            ? destination.spawnLocation.rotation
+            : destination.transform.rotation;
+
+        yield return TravelToPositionSequence(targetPosition, targetRotation, null);
+        selectedDestination = null;
+    }
+
+    private IEnumerator TravelToPositionSequence(Vector3 targetPosition, Quaternion targetRotation, System.Action onComplete)
+    {
         SharedInteractPromptUtility.ClearAllProximityPrompts();
 
-        if (loadingScreen != null) loadingScreen.SetActive(true);
-        if (loadingFill != null) loadingFill.fillAmount = 0f;
-        if (percentageText != null) percentageText.text = "0%";
-        textAnimationCoroutine = StartCoroutine(AnimateLoadingText());
+        if (DialogueManager.Instance != null)
+            DialogueManager.Instance.EndDialogue();
+        else if (UIManager.Instance != null)
+            UIManager.Instance.isDialogueOpen = false;
 
-        // Close the map UI but keep the world paused so enemies cannot hit during load.
+        BeginLoadingScreen();
+
         if (PauseMenuManager.Instance != null)
         {
             PauseMenuManager.Instance.CloseAllSubScreens();
@@ -118,38 +165,68 @@ public class TeleportManager : MonoBehaviour
             fullMapScreen.SetActive(false);
             Time.timeScale = 0f;
         }
+        else
+        {
+            Time.timeScale = 0f;
+        }
 
-        // 2. Animate loading progress (unscaled — works while paused)
         float elapsedTime = 0f;
         while (elapsedTime < loadingDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
             float progress = Mathf.Clamp01(elapsedTime / loadingDuration);
-
-            if (loadingFill != null) loadingFill.fillAmount = progress;
-            if (percentageText != null) percentageText.text = Mathf.RoundToInt(progress * 100) + "%";
-
+            UpdateLoadingProgress(progress);
             yield return null;
         }
 
-        // 3. Move player while still paused
-        Vector3 targetPosition = (destination.spawnLocation != null)
-            ? destination.spawnLocation.position
-            : destination.transform.position + new Vector3(2f, 1f, 0f);
+        if (!EnsurePlayerTransform())
+        {
+            FinishTeleportUi(resumeGameplay: true);
+            onComplete?.Invoke();
+            activeTravelCoroutine = null;
+            yield break;
+        }
 
+        MovePlayerTo(targetPosition, targetRotation);
+
+        yield return new WaitForEndOfFrame();
+
+        if (postTeleportDelay > 0)
+            yield return new WaitForSecondsRealtime(postTeleportDelay);
+
+        FinishTeleportUi(resumeGameplay: true);
+        onComplete?.Invoke();
+        activeTravelCoroutine = null;
+    }
+
+    private void BeginLoadingScreen()
+    {
+        if (loadingScreen != null) loadingScreen.SetActive(true);
+        if (loadingFill != null) loadingFill.fillAmount = 0f;
+        if (percentageText != null) percentageText.text = "0%";
+
+        if (textAnimationCoroutine != null)
+            StopCoroutine(textAnimationCoroutine);
+
+        textAnimationCoroutine = StartCoroutine(AnimateLoadingText());
+    }
+
+    private void UpdateLoadingProgress(float progress)
+    {
+        if (loadingFill != null) loadingFill.fillAmount = progress;
+        if (percentageText != null) percentageText.text = Mathf.RoundToInt(progress * 100) + "%";
+    }
+
+    private void MovePlayerTo(Vector3 targetPosition, Quaternion targetRotation)
+    {
         CharacterController cc = player.GetComponent<CharacterController>();
         Rigidbody rb = player.GetComponent<Rigidbody>();
+        UnityEngine.AI.NavMeshAgent agent = player.GetComponent<UnityEngine.AI.NavMeshAgent>();
 
-        if (cc != null)
-        {
-            cc.enabled = false;
-            player.position = targetPosition;
-            cc.enabled = true;
-        }
-        else
-        {
-            player.position = targetPosition;
-        }
+        if (cc != null) cc.enabled = false;
+        if (agent != null) agent.enabled = false;
+
+        player.SetPositionAndRotation(targetPosition, targetRotation);
 
         if (rb != null)
         {
@@ -157,33 +234,50 @@ public class TeleportManager : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
+        if (cc != null) cc.enabled = true;
+        if (agent != null) agent.enabled = true;
+
         player.SendMessage("ResetVelocity", SendMessageOptions.DontRequireReceiver);
         player.SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
         player.SendMessage("CancelAttack", SendMessageOptions.DontRequireReceiver);
+    }
 
-        // 4. Wait for physics to stabilize
-        yield return new WaitForEndOfFrame();
+    private bool EnsurePlayerTransform()
+    {
+        if (player != null)
+            return true;
 
-        // 5. Post-Teleport Delay (still paused)
-        if (postTeleportDelay > 0)
-            yield return new WaitForSecondsRealtime(postTeleportDelay);
+        GameObject tagged = GameObject.FindGameObjectWithTag("Player");
+        if (tagged != null)
+            player = tagged.transform;
 
-        // 6. Finalize — resume gameplay only after the player is safely away
-        if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = false;
-        if (textAnimationCoroutine != null) StopCoroutine(textAnimationCoroutine);
-        if (loadingScreen != null) loadingScreen.SetActive(false);
+        if (player != null)
+            return true;
+
+        Debug.LogError("[TeleportManager] Player reference is missing — teleport aborted.");
+        return false;
+    }
+
+    private void FinishTeleportUi(bool resumeGameplay)
+    {
+        if (textAnimationCoroutine != null)
+        {
+            StopCoroutine(textAnimationCoroutine);
+            textAnimationCoroutine = null;
+        }
+
+        if (loadingScreen != null)
+            loadingScreen.SetActive(false);
+
+        if (!resumeGameplay)
+            return;
 
         if (PauseMenuManager.Instance != null)
             PauseMenuManager.Instance.Resume();
         else
             Time.timeScale = 1f;
-
-        selectedDestination = null;
     }
 
-    /// <summary>
-    /// Animates the "Loading..." text with dots to indicate activity.
-    /// </summary>
     private IEnumerator AnimateLoadingText()
     {
         int dotCount = 0;
