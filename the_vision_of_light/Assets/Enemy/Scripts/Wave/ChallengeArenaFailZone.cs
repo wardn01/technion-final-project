@@ -31,9 +31,7 @@ namespace VisionOfLight.Enemy
 
         private void Start()
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-                player = playerObj.transform;
+            player = SharedInteractPromptUtility.GetPlayerTransform();
         }
 
         private void Update()

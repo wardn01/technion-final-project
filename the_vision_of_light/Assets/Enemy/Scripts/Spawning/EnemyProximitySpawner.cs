@@ -117,10 +117,7 @@ namespace VisionOfLight.Enemy
             if (playerTransform != null)
                 return true;
 
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-                playerTransform = player.transform;
-
+            playerTransform = SharedInteractPromptUtility.GetPlayerTransform();
             return playerTransform != null;
         }
 

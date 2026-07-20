@@ -554,10 +554,8 @@ public class QuickSlotManager : MonoBehaviour
 
         // Ensure PlayerHealth reference is valid
         if (playerHp == null)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) playerHp = p.GetComponent<PlayerHealth>();
-        }
+            playerHp = PlayerRegistry.Instance?.Health
+                       ?? SharedInteractPromptUtility.GetPlayerGameObject()?.GetComponent<PlayerHealth>();
 
         // --- Weapon Execution Logic ---
         if (item is WeaponItemData weapon)

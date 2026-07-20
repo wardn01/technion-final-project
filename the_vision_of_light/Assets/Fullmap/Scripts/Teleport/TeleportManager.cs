@@ -247,10 +247,7 @@ public class TeleportManager : MonoBehaviour
         if (player != null)
             return true;
 
-        GameObject tagged = GameObject.FindGameObjectWithTag("Player");
-        if (tagged != null)
-            player = tagged.transform;
-
+        player = SharedInteractPromptUtility.GetPlayerTransform();
         if (player != null)
             return true;
 

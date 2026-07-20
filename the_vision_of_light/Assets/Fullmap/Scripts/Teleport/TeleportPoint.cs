@@ -102,8 +102,7 @@ public class TeleportPoint : MonoBehaviour
         if (!isPlayerNear)
             return;
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        Transform playerTransform = player != null ? player.transform : null;
+        Transform playerTransform = SharedInteractPromptUtility.GetPlayerTransform();
 
         if (SharedInteractPromptUtility.IsPlayerBeyondRange(
                 transform.position, playerTransform, SharedInteractPromptUtility.DefaultLeaveDistance))
@@ -115,29 +114,18 @@ public class TeleportPoint : MonoBehaviour
     private void ShowInteractPrompt()
     {
         ResolveSharedInteractUi();
-
-        if (promptRoot != null && !promptRoot.activeSelf)
-            promptRoot.SetActive(true);
-
-        if (promptContainer != null && !promptContainer.activeSelf)
-            promptContainer.SetActive(true);
-
-        if (interactKeyPrompt != null && !interactKeyPrompt.activeSelf)
-            interactKeyPrompt.SetActive(true);
-
-        if (promptTextUI == null)
-            return;
-
-        if (!promptTextUI.gameObject.activeSelf)
-            promptTextUI.gameObject.SetActive(true);
-
-        promptTextUI.text = string.IsNullOrEmpty(promptText) ? "Open Teleport" : promptText;
+        SharedInteractPromptUtility.Show(
+            this,
+            promptRoot,
+            promptContainer,
+            interactKeyPrompt,
+            promptTextUI,
+            string.IsNullOrEmpty(promptText) ? "Open Teleport" : promptText);
     }
 
     private void HideInteractPrompt()
     {
-        if (promptContainer != null && promptContainer.activeSelf)
-            promptContainer.SetActive(false);
+        SharedInteractPromptUtility.Hide(this, promptContainer, interactKeyPrompt);
     }
 
     private void ResolveSharedInteractUi()

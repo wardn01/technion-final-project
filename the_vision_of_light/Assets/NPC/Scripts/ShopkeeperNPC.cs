@@ -31,7 +31,7 @@ public class ShopkeeperNPC : MonoBehaviour
 
     private void Start()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject player = SharedInteractPromptUtility.GetPlayerGameObject();
         if (player != null)
             playerTransform = player.transform;
 

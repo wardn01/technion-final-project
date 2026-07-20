@@ -112,9 +112,7 @@ namespace VisionOfLight.Enemy
         #region Unity Lifecycle
         private void Start()
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-                player = playerObj.transform;
+            player = SharedInteractPromptUtility.GetPlayerTransform();
 
             if (riftVisualController != null)
                 RefreshRiftIdleVisual();
@@ -166,11 +164,11 @@ namespace VisionOfLight.Enemy
             if (!isPlayerNear)
                 return;
 
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            Transform playerTransform = player != null ? player.transform : null;
+            if (player == null)
+                player = SharedInteractPromptUtility.GetPlayerTransform();
 
             if (SharedInteractPromptUtility.IsPlayerBeyondRange(
-                    transform.position, playerTransform, SharedInteractPromptUtility.DefaultLeaveDistance))
+                    transform.position, player, SharedInteractPromptUtility.DefaultLeaveDistance))
                 ClearPlayerProximity();
         }
         #endregion
@@ -227,38 +225,19 @@ namespace VisionOfLight.Enemy
 
         private void ShowPrompt()
         {
-            if (promptRoot != null && !promptRoot.activeSelf)
-                promptRoot.SetActive(true);
-
-            if (promptContainer != null && !promptContainer.activeSelf)
-                promptContainer.SetActive(true);
-
-            if (promptTextUI == null)
-                return;
-
-            if (!promptTextUI.gameObject.activeSelf)
-                promptTextUI.gameObject.SetActive(true);
-
-            promptTextUI.text = promptText;
+            SharedInteractPromptUtility.Show(
+                this, promptRoot, promptContainer, null, promptTextUI, promptText, showInteractKey: false);
         }
 
         private void HidePrompt()
         {
             HideInteractPrompt();
-
-            if (challengeActive)
-                return;
-
-            if (promptRoot != null && promptRoot.activeSelf)
-                promptRoot.SetActive(false);
         }
 
         /// <summary>Hides the F key / label only. Never touches the challenge HUD (WaveChallenge).</summary>
         private void HideInteractPrompt()
         {
-            if (promptContainer != null && promptContainer.activeSelf)
-                promptContainer.SetActive(false);
-
+            SharedInteractPromptUtility.Hide(this, promptContainer);
             SetInteractKeyVisible(false);
         }
 

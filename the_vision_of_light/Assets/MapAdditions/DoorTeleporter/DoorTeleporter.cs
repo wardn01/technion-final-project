@@ -84,13 +84,9 @@ public class DoorTeleporter : MonoBehaviour
         if (!isPlayerNear)
             return;
 
-        Transform player = playerObj != null ? playerObj.transform : null;
-        if (player == null)
-        {
-            GameObject tagged = GameObject.FindGameObjectWithTag("Player");
-            if (tagged != null)
-                player = tagged.transform;
-        }
+        Transform player = playerObj != null
+            ? playerObj.transform
+            : SharedInteractPromptUtility.GetPlayerTransform();
 
         if (SharedInteractPromptUtility.IsPlayerBeyondRange(
                 transform.position, player, SharedInteractPromptUtility.DefaultLeaveDistance))
@@ -100,31 +96,18 @@ public class DoorTeleporter : MonoBehaviour
     private void ShowInteractPrompt()
     {
         ResolveSharedInteractUi();
-
-        // Wave / chests may leave InteractPrompt (parent) disabled — child alone will not render.
-        if (promptRoot != null && !promptRoot.activeSelf)
-            promptRoot.SetActive(true);
-
-        if (promptContainer != null && !promptContainer.activeSelf)
-            promptContainer.SetActive(true);
-
-        // Challenge stone may leave the F badge disabled after a trial.
-        if (interactKeyPrompt != null && !interactKeyPrompt.activeSelf)
-            interactKeyPrompt.SetActive(true);
-
-        if (promptTextUI == null)
-            return;
-
-        if (!promptTextUI.gameObject.activeSelf)
-            promptTextUI.gameObject.SetActive(true);
-
-        promptTextUI.text = string.IsNullOrEmpty(promptText) ? "Enter" : promptText;
+        SharedInteractPromptUtility.Show(
+            this,
+            promptRoot,
+            promptContainer,
+            interactKeyPrompt,
+            promptTextUI,
+            string.IsNullOrEmpty(promptText) ? "Enter" : promptText);
     }
 
     private void HideInteractPrompt()
     {
-        if (promptContainer != null && promptContainer.activeSelf)
-            promptContainer.SetActive(false);
+        SharedInteractPromptUtility.Hide(this, promptContainer, interactKeyPrompt);
     }
 
     private void ResolveSharedInteractUi()

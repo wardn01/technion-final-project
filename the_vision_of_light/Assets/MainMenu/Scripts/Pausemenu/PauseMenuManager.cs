@@ -579,11 +579,7 @@ public class PauseMenuManager : MonoBehaviour
         }
 
         if (playerTransform == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-                playerTransform = player.transform;
-        }
+            playerTransform = SharedInteractPromptUtility.GetPlayerTransform();
 
         if (pauseMainPanel == null)
             pauseMainPanel = FindSceneGameObject("PauseMenuScreen");

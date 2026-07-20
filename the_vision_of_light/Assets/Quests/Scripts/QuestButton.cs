@@ -68,7 +68,7 @@ public class QuestButton : MonoBehaviour
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => onClickCallback?.Invoke(myQuest));
 
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObj = SharedInteractPromptUtility.GetPlayerGameObject();
         if (playerObj != null)
         {
             player = playerObj.transform;

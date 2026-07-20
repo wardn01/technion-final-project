@@ -332,32 +332,19 @@ namespace VisionOfLight.Chest
         private void ShowOpenPrompt()
         {
             ResolveSharedInteractUi();
-
-            if (promptRoot != null && !promptRoot.activeSelf)
-                promptRoot.SetActive(true);
-
-            if (promptContainer != null && !promptContainer.activeSelf)
-                promptContainer.SetActive(true);
-
-            SetInteractKeyVisible(true);
+            SharedInteractPromptUtility.Show(
+                this, promptRoot, promptContainer, interactKeyPrompt, promptTextUI, openPromptText);
             SetLetterBadgeVisible(true);
-            SetPromptText(openPromptText);
         }
 
         private void HidePrompt()
         {
             HideInteractPrompt();
-
-            if (promptRoot != null && promptRoot.activeSelf)
-                promptRoot.SetActive(false);
         }
 
         private void HideInteractPrompt()
         {
-            if (promptContainer != null && promptContainer.activeSelf)
-                promptContainer.SetActive(false);
-
-            SetInteractKeyVisible(false);
+            SharedInteractPromptUtility.Hide(this, promptContainer, interactKeyPrompt);
         }
 
         private void SetPromptText(string text)
@@ -737,10 +724,7 @@ namespace VisionOfLight.Chest
             if (playerTransform != null)
                 return true;
 
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-                playerTransform = player.transform;
-
+            playerTransform = SharedInteractPromptUtility.GetPlayerTransform();
             return playerTransform != null;
         }
         #endregion

@@ -76,7 +76,7 @@ namespace VisionOfLight.Enemy
         {
             yield return new WaitForSeconds(0.15f); 
 
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            GameObject player = SharedInteractPromptUtility.GetPlayerGameObject();
             if (player != null) target = player.transform;
 
             if (stats != null)

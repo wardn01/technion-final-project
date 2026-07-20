@@ -182,7 +182,7 @@ public class UI_InputManager : MonoBehaviour
         if (PlayerRegistry.Instance != null && PlayerRegistry.Instance.Health != null)
             return PlayerRegistry.Instance.Health.isDead;
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject player = SharedInteractPromptUtility.GetPlayerGameObject();
         if (player == null)
             return false;
 
