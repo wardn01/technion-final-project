@@ -121,6 +121,9 @@ namespace VisionOfLight.Chest
         private readonly List<GuardianPlacement> assignedGuardianPlacements = new List<GuardianPlacement>();
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
+
+        /// <summary>Fired every time all guardians die (first clear and each hourly clear).</summary>
+        public event System.Action GuardiansDefeated;
         #endregion
 
         #region Unity Lifecycle
@@ -614,9 +617,15 @@ namespace VisionOfLight.Chest
             proximityDefeated = true;
             proximityGuardiansActive = false;
             ChestGuardianRespawnRegistry.MarkAllDefeated(chestId);
+            NotifyGuardiansDefeated();
 
             if (PauseMenuManager.Instance != null)
                 PauseMenuManager.Instance.SaveGameSilently();
+        }
+
+        private void NotifyGuardiansDefeated()
+        {
+            GuardiansDefeated?.Invoke();
         }
 
         private bool EnsurePlayerTransform()
@@ -645,6 +654,7 @@ namespace VisionOfLight.Chest
             if (guardiansCleared && !guardiansWereCleared)
             {
                 ChestGuardianRespawnRegistry.MarkAllDefeated(chestId);
+                NotifyGuardiansDefeated();
 
                 if (PauseMenuManager.Instance != null)
                     PauseMenuManager.Instance.SaveGameSilently();
