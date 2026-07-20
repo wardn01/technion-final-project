@@ -31,7 +31,10 @@ public static class MapRenderSettings
             camera.cullingMask = FullMapCullingMask;
     }
 
-    /// <summary>Moves PlayerMapIcon to PlayerIcon layer so it stays visible when Player layer is culled.</summary>
+    /// <summary>
+    /// Moves PlayerMapIcon to PlayerIcon layer so it stays visible when Player layer is culled,
+    /// and raises sorting order so the arrow draws above teleport/NPC minimap sprites.
+    /// </summary>
     public static void EnsurePlayerMapIconLayer(Transform player)
     {
         if (player == null) return;
@@ -42,5 +45,9 @@ public static class MapRenderSettings
         int playerIconLayer = LayerMask.NameToLayer("PlayerIcon");
         if (playerIconLayer >= 0)
             icon.gameObject.layer = playerIconLayer;
+
+        SpriteRenderer sr = icon.GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.sortingOrder = 100;
     }
 }
