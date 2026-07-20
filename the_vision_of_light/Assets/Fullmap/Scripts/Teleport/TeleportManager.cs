@@ -107,25 +107,34 @@ public class TeleportManager : MonoBehaviour
         if (percentageText != null) percentageText.text = "0%";
         textAnimationCoroutine = StartCoroutine(AnimateLoadingText());
 
-        if (PauseMenuManager.Instance != null) PauseMenuManager.Instance.Resume();
-        else if (fullMapScreen != null) fullMapScreen.SetActive(false);
+        // Close the map UI but keep the world paused so enemies cannot hit during load.
+        if (PauseMenuManager.Instance != null)
+        {
+            PauseMenuManager.Instance.CloseAllSubScreens();
+            Time.timeScale = 0f;
+        }
+        else if (fullMapScreen != null)
+        {
+            fullMapScreen.SetActive(false);
+            Time.timeScale = 0f;
+        }
 
-        // 2. Animate loading progress
+        // 2. Animate loading progress (unscaled — works while paused)
         float elapsedTime = 0f;
         while (elapsedTime < loadingDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
             float progress = Mathf.Clamp01(elapsedTime / loadingDuration);
-            
+
             if (loadingFill != null) loadingFill.fillAmount = progress;
             if (percentageText != null) percentageText.text = Mathf.RoundToInt(progress * 100) + "%";
-            
+
             yield return null;
         }
 
-        // 3. Move player
-        Vector3 targetPosition = (destination.spawnLocation != null) 
-            ? destination.spawnLocation.position 
+        // 3. Move player while still paused
+        Vector3 targetPosition = (destination.spawnLocation != null)
+            ? destination.spawnLocation.position
             : destination.transform.position + new Vector3(2f, 1f, 0f);
 
         CharacterController cc = player.GetComponent<CharacterController>();
@@ -153,18 +162,21 @@ public class TeleportManager : MonoBehaviour
         player.SendMessage("CancelAttack", SendMessageOptions.DontRequireReceiver);
 
         // 4. Wait for physics to stabilize
-        yield return new WaitForEndOfFrame(); 
+        yield return new WaitForEndOfFrame();
 
-        // 5. Post-Teleport Delay (The "Magic Buffer" for smoothness)
+        // 5. Post-Teleport Delay (still paused)
         if (postTeleportDelay > 0)
-        {
             yield return new WaitForSecondsRealtime(postTeleportDelay);
-        }
 
-        // 6. Finalize
+        // 6. Finalize — resume gameplay only after the player is safely away
         if (UIManager.Instance != null) UIManager.Instance.isDialogueOpen = false;
         if (textAnimationCoroutine != null) StopCoroutine(textAnimationCoroutine);
         if (loadingScreen != null) loadingScreen.SetActive(false);
+
+        if (PauseMenuManager.Instance != null)
+            PauseMenuManager.Instance.Resume();
+        else
+            Time.timeScale = 1f;
 
         selectedDestination = null;
     }
