@@ -43,71 +43,73 @@ MonoBehaviour:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
       amount: 120
     - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 6
-    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
-      amount: 2
+      amount: 4
     damageBoost: 10
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 280
+      amount: 220
+    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
+      amount: 6
+    damageBoost: 12
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 350
+    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
+      amount: 10
+    damageBoost: 14
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 500
     - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
       amount: 8
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
       amount: 3
-    damageBoost: 12
+    damageBoost: 14
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 480
+      amount: 750
     - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
       amount: 10
-    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
-      amount: 4
-    damageBoost: 14
-  - materials:
-    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 720
-    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 12
-    - item: {fileID: 11400000, guid: bb5a17c1c18b7844abf0a05151dc5c86, type: 2}
-      amount: 1
-    damageBoost: 14
-  - materials:
-    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 980
-    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 14
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
       amount: 5
     damageBoost: 16
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 1300
+      amount: 1100
     - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 16
+      amount: 12
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
-      amount: 6
+      amount: 8
     damageBoost: 16
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 1750
-    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 18
+      amount: 1600
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
       amount: 8
+    - item: {fileID: 11400000, guid: bb5a17c1c18b7844abf0a05151dc5c86, type: 2}
+      amount: 1
     damageBoost: 18
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
-      amount: 2350
-    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 20
+      amount: 2300
+    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      amount: 10
     - item: {fileID: 11400000, guid: bb5a17c1c18b7844abf0a05151dc5c86, type: 2}
       amount: 1
     damageBoost: 20
   - materials:
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
       amount: 3200
-    - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
-      amount: 22
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
-      amount: 10
+      amount: 14
+    - item: {fileID: 11400000, guid: bb5a17c1c18b7844abf0a05151dc5c86, type: 2}
+      amount: 1
     damageBoost: 22
+  - materials:
+    - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      amount: 4500
+    - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      amount: 18
+    - item: {fileID: 11400000, guid: bb5a17c1c18b7844abf0a05151dc5c86, type: 2}
+      amount: 2
+    damageBoost: 25

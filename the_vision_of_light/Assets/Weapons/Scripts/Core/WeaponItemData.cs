@@ -83,7 +83,79 @@ public class WeaponItemData : ItemData
 
     #region Upgrades
     [Header("Upgrade System")]
+    [Tooltip("Authored costs for early levels. Higher levels (up to 100) scale from the last entry.")]
     public WeaponUpgradeLevel[] upgradeLevels;
+
+    /// <summary>Same absolute ceiling as the character (<see cref="PlayerData.absoluteMaxLevel"/>).</summary>
+    public const int AbsoluteMaxLevel = 100;
+
+    /// <summary>
+    /// Cost/boost to upgrade FROM <paramref name="currentLevel"/> to the next level.
+    /// Levels beyond the authored array scale from the last entry (same materials, rising amounts).
+    /// </summary>
+    public bool TryGetUpgradeFromLevel(int currentLevel, out WeaponUpgradeLevel upgrade)
+    {
+        upgrade = default;
+
+        if (upgradeLevels == null || upgradeLevels.Length == 0)
+            return false;
+
+        if (currentLevel < 1 || currentLevel >= AbsoluteMaxLevel)
+            return false;
+
+        int index = currentLevel - 1;
+        if (index < upgradeLevels.Length)
+        {
+            upgrade = upgradeLevels[index];
+            return true;
+        }
+
+        upgrade = ScaleUpgradeFromTemplate(upgradeLevels[upgradeLevels.Length - 1], index - (upgradeLevels.Length - 1));
+        return true;
+    }
+
+    /// <summary>Sum of damageBoost for upgrades already applied (levels 1 → currentLevel).</summary>
+    public int GetTotalBoostUntil(int appliedUpgradeCount)
+    {
+        if (upgradeLevels == null || upgradeLevels.Length == 0 || appliedUpgradeCount <= 0)
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < appliedUpgradeCount; i++)
+        {
+            if (i < upgradeLevels.Length)
+                total += upgradeLevels[i].damageBoost;
+            else
+                total += ScaleUpgradeFromTemplate(upgradeLevels[upgradeLevels.Length - 1], i - (upgradeLevels.Length - 1)).damageBoost;
+        }
+
+        return total;
+    }
+
+    private static WeaponUpgradeLevel ScaleUpgradeFromTemplate(WeaponUpgradeLevel template, int stepsBeyond)
+    {
+        float mult = 1f + stepsBeyond * 0.12f;
+        ItemRequirement[] scaled = null;
+
+        if (template.materials != null && template.materials.Length > 0)
+        {
+            scaled = new ItemRequirement[template.materials.Length];
+            for (int i = 0; i < template.materials.Length; i++)
+            {
+                scaled[i] = new ItemRequirement
+                {
+                    item = template.materials[i].item,
+                    amount = Mathf.Max(1, Mathf.RoundToInt(template.materials[i].amount * mult))
+                };
+            }
+        }
+
+        return new WeaponUpgradeLevel
+        {
+            materials = scaled,
+            damageBoost = template.damageBoost + Mathf.Max(0, stepsBeyond)
+        };
+    }
     #endregion
 
     #region Unity Lifecycle

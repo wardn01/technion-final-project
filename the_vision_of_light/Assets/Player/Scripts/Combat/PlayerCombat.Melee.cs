@@ -12,17 +12,7 @@ namespace VisionOfLight.Player
             if (playerData == null || weapon == null) return 0;
 
             int currentLvl = playerData.GetWeaponLevel(weapon.itemName);
-            int totalBoost = 0;
-
-            for (int i = 0; i < currentLvl - 1; i++)
-            {
-                if (weapon.upgradeLevels != null && i < weapon.upgradeLevels.Length)
-                {
-                    totalBoost += weapon.upgradeLevels[i].damageBoost;
-                }
-            }
-
-            return totalBoost;
+            return weapon.GetTotalBoostUntil(currentLvl - 1);
         }
         #endregion
 
