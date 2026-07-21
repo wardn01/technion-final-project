@@ -214,6 +214,7 @@ public class QuestResultUI : MonoBehaviour
 
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f;
+            AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.UI);
         }
 
         audioSource.PlayOneShot(successClip, successVolume);

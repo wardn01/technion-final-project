@@ -34,7 +34,11 @@ public class WeaponCombatSounds : MonoBehaviour
     private void Start()
     {
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
-        if (audioSource != null) audioSource.spatialBlend = 1f;
+        if (audioSource != null)
+        {
+            audioSource.spatialBlend = 1f;
+            AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.SFX);
+        }
     }
     #endregion
 

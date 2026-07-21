@@ -47,6 +47,9 @@ namespace VisionOfLight.Player
             if (audioSource == null) audioSource = GetComponent<AudioSource>();
             if (windAudioSource == null) windAudioSource = GetComponent<AudioSource>();
 
+            AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.SFX);
+            AudioMixerHub.Route(windAudioSource, AudioMixerHub.Bus.SFX);
+
             if (windAudioSource != null)
             {
                 windAudioSource.loop = true;

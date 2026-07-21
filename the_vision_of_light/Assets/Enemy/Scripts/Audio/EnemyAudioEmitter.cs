@@ -17,6 +17,7 @@ namespace VisionOfLight.Enemy
             audioSource = GetComponent<AudioSource>();
             audioSource.spatialBlend = 1f;
             audioSource.playOnAwake = false;
+            AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.SFX);
         }
 
         /// <summary>Plays a random clip for <paramref name="actionName"/>. Called from <see cref="EnemyBase.PlayEnemySound"/>.</summary>

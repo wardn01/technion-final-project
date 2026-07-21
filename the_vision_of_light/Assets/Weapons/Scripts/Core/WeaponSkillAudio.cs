@@ -38,6 +38,7 @@ public class WeaponSkillAudio : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 1f;
+        AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.SFX);
     }
 
     private void Start()

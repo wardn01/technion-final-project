@@ -69,7 +69,8 @@ public class AudioSettingsMenu : MonoBehaviour
     {
         float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
 
-        mainMixer.SetFloat("MasterVol", volume);
+        if (mainMixer != null)
+            mainMixer.SetFloat("MasterVol", volume);
         PlayerPrefs.SetFloat("MasterVol", sliderValue);
 
         if (masterText != null)
@@ -84,7 +85,8 @@ public class AudioSettingsMenu : MonoBehaviour
     {
         float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
 
-        mainMixer.SetFloat("MusicVol", volume);
+        if (mainMixer != null)
+            mainMixer.SetFloat("MusicVol", volume);
         PlayerPrefs.SetFloat("MusicVol", sliderValue);
 
         if (musicText != null)
@@ -99,7 +101,8 @@ public class AudioSettingsMenu : MonoBehaviour
     {
         float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
 
-        mainMixer.SetFloat("DialogueVol", volume);
+        if (mainMixer != null)
+            mainMixer.SetFloat("DialogueVol", volume);
         PlayerPrefs.SetFloat("DialogueVol", sliderValue);
 
         if (dialogueText != null)
@@ -114,7 +117,8 @@ public class AudioSettingsMenu : MonoBehaviour
     {
         float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
 
-        mainMixer.SetFloat("SFXVol", volume);
+        if (mainMixer != null)
+            mainMixer.SetFloat("SFXVol", volume);
         PlayerPrefs.SetFloat("SFXVol", sliderValue);
 
         if (sfxText != null)
@@ -129,7 +133,8 @@ public class AudioSettingsMenu : MonoBehaviour
     {
         float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
 
-        mainMixer.SetFloat("UIVol", volume);
+        if (mainMixer != null)
+            mainMixer.SetFloat("UIVol", volume);
         PlayerPrefs.SetFloat("UIVol", sliderValue);
 
         if (uiText != null)

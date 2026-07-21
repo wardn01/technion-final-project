@@ -20,6 +20,14 @@ namespace VisionOfLight.Enemy
 
         public bool isReturningToCamp { get; private set; }
 
+        /// <summary>True while the boss is actively fighting the player.</summary>
+        public bool IsAggroed => isAggroed;
+
+        public override bool WantsCombatMusic(Transform player)
+        {
+            return !isDead && isAggroed && !isReturningToCamp;
+        }
+
         protected PlayerHealth playerHealth;
         protected EnemyStatusEffects statusEffects;
 

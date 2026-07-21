@@ -315,6 +315,7 @@ namespace VisionOfLight.Enemy
 
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f;
+            AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.UI);
         }
 
         private void HideTimer()

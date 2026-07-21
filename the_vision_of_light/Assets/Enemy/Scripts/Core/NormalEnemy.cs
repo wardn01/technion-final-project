@@ -51,6 +51,14 @@ namespace VisionOfLight.Enemy
             startingPosition = transform.position; 
         }
 
+        public override bool WantsCombatMusic(Transform player)
+        {
+            if (isReturningToCamp)
+                return false;
+
+            return base.WantsCombatMusic(player);
+        }
+
         protected virtual void Update()
         {
             if (isDead || target == null || playerHealth == null) return;

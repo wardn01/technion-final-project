@@ -37,6 +37,16 @@ namespace VisionOfLight.Enemy
         public bool isHitBase = false;
         public bool isAttackingBase = false;
 
+        /// <summary>True when this enemy should pull combat BGM (chase / fight).</summary>
+        public virtual bool WantsCombatMusic(Transform player)
+        {
+            if (isDead || player == null || stats == null)
+                return false;
+
+            float distance = Vector3.Distance(transform.position, player.position);
+            return distance <= stats.ChaseRange;
+        }
+
         [Header("UI & Effects")]
         public GameObject damageTextPrefab;
         public Transform textSpawnPoint;
