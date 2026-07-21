@@ -109,12 +109,14 @@ public class WorldMusicManager : MonoBehaviour
         audioSource.volume = 0f;
 
         ConfigureMixer();
-        AudioMixerHub.ApplySavedVolumes();
         AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.Music);
     }
 
     private void Start()
     {
+        // Mixer SetFloat during Awake/scene-load does not stick (Unity resets it
+        // when the mixer snapshot initializes) — apply saved sliders here instead.
+        AudioMixerHub.ApplySavedVolumes();
         ForceMood(MusicMood.Exploration, immediate: true);
     }
 

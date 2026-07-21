@@ -45,16 +45,30 @@ namespace VisionOfLight.Player
         {
             if (animator == null) animator = GetComponent<Animator>();
             if (audioSource == null) audioSource = GetComponent<AudioSource>();
-            if (windAudioSource == null) windAudioSource = GetComponent<AudioSource>();
+
+            // A missing wind source used to alias the footstep source — the wind fade then
+            // dragged the shared AudioSource volume to 0 and permanently muted every one-shot
+            // (footsteps, jump, landing). Wind must always have its own dedicated source.
+            if (windAudioSource == null || windAudioSource == audioSource)
+            {
+                windAudioSource = gameObject.AddComponent<AudioSource>();
+
+                if (audioSource != null)
+                {
+                    windAudioSource.spatialBlend = audioSource.spatialBlend;
+                    windAudioSource.outputAudioMixerGroup = audioSource.outputAudioMixerGroup;
+                }
+            }
+
+            windAudioSource.loop = true;
+            windAudioSource.playOnAwake = false;
+
+            // Heal a zeroed volume left behind by the old aliasing bug.
+            if (audioSource != null && audioSource.volume < 0.01f)
+                audioSource.volume = 1f;
 
             AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.SFX);
             AudioMixerHub.Route(windAudioSource, AudioMixerHub.Bus.SFX);
-
-            if (windAudioSource != null)
-            {
-                windAudioSource.loop = true;
-                windAudioSource.playOnAwake = false;
-            }
         }
 
         void Update()
