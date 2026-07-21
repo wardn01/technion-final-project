@@ -41,6 +41,9 @@ public class TeleportManager : MonoBehaviour
     private Coroutine textAnimationCoroutine;
     private Coroutine activeTravelCoroutine;
 
+    /// <summary>True while a loading-screen travel (map teleport / revive / OOB) is running.</summary>
+    public bool IsTraveling => activeTravelCoroutine != null;
+
     #region Unity Lifecycle
     private void Awake()
     {

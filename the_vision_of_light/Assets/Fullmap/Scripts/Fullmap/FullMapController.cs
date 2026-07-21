@@ -224,7 +224,8 @@ public class FullMapController : MonoBehaviour
         playerMapMarker.SetAsLastSibling();
     }
 
-    private Vector2 WorldToMapAnchoredPosition(Vector3 worldPosition)
+    /// <summary>Converts a world XZ position into mapContent anchored UI coordinates.</summary>
+    public Vector2 WorldToMapAnchoredPosition(Vector3 worldPosition)
     {
         float mapSize = mapContent.rect.width;
         float ratio = mapSize / worldSize;
