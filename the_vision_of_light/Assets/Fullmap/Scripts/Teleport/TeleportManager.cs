@@ -148,6 +148,11 @@ public class TeleportManager : MonoBehaviour
     {
         SharedInteractPromptUtility.ClearAllProximityPrompts();
 
+        // Boss bar stays stuck otherwise — the boss only hides it on its own camp reset,
+        // which cannot run while the game is paused during the teleport.
+        if (VisionOfLight.Enemy.BossHealthBarUI.Instance != null)
+            VisionOfLight.Enemy.BossHealthBarUI.Instance.HideBoss(null);
+
         if (DialogueManager.Instance != null)
             DialogueManager.Instance.EndDialogue();
         else if (UIManager.Instance != null)
