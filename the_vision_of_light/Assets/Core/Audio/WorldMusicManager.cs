@@ -5,7 +5,8 @@ using VisionOfLight.Enemy;
 using VisionOfLight.Player;
 
 /// <summary>
-/// World-only dynamic BGM: exploration, normal combat, Orc boss, Golem boss.
+/// World-only dynamic BGM: exploration, village, normal combat, Orc boss, Golem boss.
+/// Snow is an ambience layer: exploration keeps playing at reduced volume.
 /// Place in the World scene (not MainMenu — keep MainMenuBGM there).
 /// </summary>
 [DefaultExecutionOrder(-50)]
@@ -13,9 +14,24 @@ public class WorldMusicManager : MonoBehaviour
 {
     public static WorldMusicManager Instance { get; private set; }
 
+    /// <summary>True while combat or a boss fight drives the music (ambience zones duck themselves).</summary>
+    public static bool IsCombatMusicActive
+    {
+        get
+        {
+            if (Instance == null)
+                return false;
+
+            return Instance.currentMood == MusicMood.Combat
+                || Instance.currentMood == MusicMood.OrcBoss
+                || Instance.currentMood == MusicMood.GolemBoss;
+        }
+    }
+
     public enum MusicMood
     {
         Exploration,
+        Village,
         Combat,
         OrcBoss,
         GolemBoss
@@ -41,6 +57,9 @@ public class WorldMusicManager : MonoBehaviour
     [Tooltip("Roaming / open world. Soft background while not fighting. Suggested: First_Light_on_the_Peak.")]
     public AudioClip explorationMusic;
 
+    [Tooltip("Safe village theme. Plays while the player is inside a WorldMusicVillageZone.")]
+    public AudioClip villageMusic;
+
     [Tooltip("Normal enemy chase or fight (Goblin, Bear, Skeleton, wave trash, …). Louder than exploration.")]
     public AudioClip combatMusic;
 
@@ -54,6 +73,15 @@ public class WorldMusicManager : MonoBehaviour
     [Tooltip("Quiet roaming level. Keep lower than combat so fights feel louder.")]
     [Range(0f, 1f)]
     public float explorationVolume = 0.28f;
+
+    [Tooltip("Village theme level. Usually soft, similar to exploration.")]
+    [Range(0f, 1f)]
+    public float villageVolume = 0.35f;
+
+    [Header("Snow Region")]
+    [Tooltip("Exploration volume multiplier inside snow zones. 0.7 = 30% quieter.")]
+    [Range(0f, 1f)]
+    public float explorationVolumeInSnowMultiplier = 0.7f;
 
     [Tooltip("Normal combat level. Should be clearly louder than exploration.")]
     [Range(0f, 1f)]
@@ -88,6 +116,7 @@ public class WorldMusicManager : MonoBehaviour
     private float currentTargetVolume;
     private float nextPollTime;
     private float combatClearAt = -1f;
+    private bool isPlayerInSnow;
 
     private void Awake()
     {
@@ -221,6 +250,16 @@ public class WorldMusicManager : MonoBehaviour
         }
 
         combatClearAt = -1f;
+
+        // Village replaces exploration and wins if zones overlap.
+        if (WorldMusicVillageZone.ContainsPlayer(player.position))
+        {
+            isPlayerInSnow = false;
+            return MusicMood.Village;
+        }
+
+        // Snow keeps exploration playing, but ducks it while snow ambience is layered above it.
+        isPlayerInSnow = WorldAmbienceZone.ShouldDuckExploration(player.position);
         return MusicMood.Exploration;
     }
 
@@ -254,6 +293,7 @@ public class WorldMusicManager : MonoBehaviour
     {
         AudioClip clip = mood switch
         {
+            MusicMood.Village => villageMusic,
             MusicMood.Combat => combatMusic,
             MusicMood.OrcBoss => orcBossMusic,
             MusicMood.GolemBoss => golemBossMusic,
@@ -274,10 +314,11 @@ public class WorldMusicManager : MonoBehaviour
     {
         return mood switch
         {
+            MusicMood.Village => villageVolume,
             MusicMood.Combat => combatVolume,
             MusicMood.OrcBoss => orcBossVolume,
             MusicMood.GolemBoss => golemBossVolume,
-            _ => explorationVolume
+            _ => explorationVolume * (isPlayerInSnow ? explorationVolumeInSnowMultiplier : 1f)
         };
     }
 
