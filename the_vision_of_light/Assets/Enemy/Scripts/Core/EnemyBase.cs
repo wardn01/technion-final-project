@@ -171,7 +171,10 @@ namespace VisionOfLight.Enemy
         }
 
         /// <summary>Applies defense-scaled damage, floating numbers, hit reaction, and death when HP reaches zero.</summary>
-        public virtual void TakeDamage(float incomingDamage, bool playHitReaction = true)
+        public virtual void TakeDamage(
+            float incomingDamage,
+            bool playHitReaction = true,
+            WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
         {
             if (isDead) return;
 
@@ -183,6 +186,8 @@ namespace VisionOfLight.Enemy
 
             currentHealth -= finalDamageInt;
             UpdateHealthUI();
+
+            PlayerStatsTracker.AddDamage(finalDamageInt, element);
 
             if (damageTextPrefab != null)
             {
@@ -210,6 +215,8 @@ namespace VisionOfLight.Enemy
         {
             if (isDead) return;
             isDead = true;
+
+            PlayerStatsTracker.RecordKill();
 
             EnemyStatusEffects statusEffects = GetComponent<EnemyStatusEffects>();
             if (statusEffects != null)

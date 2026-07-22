@@ -102,6 +102,7 @@ public class WorldSaveManager : MonoBehaviour
             ChestRegistry.ApplyFromSave(data);
             ChestGuardianRespawnRegistry.ApplyFromSave(data);
             TeleportUnlockRegistry.ApplyFromSave(data);
+            PlayerStatsTracker.ApplyFromSave(data);
             ApplyQuestProgress(data.mainQuestState, data.questStepIndex, data.hasCompletedChapter01Awakening);
 
             // Restore Player Data
@@ -125,6 +126,7 @@ public class WorldSaveManager : MonoBehaviour
             ChestRegistry.ApplyFromSave(null);
             ChestGuardianRespawnRegistry.ApplyFromSave(null);
             TeleportUnlockRegistry.ApplyFromSave(null);
+            PlayerStatsTracker.ApplyFromSave(null);
             ApplyQuestProgress(0, 0, false);
 
             if (activePlayerData != null)

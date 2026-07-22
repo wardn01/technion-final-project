@@ -42,7 +42,7 @@ namespace VisionOfLight.Player
 
                     if (angle <= attackAngle)
                     {
-                        enemyBase.TakeDamage(finalDamage);
+                        enemyBase.TakeDamage(finalDamage, true, activeWeaponData.weaponElement);
                     }
                 }
             }

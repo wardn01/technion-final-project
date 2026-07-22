@@ -159,11 +159,14 @@ namespace VisionOfLight.Enemy
         }
 
         /// <summary>Ignores damage while walking home; resumes normal AI on arrival.</summary>
-        public override void TakeDamage(float amount, bool playHitReaction = true)
+        public override void TakeDamage(
+            float amount,
+            bool playHitReaction = true,
+            WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
         {
             if (isReturningToCamp) return;
 
-            base.TakeDamage(amount, playHitReaction);
+            base.TakeDamage(amount, playHitReaction, element);
         }
 
         protected override void PlayHitEffect()

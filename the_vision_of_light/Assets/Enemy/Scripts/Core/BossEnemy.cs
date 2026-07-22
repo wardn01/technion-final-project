@@ -144,12 +144,15 @@ namespace VisionOfLight.Enemy
 
         #region Aggro & Camp Reset
         /// <summary>First hit or chase-range entry shows the HUD boss bar.</summary>
-        public override void TakeDamage(float damage, bool playHitReaction = true)
+        public override void TakeDamage(
+            float damage,
+            bool playHitReaction = true,
+            WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
         {
             if (isReturningToCamp) return;
 
             EnterAggro();
-            base.TakeDamage(damage, playHitReaction);
+            base.TakeDamage(damage, playHitReaction, element);
         }
 
         protected void EnterAggro()

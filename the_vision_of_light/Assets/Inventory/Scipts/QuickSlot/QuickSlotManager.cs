@@ -605,6 +605,8 @@ public class QuickSlotManager : MonoBehaviour
                             cons.tickInterval,
                             cons.totalTicks);
 
+                        PlayerStatsTracker.RecordPotionConsumed();
+
                         // Apply Cooldown timestamps
                         cooldownTimers[id] = Time.time + cons.cooldownTime;
                         cooldownTimers["LastCooldownUsed"] = cons.cooldownTime;

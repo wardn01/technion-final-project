@@ -419,6 +419,7 @@ namespace VisionOfLight.Enemy
             if (aliveEnemies.Count > 0)
                 return;
 
+            PlayerStatsTracker.RecordWaveCleared();
             currentWaveIndex++;
 
             if (activeWaves != null && currentWaveIndex < activeWaves.Length)

@@ -541,7 +541,10 @@ namespace VisionOfLight.Enemy
                 Physics.IgnoreCollision(stoneCollider, golemCollider, true);
         }
 
-        public override void TakeDamage(float damage, bool playHitReaction = true)
+        public override void TakeDamage(
+            float damage,
+            bool playHitReaction = true,
+            WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
         {
             MarkFightStarted();
 
@@ -557,7 +560,7 @@ namespace VisionOfLight.Enemy
                     isEnraged = true;
             }
 
-            base.TakeDamage(damage, playHitReaction);
+            base.TakeDamage(damage, playHitReaction, element);
         }
 
         protected override void PlayHitEffect()

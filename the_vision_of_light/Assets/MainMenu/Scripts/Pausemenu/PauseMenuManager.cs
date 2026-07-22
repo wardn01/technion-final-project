@@ -292,7 +292,11 @@ public class PauseMenuManager : MonoBehaviour
         OpenSubScreen(questScreen, false);
         QuestUIController.Instance?.RefreshQuestUI();
     }
-    public void OpenPlayerStats() => OpenSubScreen(playerStatsScreen, false);
+    public void OpenPlayerStats()
+    {
+        OpenSubScreen(playerStatsScreen, false);
+        PlayerStatsUI.Instance?.RefreshValues();
+    }
     public void OpenSettings() => settingsMenuUI?.SetActive(true);
     public void CloseSettings() => settingsMenuUI?.SetActive(false);
 
@@ -354,6 +358,7 @@ public class PauseMenuManager : MonoBehaviour
         ChestRegistry.WriteToSave(data);
         ChestGuardianRespawnRegistry.WriteToSave(data);
         TeleportUnlockRegistry.WriteToSave(data);
+        PlayerStatsTracker.WriteToSave(data);
 
         SaveManager.SaveGame(currentSlot, data);
     }
@@ -455,6 +460,7 @@ public class PauseMenuManager : MonoBehaviour
             ChestRegistry.ApplyFromSave(data);
             ChestGuardianRespawnRegistry.ApplyFromSave(data);
             TeleportUnlockRegistry.ApplyFromSave(data);
+            PlayerStatsTracker.ApplyFromSave(data);
         }
         else
         {
@@ -463,6 +469,7 @@ public class PauseMenuManager : MonoBehaviour
             ChestRegistry.ApplyFromSave(null);
             ChestGuardianRespawnRegistry.ApplyFromSave(null);
             TeleportUnlockRegistry.ApplyFromSave(null);
+            PlayerStatsTracker.ApplyFromSave(null);
         }
     }
 
@@ -597,7 +604,7 @@ public class PauseMenuManager : MonoBehaviour
             questScreen = FindSceneGameObject("QuestScreen");
 
         if (playerStatsScreen == null)
-            playerStatsScreen = FindSceneGameObject("AttributesScreen");
+            playerStatsScreen = FindSceneGameObject("StatsScreen");
 
         if (fullMapCamera == null)
             fullMapCamera = FindSceneGameObject("FullMapCamera");

@@ -197,7 +197,7 @@ namespace VisionOfLight.Enemy
             {
                 if (enemyBase != null && enemyBase.IsDead) yield break;
 
-                enemyBase.TakeDamage(damagePerTick, playHitReaction: false);
+                enemyBase.TakeDamage(damagePerTick, playHitReaction: false, WeaponItemData.WeaponElement.Fire);
                 yield return new WaitForSeconds(tickInterval);
             }
 

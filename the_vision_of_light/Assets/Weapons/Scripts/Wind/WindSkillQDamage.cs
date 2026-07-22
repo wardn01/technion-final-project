@@ -64,7 +64,7 @@ public class WindSkillQDamage : MonoBehaviour
                 }
             }
 
-            if (dealDamageThisFrame) enemy.TakeDamage(damagePerTick);
+            if (dealDamageThisFrame) enemy.TakeDamage(damagePerTick, true, WeaponItemData.WeaponElement.Wind);
         }
     }
 

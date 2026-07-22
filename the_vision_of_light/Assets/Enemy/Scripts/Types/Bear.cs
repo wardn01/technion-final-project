@@ -69,10 +69,13 @@ namespace VisionOfLight.Enemy
         }
 
         /// <summary>Waking the bear on damage or proximity.</summary>
-        public override void TakeDamage(float amount, bool playHitReaction = true)
+        public override void TakeDamage(
+            float amount,
+            bool playHitReaction = true,
+            WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
         {
             EnterAggro(playRoar: IsSleeping());
-            base.TakeDamage(amount, playHitReaction);
+            base.TakeDamage(amount, playHitReaction, element);
         }
 
         private void EnterAggro(bool playRoar)

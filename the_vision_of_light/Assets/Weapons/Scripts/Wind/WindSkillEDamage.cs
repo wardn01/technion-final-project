@@ -31,7 +31,7 @@ public class WindSkillEDamage : MonoBehaviour
 
         if (enemy == null || enemy.IsDead || enemiesHit.Contains(enemy)) return;
 
-        enemy.TakeDamage(damageAmount);
+        enemy.TakeDamage(damageAmount, true, WeaponItemData.WeaponElement.Wind);
         enemiesHit.Add(enemy);
 
         Vector3 pushDir = enemy.transform.position - transform.position;

@@ -30,7 +30,7 @@ public class IceSkillEDamage : MonoBehaviour
 
         if (enemy == null || enemy.IsDead || enemiesHit.Contains(enemy)) return;
 
-        enemy.TakeDamage(damageAmount);
+        enemy.TakeDamage(damageAmount, true, WeaponItemData.WeaponElement.Ice);
         enemiesHit.Add(enemy);
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();

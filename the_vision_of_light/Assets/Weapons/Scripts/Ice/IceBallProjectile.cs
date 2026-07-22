@@ -118,7 +118,7 @@ public class IceBallProjectile : MonoBehaviour
         EnemyBase hitEnemy = enemy ?? target;
         if (hitEnemy != null && !hitEnemy.IsDead)
         {
-            hitEnemy.TakeDamage(damage);
+            hitEnemy.TakeDamage(damage, true, WeaponItemData.WeaponElement.Ice);
 
             EnemyStatusEffects status = hitEnemy.GetComponent<EnemyStatusEffects>();
             if (status != null && slowPercentage > 0f)

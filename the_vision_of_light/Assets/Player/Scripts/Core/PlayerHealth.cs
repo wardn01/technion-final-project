@@ -371,6 +371,8 @@ namespace VisionOfLight.Player
         {
             isDead = true;
 
+            PlayerStatsTracker.RecordDeath();
+
             if (playerMovementScript != null)
             {
                 playerMovementScript.enabled = false;

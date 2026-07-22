@@ -848,6 +848,7 @@ namespace VisionOfLight.Chest
             GrantLoot();
             PlayOpenSound();
             ChestRegistry.MarkOpened(chestId);
+            PlayerStatsTracker.RecordChestOpened();
 
             if (PauseMenuManager.Instance != null)
                 PauseMenuManager.Instance.SaveGameSilently();

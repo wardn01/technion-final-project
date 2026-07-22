@@ -34,7 +34,7 @@ public class FireSkillEDamage : MonoBehaviour
 
         if (enemy == null || enemy.IsDead || enemiesHit.Contains(enemy)) return;
 
-        enemy.TakeDamage(damageAmount);
+        enemy.TakeDamage(damageAmount, true, WeaponItemData.WeaponElement.Fire);
         enemiesHit.Add(enemy);
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();

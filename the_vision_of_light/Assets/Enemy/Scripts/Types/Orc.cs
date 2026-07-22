@@ -80,7 +80,10 @@ namespace VisionOfLight.Enemy
                 anim.SetFloat("Speed", 0f);
         }
 
-        public override void TakeDamage(float damage, bool playHitReaction = true)
+        public override void TakeDamage(
+            float damage,
+            bool playHitReaction = true,
+            WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
         {
             if (isInvincible || BossStats == null)
                 return;
@@ -105,7 +108,7 @@ namespace VisionOfLight.Enemy
                     if (allowedFinalDamage > 0f)
                     {
                         float rawAllowed = allowedFinalDamage / damageMultiplier;
-                        base.TakeDamage(rawAllowed, playHitReaction);
+                        base.TakeDamage(rawAllowed, playHitReaction, element);
                     }
 
                     SnapHealthToEnrageThreshold(enrageThresholdHealth);
@@ -114,7 +117,7 @@ namespace VisionOfLight.Enemy
                 }
             }
 
-            base.TakeDamage(damage, playHitReaction);
+            base.TakeDamage(damage, playHitReaction, element);
         }
 
         /// <summary>Syncs HP bar and RageOrc enrage meter on the HUD.</summary>

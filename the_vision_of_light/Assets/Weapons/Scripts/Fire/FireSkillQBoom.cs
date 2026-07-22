@@ -72,7 +72,7 @@ public class FireSkillQBoom : MonoBehaviour
         EnemyBase enemy = other.GetComponentInParent<EnemyBase>();
         if (enemy == null || enemy.IsDead || !enemiesHit.Add(enemy)) return;
 
-        enemy.TakeDamage(damageAmount);
+        enemy.TakeDamage(damageAmount, true, WeaponItemData.WeaponElement.Fire);
     }
     #endregion
 

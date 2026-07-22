@@ -46,6 +46,58 @@ public class GameData
 
     /// <summary>When all guardians were defeated per chest (UTC seconds) for hourly respawn.</summary>
     public List<ChestGuardianDefeatTime> chestGuardianDefeatTimes = new List<ChestGuardianDefeatTime>();
+
+    /// <summary>Lifetime combat / exploration achievement counters for this save slot.</summary>
+    public PlayerStatistics playerStatistics = new PlayerStatistics();
+}
+
+[System.Serializable]
+public class PlayerStatistics
+{
+    public int totalEnemiesKilled;
+    public float totalDamageDealt;
+    public float highestSingleDamage;
+    public float windDamageDealt;
+    public float fireDamageDealt;
+    public float iceDamageDealt;
+    public int chestsOpened;
+    public int wavesCleared;
+    public int timesDied;
+    public int potionsConsumed;
+
+    public void Reset()
+    {
+        totalEnemiesKilled = 0;
+        totalDamageDealt = 0f;
+        highestSingleDamage = 0f;
+        windDamageDealt = 0f;
+        fireDamageDealt = 0f;
+        iceDamageDealt = 0f;
+        chestsOpened = 0;
+        wavesCleared = 0;
+        timesDied = 0;
+        potionsConsumed = 0;
+    }
+
+    public void CopyFrom(PlayerStatistics other)
+    {
+        if (other == null)
+        {
+            Reset();
+            return;
+        }
+
+        totalEnemiesKilled = other.totalEnemiesKilled;
+        totalDamageDealt = other.totalDamageDealt;
+        highestSingleDamage = other.highestSingleDamage;
+        windDamageDealt = other.windDamageDealt;
+        fireDamageDealt = other.fireDamageDealt;
+        iceDamageDealt = other.iceDamageDealt;
+        chestsOpened = other.chestsOpened;
+        wavesCleared = other.wavesCleared;
+        timesDied = other.timesDied;
+        potionsConsumed = other.potionsConsumed;
+    }
 }
 
 [System.Serializable]

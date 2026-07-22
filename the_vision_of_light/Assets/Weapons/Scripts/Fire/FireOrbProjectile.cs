@@ -111,7 +111,7 @@ public class FireOrbProjectile : MonoBehaviour
 
         EnemyBase hitEnemy = enemy ?? target;
         if (hitEnemy != null && !hitEnemy.IsDead)
-            hitEnemy.TakeDamage(damage);
+            hitEnemy.TakeDamage(damage, true, WeaponItemData.WeaponElement.Fire);
 
         if (hitClip != null)
             AudioSource.PlayClipAtPoint(hitClip, transform.position, hitVolume);
