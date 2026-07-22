@@ -216,7 +216,7 @@ namespace VisionOfLight.Enemy
             if (isDead) return;
             isDead = true;
 
-            PlayerStatsTracker.RecordKill();
+            PlayerStatsTracker.RecordKill(stats != null ? stats.name : null);
 
             EnemyStatusEffects statusEffects = GetComponent<EnemyStatusEffects>();
             if (statusEffects != null)

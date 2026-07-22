@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SkeletonData
   m_EditorClassIdentifier: Assembly-CSharp::SkeletonStats
   enemyName: Skeleton
+  icon: {fileID: 21300000, guid: 3c0e880bf4c60cc48bae36f9e273bdf0, type: 3}
   baseMaxHealth: 95
   baseAttack: 8
   baseDefense: 2

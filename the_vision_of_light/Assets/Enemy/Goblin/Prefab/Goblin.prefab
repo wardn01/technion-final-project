@@ -120,9 +120,9 @@ MonoBehaviour:
   playerData: {fileID: 11400000, guid: b5d270fc67575f148861a06db0a29448, type: 2}
   stats: {fileID: 11400000, guid: 2962d3bb5774ee54dbb2dafb1061cc4c, type: 2}
   enemyLevel: 1
-  currentMaxHealth: 68.2
-  currentAttack: 8.55
-  currentDefense: 2.78
+  currentMaxHealth: 92
+  currentAttack: 11.22
+  currentDefense: 3.55
   isHitBase: 0
   isAttackingBase: 0
   damageTextPrefab: {fileID: 6555890384464250565, guid: 29839a0f38d5992438b5d5df4dc2a5ec, type: 3}

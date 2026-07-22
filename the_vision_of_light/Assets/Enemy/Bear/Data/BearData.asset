@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: BearData
   m_EditorClassIdentifier: Assembly-CSharp::BearStats
   enemyName: Bear
+  icon: {fileID: 21300000, guid: 4ba16ad3bb75bbd43a62af81d5adc1e4, type: 3}
   baseMaxHealth: 110
   baseAttack: 12.5
   baseDefense: 4.2

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: GolemData
   m_EditorClassIdentifier: Assembly-CSharp::GolemStats
   enemyName: Golem
+  icon: {fileID: 21300000, guid: e6bfd5e4bb6175e42a738e08f629f40a, type: 3}
   baseMaxHealth: 255
   baseAttack: 27
   baseDefense: 11.5

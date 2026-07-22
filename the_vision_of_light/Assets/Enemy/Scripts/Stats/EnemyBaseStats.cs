@@ -21,6 +21,9 @@ namespace VisionOfLight.Enemy
         [Header("Basic Info")]
         [SerializeField] private string enemyName = "New Enemy";
 
+        [Tooltip("Optional portrait used by the bestiary / monster screen.")]
+        [SerializeField] private Sprite icon;
+
         [Header("Base Combat Stats")]
         [SerializeField] private float baseMaxHealth = 100f;
         [SerializeField] private float baseAttack = 10f;
@@ -45,6 +48,7 @@ namespace VisionOfLight.Enemy
         [SerializeField] private int xpReward = 20;
 
         public string EnemyName => enemyName;
+        public Sprite Icon => icon;
         public float BaseMaxHealth => baseMaxHealth;
         public float BaseAttack => baseAttack;
         public float BaseDefense => baseDefense;

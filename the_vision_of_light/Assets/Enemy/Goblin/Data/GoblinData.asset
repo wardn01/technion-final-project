@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: GoblinData
   m_EditorClassIdentifier: Assembly-CSharp::GoblinStats
   enemyName: Goblin
+  icon: {fileID: 21300000, guid: 10709f25d15216f4f98d30122c07885e, type: 3}
   baseMaxHealth: 88
   baseAttack: 10.5
   baseDefense: 3.2

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: OrcData
   m_EditorClassIdentifier: Assembly-CSharp::OrcStats
   enemyName: Orc
+  icon: {fileID: 21300000, guid: 3ff32c28e3f2819448eb14d543dba18d, type: 3}
   baseMaxHealth: 230
   baseAttack: 22
   baseDefense: 11

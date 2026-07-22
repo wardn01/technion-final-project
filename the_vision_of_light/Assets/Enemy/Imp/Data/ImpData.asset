@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ImpData
   m_EditorClassIdentifier: Assembly-CSharp::ImpStats
   enemyName: Imp
+  icon: {fileID: 21300000, guid: a1bd940a63fe7a34093318310d9c3ecb, type: 3}
   baseMaxHealth: 85
   baseAttack: 7.5
   baseDefense: 1.8

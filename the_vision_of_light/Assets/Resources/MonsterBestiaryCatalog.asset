@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c442c542fbfa974f823eb7a99aab1c9, type: 3}
+  m_Name: MonsterBestiaryCatalog
+  m_EditorClassIdentifier: 
+  entries:
+  - stats: {fileID: 11400000, guid: 2962d3bb5774ee54dbb2dafb1061cc4c, type: 2}
+    icon: {fileID: 21300000, guid: 10709f25d15216f4f98d30122c07885e, type: 3}
+    listIcon: {fileID: 21300000, guid: 795521f822b7f5f44a05e943484eb0f9, type: 3}
+    description: Cunning scavengers clad in ragged bone armor. They strike from the brush,
+      vanish into the trees, and return in hungry packs whenever gold or easy prey is near.
+  - stats: {fileID: 11400000, guid: fd185a011d84a7842acc9baa4703ff70, type: 2}
+    icon: {fileID: 21300000, guid: 3c0e880bf4c60cc48bae36f9e273bdf0, type: 3}
+    listIcon: {fileID: 21300000, guid: a704fa612dd835041a682d7153ee2c2f, type: 3}
+    description: Ancient bones that refuse the grave. Bound by lingering hate, these
+      silent warriors rise again with rusted blades until their cursed remains are finally
+      shattered.
+  - stats: {fileID: 11400000, guid: c9f6b4d3a51e6872f4a3b2c0d5e7f1a0, type: 2}
+    icon: {fileID: 21300000, guid: a1bd940a63fe7a34093318310d9c3ecb, type: 3}
+    listIcon: {fileID: 21300000, guid: f5be83e45fa503747a4dad467928e3f6, type: 3}
+    description: A mischievous little demon that thrives on chaos and fear. Quick and
+      slippery, it burns and teases travelers, then slips into shadow before heavier foes
+      arrive.
+  - stats: {fileID: 11400000, guid: fe68915e9adde944997b2a3d790af38c, type: 2}
+    icon: {fileID: 21300000, guid: 4ba16ad3bb75bbd43a62af81d5adc1e4, type: 3}
+    listIcon: {fileID: 21300000, guid: a842cf257ff62d34592611ad95594700, type: 3}
+    description: A fierce beast of the deep forest. Thick fur and crushing paws make
+      it deadly on the trail; once provoked, it charges without mercy until the threat
+      is gone.
+  - stats: {fileID: 11400000, guid: b2c3d4e5f6789012345678cafe002003, type: 2}
+    icon: {fileID: 21300000, guid: 9b063c9bed9540b478f1674b6f204fd7, type: 3}
+    listIcon: {fileID: 21300000, guid: 161d1196880d3a24d81481414469cc65, type: 3}
+    description: A lesser stone construct with glowing veins of restless magic. Smaller
+      than its kin, yet stubborn in battle, it guards ruins and broken shrines with relentless
+      force.
+  - stats: {fileID: 11400000, guid: 4c9638b359b7dd34e8adc91ba1a07a8b, type: 2}
+    icon: {fileID: 21300000, guid: 3ff32c28e3f2819448eb14d543dba18d, type: 3}
+    listIcon: {fileID: 21300000, guid: 6a709a27c0a341e41a2bafbf0afdd89b, type: 3}
+    description: A brutal warlord of the orc tribes. Clad for war and hungry for conquest,
+      it leads crushing raids across the land and drives weaker creatures from its path.
+  - stats: {fileID: 11400000, guid: 0d1e2f3a4b5c6d7e8f9012345678abcd, type: 2}
+    icon: {fileID: 21300000, guid: e6bfd5e4bb6175e42a738e08f629f40a, type: 3}
+    listIcon: {fileID: 21300000, guid: de000b81cfd4c184b87aa6c8eea6fb6b, type: 3}
+    description: An ancient guardian of living stone. Forged to watch forgotten places,
+      its glowing eyes never sleep, and every heavy step shakes the ground until intruders
+      fall or flee.

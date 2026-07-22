@@ -22,6 +22,7 @@ public class PauseMenuManager : MonoBehaviour
     public GameObject setupScreen;
     public GameObject questScreen;
     public GameObject playerStatsScreen;
+    public GameObject monsterScreen;
 
     [Header("HUD Elements (Hidden when paused)")]
     public GameObject[] hudElementsToHide;
@@ -224,6 +225,7 @@ public class PauseMenuManager : MonoBehaviour
         if (mapScreen != null) mapScreen.SetActive(false);
         if (questScreen != null) questScreen.SetActive(false);
         if (playerStatsScreen != null) playerStatsScreen.SetActive(false);
+        if (monsterScreen != null) monsterScreen.SetActive(false);
         if (FullMapController.Instance != null)
             FullMapController.Instance.SetFullMapCameraEnabled(false);
 
@@ -297,6 +299,13 @@ public class PauseMenuManager : MonoBehaviour
         OpenSubScreen(playerStatsScreen, false);
         PlayerStatsUI.Instance?.RefreshValues();
     }
+
+    public void OpenMonsterScreen()
+    {
+        OpenSubScreen(monsterScreen, false);
+        MonsterBestiaryUI.Instance?.Refresh();
+    }
+
     public void OpenSettings() => settingsMenuUI?.SetActive(true);
     public void CloseSettings() => settingsMenuUI?.SetActive(false);
 
@@ -548,6 +557,7 @@ public class PauseMenuManager : MonoBehaviour
         setupScreen = sceneSource.setupScreen;
         questScreen = sceneSource.questScreen;
         playerStatsScreen = sceneSource.playerStatsScreen;
+        monsterScreen = sceneSource.monsterScreen;
         hudElementsToHide = sceneSource.hudElementsToHide;
         quickSlotBar = sceneSource.quickSlotBar;
         fullMapCamera = sceneSource.fullMapCamera;
@@ -605,6 +615,9 @@ public class PauseMenuManager : MonoBehaviour
 
         if (playerStatsScreen == null)
             playerStatsScreen = FindSceneGameObject("StatsScreen");
+
+        if (monsterScreen == null)
+            monsterScreen = FindSceneGameObject("MonsterScreen");
 
         if (fullMapCamera == null)
             fullMapCamera = FindSceneGameObject("FullMapCamera");

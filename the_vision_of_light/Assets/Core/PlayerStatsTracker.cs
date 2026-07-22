@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -7,6 +8,7 @@ using UnityEngine;
 public static class PlayerStatsTracker
 {
     private static readonly PlayerStatistics runtime = new PlayerStatistics();
+    private static readonly Dictionary<string, int> monsterKillLookup = new Dictionary<string, int>();
 
     /// <summary>Live counters for the current session (also mirrored into GameData on save).</summary>
     public static PlayerStatistics Stats => runtime;
@@ -16,10 +18,12 @@ public static class PlayerStatsTracker
         if (data == null || data.playerStatistics == null)
         {
             runtime.Reset();
+            RebuildLookupFromRuntime();
             return;
         }
 
         runtime.CopyFrom(data.playerStatistics);
+        RebuildLookupFromRuntime();
     }
 
     public static void WriteToSave(GameData data)
@@ -30,6 +34,7 @@ public static class PlayerStatsTracker
         if (data.playerStatistics == null)
             data.playerStatistics = new PlayerStatistics();
 
+        SyncLookupIntoRuntime();
         data.playerStatistics.CopyFrom(runtime);
     }
 
@@ -58,9 +63,36 @@ public static class PlayerStatsTracker
         }
     }
 
-    public static void RecordKill()
+    /// <summary>
+    /// Records a kill. Prefer <paramref name="monsterId"/> = EnemyBaseStats asset name (e.g. OrcData).
+    /// Always increments <see cref="PlayerStatistics.totalEnemiesKilled"/>.
+    /// </summary>
+    public static void RecordKill(string monsterId = null)
     {
         runtime.totalEnemiesKilled++;
+
+        if (string.IsNullOrWhiteSpace(monsterId))
+            return;
+
+        if (monsterKillLookup.TryGetValue(monsterId, out int count))
+            monsterKillLookup[monsterId] = count + 1;
+        else
+            monsterKillLookup[monsterId] = 1;
+
+        SyncLookupIntoRuntime();
+    }
+
+    public static int GetKillCount(string monsterId)
+    {
+        if (string.IsNullOrWhiteSpace(monsterId))
+            return 0;
+
+        return monsterKillLookup.TryGetValue(monsterId, out int count) ? count : 0;
+    }
+
+    public static bool IsDiscovered(string monsterId)
+    {
+        return GetKillCount(monsterId) > 0;
     }
 
     public static void RecordChestOpened()
@@ -83,11 +115,48 @@ public static class PlayerStatsTracker
         runtime.potionsConsumed++;
     }
 
+    private static void RebuildLookupFromRuntime()
+    {
+        monsterKillLookup.Clear();
+
+        if (runtime.monsterKills == null)
+            return;
+
+        foreach (MonsterKillEntry entry in runtime.monsterKills)
+        {
+            if (entry == null || string.IsNullOrEmpty(entry.monsterId) || entry.killCount <= 0)
+                continue;
+
+            monsterKillLookup[entry.monsterId] = entry.killCount;
+        }
+    }
+
+    private static void SyncLookupIntoRuntime()
+    {
+        if (runtime.monsterKills == null)
+            runtime.monsterKills = new List<MonsterKillEntry>();
+        else
+            runtime.monsterKills.Clear();
+
+        foreach (KeyValuePair<string, int> pair in monsterKillLookup)
+        {
+            if (string.IsNullOrEmpty(pair.Key) || pair.Value <= 0)
+                continue;
+
+            runtime.monsterKills.Add(new MonsterKillEntry
+            {
+                monsterId = pair.Key,
+                killCount = pair.Value
+            });
+        }
+    }
+
 #if UNITY_EDITOR
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         runtime.Reset();
+        monsterKillLookup.Clear();
     }
 #endif
 }

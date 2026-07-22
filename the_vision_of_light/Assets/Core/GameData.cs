@@ -52,6 +52,13 @@ public class GameData
 }
 
 [System.Serializable]
+public class MonsterKillEntry
+{
+    public string monsterId;
+    public int killCount;
+}
+
+[System.Serializable]
 public class PlayerStatistics
 {
     public int totalEnemiesKilled;
@@ -65,6 +72,9 @@ public class PlayerStatistics
     public int timesDied;
     public int potionsConsumed;
 
+    /// <summary>Per-species kill counts keyed by EnemyBaseStats asset name (e.g. OrcData).</summary>
+    public List<MonsterKillEntry> monsterKills = new List<MonsterKillEntry>();
+
     public void Reset()
     {
         totalEnemiesKilled = 0;
@@ -77,6 +87,7 @@ public class PlayerStatistics
         wavesCleared = 0;
         timesDied = 0;
         potionsConsumed = 0;
+        monsterKills = new List<MonsterKillEntry>();
     }
 
     public void CopyFrom(PlayerStatistics other)
@@ -97,6 +108,22 @@ public class PlayerStatistics
         wavesCleared = other.wavesCleared;
         timesDied = other.timesDied;
         potionsConsumed = other.potionsConsumed;
+
+        monsterKills = new List<MonsterKillEntry>();
+        if (other.monsterKills == null)
+            return;
+
+        foreach (MonsterKillEntry entry in other.monsterKills)
+        {
+            if (entry == null || string.IsNullOrEmpty(entry.monsterId))
+                continue;
+
+            monsterKills.Add(new MonsterKillEntry
+            {
+                monsterId = entry.monsterId,
+                killCount = entry.killCount
+            });
+        }
     }
 }
 

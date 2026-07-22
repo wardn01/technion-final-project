@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: MiniGolemData
   m_EditorClassIdentifier: Assembly-CSharp::MiniGolemStats
   enemyName: Mini Golem
+  icon: {fileID: 21300000, guid: 9b063c9bed9540b478f1674b6f204fd7, type: 3}
   baseMaxHealth: 95
   baseAttack: 11.5
   baseDefense: 3.8
