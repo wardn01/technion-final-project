@@ -152,5 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UIFloatingText
   moveSpeedX: 50
   moveSpeedY: 10
-  fadeSpeed: 1.5
   lifeTime: 2
+  fadeSpeed: 1.5
+  punchScale: 1.2
+  punchDuration: 0.12

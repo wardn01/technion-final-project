@@ -77,6 +77,10 @@ namespace VisionOfLight.Player
             if (isDead)
                 return;
 
+            // DEV-CHEATS: invincibility (always false when cheats are off / release build).
+            if (VisionOfLight.DeveloperTools.DeveloperCheatsManager.PlayerInvincible)
+                return;
+
             int playerDefense = playerData != null ? playerData.GetTotalDefense() : 0;
             float damageMultiplier = 100f / (100f + playerDefense);
             int finalDamage = Mathf.RoundToInt(incomingDamage * damageMultiplier);

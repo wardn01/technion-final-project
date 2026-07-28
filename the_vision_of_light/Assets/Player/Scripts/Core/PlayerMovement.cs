@@ -123,6 +123,15 @@ namespace VisionOfLight.Player
 
         void Update()
         {
+            // DEV-CHEATS: developer Fly Mode fully replaces normal movement this frame
+            // (gravity, jumping, gliding, ground checks, and fall damage are all skipped).
+            if (VisionOfLight.DeveloperTools.DeveloperFlyController.TryHandleFlight(this))
+            {
+                if (isGliding) StopGliding();
+                HandleWindSound();
+                return;
+            }
+
             CheckAnimationLocks();
             HandleGroundCheck();
             HandleWaterState();
@@ -252,6 +261,9 @@ namespace VisionOfLight.Player
                 }
                 else currentSpeed = walkSpeed;
             }
+
+            // DEV-CHEATS: fast move multiplier (1x when cheats are off / release build).
+            currentSpeed *= VisionOfLight.DeveloperTools.DeveloperCheatsManager.MoveSpeedMultiplier;
 
             Vector3 direction = new Vector3(x, 0f, z).normalized;
             Vector3 moveDirection = Vector3.zero;

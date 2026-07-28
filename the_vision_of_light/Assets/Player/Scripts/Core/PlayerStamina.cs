@@ -41,6 +41,10 @@ namespace VisionOfLight.Player
             if (staminaRegenRate < 0f) staminaRegenRate = 0f;
             if (staminaRegenDelay < 0f) staminaRegenDelay = 0f;
 
+            // DEV-CHEATS: keep stamina pinned at max while unlimited stamina is on.
+            if (VisionOfLight.DeveloperTools.DeveloperCheatsManager.UnlimitedStamina && currentStamina < maxStamina)
+                currentStamina = maxStamina;
+
             if (regenTimer > 0f)
             {
                 regenTimer -= Time.deltaTime;
@@ -81,6 +85,9 @@ namespace VisionOfLight.Player
         public void ConsumeStamina(float amount)
         {
             if (amount <= 0f) return;
+
+            // DEV-CHEATS: unlimited stamina — skip consumption entirely.
+            if (VisionOfLight.DeveloperTools.DeveloperCheatsManager.UnlimitedStamina) return;
 
             currentStamina -= amount;
             currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);

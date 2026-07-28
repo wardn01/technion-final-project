@@ -178,6 +178,9 @@ namespace VisionOfLight.Enemy
         {
             if (isDead) return;
 
+            // DEV-CHEATS: high damage multiplier (1x when cheats are off / release build).
+            incomingDamage *= VisionOfLight.DeveloperTools.DeveloperCheatsManager.PlayerDamageMultiplier;
+
             float damageMultiplier = 100f / (100f + currentDefense);
             float finalDamage = incomingDamage * damageMultiplier;
 
