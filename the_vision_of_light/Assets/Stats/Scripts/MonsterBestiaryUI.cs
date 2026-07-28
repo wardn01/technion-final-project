@@ -78,6 +78,11 @@ public class MonsterBestiaryUI : MonoBehaviour
         Instance = this;
         EnsureCatalog();
         EnsureLockedNoneObject();
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (revealAllForTest)
+            Debug.LogWarning("[Bestiary] revealAllForTest is ENABLED — disable it before shipping.", this);
+#endif
     }
 
     private void EnsureLockedNoneObject()
@@ -242,9 +247,12 @@ public class MonsterBestiaryUI : MonoBehaviour
 
     private bool IsEntryDiscovered(string monsterId)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Test-only reveal. Compiled out of release builds so a scene accidentally
+        // saved with the flag enabled can never unlock the full bestiary for players.
         if (revealAllForTest)
             return true;
-
+#endif
         return PlayerStatsTracker.IsDiscovered(monsterId);
     }
 
