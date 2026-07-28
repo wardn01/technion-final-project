@@ -562,7 +562,10 @@ public class QuickSlotManager : MonoBehaviour
         {
             if ((InventoryManager.Instance?.GetItemAmount(weapon) ?? 0) <= 0)
             {
-                AssignItem(null, index);
+                // Ghost weapon (not in inventory anymore) — clear the slot directly.
+                // AssignItem(null, ...) is a no-op because of its null guard.
+                slots[index] = null;
+                UpdateUI();
                 return;
             }
 

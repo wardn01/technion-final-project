@@ -94,6 +94,11 @@ public class WorldSaveManager : MonoBehaviour
     /// </summary>
     public void LoadWorldData()
     {
+        // Fallback: the scene reference can be left unassigned — load the shared
+        // profile asset from Resources so save data always overwrites stale values.
+        if (activePlayerData == null)
+            activePlayerData = Resources.Load<PlayerData>("Player Data");
+
         GameData data = SaveManager.LoadGame(currentSlot);
 
         if (data != null)

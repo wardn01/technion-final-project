@@ -118,10 +118,33 @@ public class PauseMenuManager : MonoBehaviour
             yield break;
 
         if (!CanRestorePersistedWorldState())
+        {
+            // Fresh world (pre-awakening): nothing gets restored, so make sure no
+            // leftovers from a previous session linger in the inventory or hotbar.
+            ClearRuntimeStateForFreshWorld();
             yield break;
+        }
 
         ResolveWorldReferences();
         LoadPlayerData();
+    }
+
+    /// <summary>
+    /// Clears session-persistent runtime state (inventory + quick slots) so a brand-new
+    /// world never starts with ghost items carried over from a previous world/session.
+    /// </summary>
+    private void ClearRuntimeStateForFreshWorld()
+    {
+        InventoryManager.Instance?.ClearInventory();
+
+        if (QuickSlotManager.Instance != null)
+        {
+            for (int i = 0; i < QuickSlotManager.Instance.slots.Length; i++)
+                QuickSlotManager.Instance.slots[i] = null;
+
+            QuickSlotManager.Instance.ResetSelection();
+            QuickSlotManager.Instance.UpdateUI();
+        }
     }
 
     public void HandleBackButton()
