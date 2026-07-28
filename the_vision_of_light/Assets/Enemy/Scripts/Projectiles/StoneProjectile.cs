@@ -266,23 +266,32 @@ namespace VisionOfLight.Enemy
                 rb.position = pos;
         }
 
+        // Shared buffer — this runs every physics tick per flying stone, so it must not allocate.
+        private static readonly RaycastHit[] groundHitsBuffer = new RaycastHit[16];
+
         private bool TryFindGroundPosition(float worldX, float worldZ, out Vector3 groundedPosition)
         {
             groundedPosition = transform.position;
             float radius = GetWorldRadius();
             Vector3 origin = new Vector3(worldX, groundRayHeight, worldZ);
 
-            RaycastHit[] hits = Physics.RaycastAll(
+            int hitCount = Physics.RaycastNonAlloc(
                 origin,
                 Vector3.down,
+                groundHitsBuffer,
                 groundRayHeight + 50f,
                 groundMask,
                 QueryTriggerInteraction.Ignore);
 
-            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            // Nearest valid hit without sorting or allocating.
+            float bestDistance = float.MaxValue;
+            float bestY = 0f;
+            bool found = false;
 
-            foreach (RaycastHit hit in hits)
+            for (int i = 0; i < hitCount; i++)
             {
+                RaycastHit hit = groundHitsBuffer[i];
+
                 if (hit.collider == null)
                     continue;
 
@@ -292,11 +301,19 @@ namespace VisionOfLight.Enemy
                 if (hit.collider.GetComponentInParent<PlayerHealth>() != null)
                     continue;
 
-                groundedPosition = new Vector3(worldX, hit.point.y + radius, worldZ);
-                return true;
+                if (hit.distance >= bestDistance)
+                    continue;
+
+                bestDistance = hit.distance;
+                bestY = hit.point.y;
+                found = true;
             }
 
-            return false;
+            if (!found)
+                return false;
+
+            groundedPosition = new Vector3(worldX, bestY + radius, worldZ);
+            return true;
         }
 
         private void SeparateFromPlayerHorizontally(Vector3 capsuleBottom, Vector3 capsuleTop, float playerRadius)

@@ -33,6 +33,16 @@ public class UI_InputManager : MonoBehaviour
 
     private void Update()
     {
+        // No menu input while a teleport loading screen covers the view — Escape
+        // here would resume gameplay (timeScale = 1) underneath the loading screen.
+        if (TeleportManager.Instance != null && TeleportManager.Instance.IsTraveling)
+            return;
+
+        // While the player is rebinding a key, KeybindManager.OnGUI owns the input —
+        // the pressed key must not also fire menu hotkeys or close the settings screen.
+        if (KeybindManager.Instance != null && !string.IsNullOrEmpty(KeybindManager.Instance.GetActionToRebind()))
+            return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             HandleEscapeKey();
@@ -49,6 +59,13 @@ public class UI_InputManager : MonoBehaviour
     private void HandleHotkeys()
     {
         if (IsPlayerDead())
+            return;
+
+        // Settings screen has its own back-button flow — I/C/M/J must not open
+        // other screens on top of it (they never deactivate settingsMenuUI).
+        if (PauseMenuManager.Instance != null
+            && PauseMenuManager.Instance.settingsMenuUI != null
+            && PauseMenuManager.Instance.settingsMenuUI.activeSelf)
             return;
 
         bool inventoryKey = false;

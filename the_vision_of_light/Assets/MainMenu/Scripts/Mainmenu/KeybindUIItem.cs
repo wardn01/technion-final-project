@@ -35,15 +35,30 @@ public class KeybindUIItem : MonoBehaviour
         }
     }
 
+    // Last displayed state — the text is only rebuilt when it actually changes,
+    // since KeyCode.ToString() and the color writes allocated/dirtied the UI per frame.
+    private KeyCode displayedKey = KeyCode.None;
+    private bool displayedRebinding;
+    private bool hasDisplayedOnce;
+
     /// <summary>
-    /// Updates the UI text and color every frame to reflect the current key or rebinding state.
+    /// Updates the UI text and color to reflect the current key or rebinding state.
     /// </summary>
     private void Update()
     {
         if (KeybindManager.Instance != null && KeybindManager.Instance.keys.TryGetValue(actionName, out KeyCode currentKey))
         {
+            bool isRebinding = !isLocked && KeybindManager.Instance.GetActionToRebind() == actionName;
+
+            if (hasDisplayedOnce && currentKey == displayedKey && isRebinding == displayedRebinding)
+                return;
+
+            hasDisplayedOnce = true;
+            displayedKey = currentKey;
+            displayedRebinding = isRebinding;
+
             // If this specific action is currently waiting for a new key input
-            if (!isLocked && KeybindManager.Instance.GetActionToRebind() == actionName)
+            if (isRebinding)
             {
                 buttonText.text = "> ? <"; 
                 buttonText.color = Color.yellow; 

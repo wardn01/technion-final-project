@@ -31,14 +31,17 @@ namespace VisionOfLight.Enemy
 
         private const float PeerSeparationRadius = 1.15f;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable(); // keep the EnemyBase.ActiveEnemies registry accurate
+
             if (!activeGolems.Contains(this))
                 activeGolems.Add(this);
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
             activeGolems.Remove(this);
         }
 
@@ -355,7 +358,8 @@ namespace VisionOfLight.Enemy
         /// <summary>Animation event on Attack01 clip — spawns <see cref="MiniGolemStoneProjectile"/>.</summary>
         public void ShootStone()
         {
-            if (RangedStats == null || stonePrefab == null || throwPoint == null)
+            // Animation events can fire while blending into death — no posthumous throws.
+            if (isDead || RangedStats == null || stonePrefab == null || throwPoint == null)
                 return;
 
             float damage = currentAttack * (RangedStats.ThrowDamage / 100f);

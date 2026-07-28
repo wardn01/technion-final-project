@@ -107,7 +107,25 @@ public class PlayMenuManager : MonoBehaviour
 
         for (int i = 1; i <= MAX_SLOTS; i++)
         {
-            if (PlayerPrefs.GetInt($"Slot_{i}_Exists", 0) == 1)
+            bool slotExists = PlayerPrefs.GetInt($"Slot_{i}_Exists", 0) == 1;
+
+            // Self-heal: the JSON file is the source of truth. If PlayerPrefs metadata
+            // was lost (new Windows user, cleared registry), restore it from the save.
+            if (!slotExists && SaveManager.SaveFileExists(i))
+            {
+                GameData recovered = SaveManager.LoadGame(i);
+                if (recovered != null)
+                {
+                    PlayerPrefs.SetInt($"Slot_{i}_Exists", 1);
+                    if (!string.IsNullOrEmpty(recovered.worldName))
+                        PlayerPrefs.SetString($"Slot_{i}_Name", recovered.worldName);
+                    PlayerPrefs.Save();
+                    slotExists = true;
+                    Debug.LogWarning($"[Save] Restored missing slot metadata for slot {i} from its save file.");
+                }
+            }
+
+            if (slotExists)
             {
                 activeWorldsCount++;
                 if (firstFoundSlot == -1) firstFoundSlot = i;
@@ -288,6 +306,8 @@ public class PlayMenuManager : MonoBehaviour
         {
             GameData newWorldData = new GameData();
             newWorldData.worldName = worldName;
+            // New worlds are already slot-based — never import legacy teleport PlayerPrefs.
+            newWorldData.teleportDataMigrated = true;
             
             PlayerData defaultData = ScriptableObject.CreateInstance<PlayerData>();
             defaultData.ResetToDefault();

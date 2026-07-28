@@ -46,7 +46,9 @@ namespace VisionOfLight.Enemy
 
         protected virtual void Update()
         {
-            if (isDead || target == null || playerHealth == null) return;
+            // stats is dereferenced below (ChaseRange) — a misconfigured prefab
+            // without a stats asset must not throw every frame.
+            if (isDead || target == null || playerHealth == null || stats == null) return;
 
             if (playerHealth.isDead)
             {

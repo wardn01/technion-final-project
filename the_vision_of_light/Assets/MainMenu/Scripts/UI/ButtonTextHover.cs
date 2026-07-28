@@ -5,8 +5,10 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Handles interactive UI button effects including color tints, audio feedback, and icon animations on hover.
+/// NOTE: the class name must stay "ButtonTextHover" (matching the file name) — three
+/// MainMenu.unity buttons reference this component by that serialized identifier.
 /// </summary>
-public class MainMenuButtonEffects : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class ButtonTextHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public enum ButtonType { Play, Settings, Exit, None }
     

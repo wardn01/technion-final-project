@@ -42,16 +42,23 @@ public class MonsterQuestManager : MonoBehaviour
         }
 
         // Chapter 2+ uses QuestKillObjective on children; disabling the parent would prevent those scripts from running.
-        if (monstersGroup != null && !UsesPerStepKillObjectives())
+        // Cached once: the group's children are scene-authored and never change at runtime,
+        // and the previous per-frame GetComponentInChildren scan in Update was wasted work.
+        usesPerStepKillObjectives = monstersGroup != null &&
+            monstersGroup.GetComponentInChildren<QuestKillObjective>(true) != null;
+
+        if (monstersGroup != null && !usesPerStepKillObjectives)
             monstersGroup.SetActive(false);
     }
+
+    private bool usesPerStepKillObjectives;
 
     /// <summary>
     /// Activates the monster group once the story reaches the target state and the objective is unfinished.
     /// </summary>
     private void Update()
     {
-        if (monstersGroup == null || UsesPerStepKillObjectives())
+        if (monstersGroup == null || usesPerStepKillObjectives)
             return;
 
         if (QuestManager.Instance != null && IsObjectiveActive())
@@ -61,11 +68,6 @@ public class MonsterQuestManager : MonoBehaviour
         }
     }
 
-    private bool UsesPerStepKillObjectives()
-    {
-        return monstersGroup != null &&
-               monstersGroup.GetComponentInChildren<QuestKillObjective>(true) != null;
-    }
     #endregion
 
     #region Objective Logic

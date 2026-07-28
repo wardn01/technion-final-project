@@ -467,13 +467,20 @@ namespace VisionOfLight.Enemy
             isSpawning = false;
         }
 
-        private Transform PickSpawnPoint(Transform[] spawnPoints)
+    private Transform PickSpawnPoint(Transform[] spawnPoints)
+    {
+        if (spawnPoints != null && spawnPoints.Length > 0)
         {
-            if (spawnPoints != null && spawnPoints.Length > 0)
-                return spawnPoints[Random.Range(0, spawnPoints.Length)];
+            Transform picked = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-            return transform;
+            // A null array entry would throw inside the spawn coroutine and
+            // soft-lock the whole challenge — fall back to the stone itself.
+            if (picked != null)
+                return picked;
         }
+
+        return transform;
+    }
 
         private void HandleChallengeTimeExpired()
         {

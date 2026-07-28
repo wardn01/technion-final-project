@@ -22,6 +22,8 @@ public class WindSkillQDamage : MonoBehaviour
     private float damagePerTick;
     private float nextDamageTime;
     private readonly List<EnemyBase> enemiesInTornado = new List<EnemyBase>();
+    // Cached on trigger-enter — avoids GetComponent per enemy per frame in Update.
+    private readonly Dictionary<EnemyBase, NavMeshAgent> agentCache = new Dictionary<EnemyBase, NavMeshAgent>();
     #endregion
 
     #region Public API
@@ -43,11 +45,12 @@ public class WindSkillQDamage : MonoBehaviour
 
             if (enemy == null || enemy.IsDead)
             {
+                if (enemy != null) agentCache.Remove(enemy);
                 enemiesInTornado.RemoveAt(i);
                 continue;
             }
 
-            NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
+            agentCache.TryGetValue(enemy, out NavMeshAgent agent);
 
             if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
             {
@@ -75,6 +78,7 @@ public class WindSkillQDamage : MonoBehaviour
             if (enemy != null && !enemy.IsDead) RestoreEnemy(enemy);
         }
         enemiesInTornado.Clear();
+        agentCache.Clear();
     }
     #endregion
 
@@ -86,6 +90,7 @@ public class WindSkillQDamage : MonoBehaviour
         if (enemy == null || enemy.IsDead || enemiesInTornado.Contains(enemy)) return;
 
         enemiesInTornado.Add(enemy);
+        agentCache[enemy] = enemy.GetComponent<NavMeshAgent>();
 
         EnemyStatusEffects status = enemy.GetComponent<EnemyStatusEffects>();
         if (status != null) status.PauseAI();
@@ -98,6 +103,7 @@ public class WindSkillQDamage : MonoBehaviour
         if (enemy == null || !enemiesInTornado.Contains(enemy)) return;
 
         enemiesInTornado.Remove(enemy);
+        agentCache.Remove(enemy);
         RestoreEnemy(enemy);
     }
 

@@ -212,12 +212,13 @@ public class WorldMusicManager : MonoBehaviour
 
     private MusicMood DetectDesiredMood(Transform player)
     {
-        EnemyBase[] enemies = Object.FindObjectsByType<EnemyBase>(
-            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        // Enemies self-register in EnemyBase.ActiveEnemies — no scene-wide
+        // FindObjectsByType scan (which allocated an array 3×/sec) needed.
+        var enemies = EnemyBase.ActiveEnemies;
 
         bool anyCombat = false;
 
-        for (int i = 0; i < enemies.Length; i++)
+        for (int i = 0; i < enemies.Count; i++)
         {
             EnemyBase enemy = enemies[i];
             if (enemy == null || enemy.IsDead || !enemy.WantsCombatMusic(player))

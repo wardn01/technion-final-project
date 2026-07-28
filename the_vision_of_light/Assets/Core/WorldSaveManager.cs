@@ -111,18 +111,28 @@ public class WorldSaveManager : MonoBehaviour
             ApplyQuestProgress(data.mainQuestState, data.questStepIndex, data.hasCompletedChapter01Awakening);
 
             // Restore Player Data
-            if (activePlayerData != null && !string.IsNullOrEmpty(data.playerDataJson))
+            if (activePlayerData != null)
             {
                 // Ascension phases are inspector-authored config, not runtime state. The saved JSON
                 // is produced from a blank PlayerData whose phases array is empty, so cache the
                 // configured phases and restore them after the overwrite to avoid wiping them.
                 AscensionPhase[] configuredPhases = activePlayerData.ascensionPhases;
 
-                JsonUtility.FromJsonOverwrite(data.playerDataJson, activePlayerData);
+                // Always start from defaults: FromJsonOverwrite only writes fields present in
+                // the JSON, and this is a shared asset — without the reset, fields missing from
+                // older or partial saves would keep values from a previously played slot.
+                activePlayerData.ResetToDefault();
 
-                activePlayerData.ascensionPhases = configuredPhases;
-
-                activePlayerData.RestoreAfterLoad(); 
+                if (!string.IsNullOrEmpty(data.playerDataJson))
+                {
+                    JsonUtility.FromJsonOverwrite(data.playerDataJson, activePlayerData);
+                    activePlayerData.ascensionPhases = configuredPhases;
+                    activePlayerData.RestoreAfterLoad();
+                }
+                else
+                {
+                    activePlayerData.ascensionPhases = configuredPhases;
+                }
             }
         }
         else
@@ -180,6 +190,14 @@ public class WorldSaveManager : MonoBehaviour
             data.mainQuestState = QuestManager.Instance.mainQuestState;
             data.questStepIndex = QuestManager.Instance.questStepIndex;
         }
+
+        // Also persist live registry state so this fallback never writes a
+        // near-empty file over real progress (e.g. when the base file failed to parse).
+        ChallengeTrialRegistry.WriteToSave(data);
+        ChestRegistry.WriteToSave(data);
+        ChestGuardianRespawnRegistry.WriteToSave(data);
+        TeleportUnlockRegistry.WriteToSave(data);
+        PlayerStatsTracker.WriteToSave(data);
 
         SaveManager.SaveGame(currentSlot, data);
     }

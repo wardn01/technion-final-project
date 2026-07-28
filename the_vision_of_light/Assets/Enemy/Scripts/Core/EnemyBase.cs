@@ -52,6 +52,27 @@ namespace VisionOfLight.Enemy
         public Transform textSpawnPoint;
         #endregion
 
+        #region Active Enemy Registry
+        /// <summary>
+        /// All enabled enemies in the scene. Kept via OnEnable/OnDisable so systems
+        /// like <c>WorldMusicManager</c> can poll without FindObjectsByType scans.
+        /// Scene loads destroy enemies (OnDisable fires), so no stale entries persist.
+        /// </summary>
+        public static readonly System.Collections.Generic.List<EnemyBase> ActiveEnemies =
+            new System.Collections.Generic.List<EnemyBase>();
+
+        protected virtual void OnEnable()
+        {
+            if (!ActiveEnemies.Contains(this))
+                ActiveEnemies.Add(this);
+        }
+
+        protected virtual void OnDisable()
+        {
+            ActiveEnemies.Remove(this);
+        }
+        #endregion
+
         #region Unity Lifecycle
         protected virtual void Awake()
         {
@@ -221,12 +242,11 @@ namespace VisionOfLight.Enemy
 
             PlayerStatsTracker.RecordKill(stats != null ? stats.name : null);
 
+            // Clear ALL effects (including freeze/slow animator speed) so a frozen
+            // enemy still plays its death animation instead of standing mid-pose.
             EnemyStatusEffects statusEffects = GetComponent<EnemyStatusEffects>();
             if (statusEffects != null)
-            {
-                statusEffects.RemoveBurn();
-                statusEffects.RemoveSlow();
-            }
+                statusEffects.ResetAllEffects();
 
             if (anim != null) anim.SetTrigger("Die");
             StopAgent();
@@ -275,7 +295,9 @@ namespace VisionOfLight.Enemy
         /// <summary>Deals melee damage to the player when in range and facing the target.</summary>
         protected void ExecuteMeleeAttack(float damageMultiplier = 1f, float attackRange = 2f, float maxAngle = 60f)
         {
-            if (target == null) return;
+            // Animation events can still fire while transitioning into the death
+            // animation — a dead enemy must never land a hit.
+            if (isDead || target == null) return;
 
             float distance = Vector3.Distance(transform.position, target.position);
 

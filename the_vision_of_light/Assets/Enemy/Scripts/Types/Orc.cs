@@ -27,13 +27,19 @@ namespace VisionOfLight.Enemy
 
         protected override void Update()
         {
+            // A dead boss must never run camp resets (they mutate health post-death).
+            if (isDead)
+                return;
+
             if (playerHealth != null && playerHealth.isDead)
             {
-                TriggerCampReset();
+                // Reset once — not every frame while the player stays dead.
+                if (!isReturningToCamp)
+                    TriggerCampReset();
                 return;
             }
 
-            if (isDead || target == null)
+            if (target == null)
                 return;
 
             if (isInEnrageSequence)
@@ -110,6 +116,11 @@ namespace VisionOfLight.Enemy
                         float rawAllowed = allowedFinalDamage / damageMultiplier;
                         base.TakeDamage(rawAllowed, playHitReaction, element);
                     }
+
+                    // The developer damage cheat multiplies inside base.TakeDamage and can
+                    // overshoot the cap — never enrage a boss that just died from the hit.
+                    if (isDead)
+                        return;
 
                     SnapHealthToEnrageThreshold(enrageThresholdHealth);
                     TriggerEnragePhase();
@@ -202,7 +213,8 @@ namespace VisionOfLight.Enemy
         /// <summary>Animation event — phase-2 heavy fire strike with ground VFX.</summary>
         public void AnimHeavyHit()
         {
-            if (target == null || BossStats == null || isInEnrageSequence)
+            // Animation events can fire while blending into death — no posthumous hits.
+            if (isDead || target == null || BossStats == null || isInEnrageSequence)
                 return;
 
             EnemyVFX vfxController = GetComponent<EnemyVFX>();

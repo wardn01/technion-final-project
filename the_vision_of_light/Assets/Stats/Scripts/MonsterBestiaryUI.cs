@@ -732,7 +732,13 @@ public class MonsterBestiaryUI : MonoBehaviour
             return;
 
         for (int i = parent.childCount - 1; i >= 0; i--)
-            Destroy(parent.GetChild(i).gameObject);
+        {
+            Transform child = parent.GetChild(i);
+            // Detach first: Destroy is deferred to end of frame, and layout groups
+            // would otherwise still count the dying rows while the new list builds.
+            child.SetParent(null);
+            Destroy(child.gameObject);
+        }
     }
 
     private static void SetText(TextMeshProUGUI field, string value)

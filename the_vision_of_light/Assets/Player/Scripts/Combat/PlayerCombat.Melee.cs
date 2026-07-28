@@ -29,11 +29,14 @@ namespace VisionOfLight.Player
 
             Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
 
+            // Dedupe per enemy so a future multi-collider enemy is never hit twice per swing.
+            var damagedEnemies = new System.Collections.Generic.HashSet<EnemyBase>();
+
             foreach (Collider enemy in hitEnemies)
             {
                 EnemyBase enemyBase = enemy.GetComponent<EnemyBase>() ?? enemy.GetComponentInParent<EnemyBase>();
 
-                if (enemyBase != null && !enemyBase.IsDead)
+                if (enemyBase != null && !enemyBase.IsDead && damagedEnemies.Add(enemyBase))
                 {
                     Vector3 directionToEnemy = (enemy.transform.position - transform.position).normalized;
                     directionToEnemy.y = 0;

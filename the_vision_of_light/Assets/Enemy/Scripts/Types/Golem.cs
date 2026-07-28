@@ -97,9 +97,15 @@ namespace VisionOfLight.Enemy
 
         protected override void Update()
         {
+            // A dead boss must never run camp resets (they mutate health post-death).
+            if (isDead)
+                return;
+
             if (playerHealth != null && playerHealth.isDead)
             {
-                TriggerCampReset();
+                // Reset once — not every frame while the player stays dead.
+                if (!isReturningToCamp)
+                    TriggerCampReset();
                 return;
             }
 
@@ -499,7 +505,8 @@ namespace VisionOfLight.Enemy
         /// <summary>Animation event on ThrowStone clip — spawns <see cref="StoneProjectile"/>.</summary>
         public void ShootStone()
         {
-            if (throwPoint == null || stonePrefab == null)
+            // Animation events can fire while blending into death — no posthumous throws.
+            if (isDead || throwPoint == null || stonePrefab == null)
                 return;
 
             TryGetThrowStats(out float throwDamagePercent, out float projectileSpeed);
@@ -551,12 +558,20 @@ namespace VisionOfLight.Enemy
             if (HasLivingMiniGolems())
                 return;
 
-            TrySummonMiniGolems(currentHealth - damage);
+            // Predict the damage that will actually be applied (defense scaling +
+            // developer multiplier, mirroring EnemyBase.TakeDamage) so summon/enrage
+            // thresholds fire at the configured health, not before.
+            float predictedFinalDamage = Mathf.Max(1f,
+                damage
+                * VisionOfLight.DeveloperTools.DeveloperCheatsManager.PlayerDamageMultiplier
+                * (100f / (100f + currentDefense)));
+
+            TrySummonMiniGolems(currentHealth - predictedFinalDamage);
 
             if (!isEnraged && BossStats != null && currentHealth > 0)
             {
                 float threshold = currentMaxHealth * BossStats.EnrageHealthPercentage;
-                if ((currentHealth - damage) <= threshold)
+                if ((currentHealth - predictedFinalDamage) <= threshold)
                     isEnraged = true;
             }
 

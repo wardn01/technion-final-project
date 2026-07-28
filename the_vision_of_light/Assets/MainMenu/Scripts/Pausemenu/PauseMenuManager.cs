@@ -325,8 +325,14 @@ public class PauseMenuManager : MonoBehaviour
 
     public void OpenMonsterScreen()
     {
+        // MonsterBestiaryUI.OnEnable already refreshes when the screen activates —
+        // refresh explicitly only if it was open (SetActive(true) won't re-fire OnEnable).
+        bool wasAlreadyOpen = monsterScreen != null && monsterScreen.activeSelf;
+
         OpenSubScreen(monsterScreen, false);
-        MonsterBestiaryUI.Instance?.Refresh();
+
+        if (wasAlreadyOpen)
+            MonsterBestiaryUI.Instance?.Refresh();
     }
 
     public void OpenSettings() => settingsMenuUI?.SetActive(true);
@@ -457,19 +463,30 @@ public class PauseMenuManager : MonoBehaviour
             if (playerTransform != null && HasStoredPlayerPosition(data))
                 ApplySavedPlayerPosition(data);
 
-            if (DayNightCycle.Instance != null) DayNightCycle.Instance.currentTime = data.currentTime;
+            // Wrap into the [0,24) range DayNightCycle expects; reject non-finite values.
+            if (DayNightCycle.Instance != null && float.IsFinite(data.currentTime))
+                DayNightCycle.Instance.currentTime = Mathf.Repeat(data.currentTime, 24f);
 
             if (InventoryManager.Instance != null)
             {
-                ItemData[] allItems = Resources.LoadAll<ItemData>("");
+                // Cached — avoids re-walking the whole Resources folder on every load.
+                ItemData[] allItems = PlayerData.GetAllItemAssets();
                 foreach (SavedItem savedItem in data.inventoryItems)
+                {
+                    bool resolved = false;
                     foreach (ItemData item in allItems)
                         if (item.name == savedItem.itemName
                             || (savedItem.itemName == "Gold Coin" && item.name == "Gold coin 0"))
                         {
                             InventoryManager.Instance.AddItem(item, savedItem.amount, silent: true);
+                            resolved = true;
                             break;
                         }
+
+                    // Surface renamed/removed item assets instead of silently dropping them.
+                    if (!resolved)
+                        Debug.LogWarning($"[Save] Inventory item '{savedItem.itemName}' from slot {currentSlot} no longer resolves to an ItemData asset and was skipped.");
+                }
             }
 
             if (playerProfile != null && !string.IsNullOrEmpty(data.playerDataJson))
@@ -527,7 +544,9 @@ public class PauseMenuManager : MonoBehaviour
         PlayerStamina playerStamina = playerTransform.GetComponent<PlayerStamina>();
         if (playerStamina != null)
         {
-            if (data != null && data.hasSavedStamina)
+            // NaN survives Mathf.Clamp and would permanently break stamina checks,
+            // so treat non-finite saved values as "no saved stamina".
+            if (data != null && data.hasSavedStamina && float.IsFinite(data.savedCurrentStamina))
                 playerStamina.ApplyLoadedStamina(true, data.savedCurrentStamina);
             else
                 playerStamina.ApplyLoadedStamina(false, 0f);
@@ -538,6 +557,13 @@ public class PauseMenuManager : MonoBehaviour
     {
         if (data?.playerPos == null || data.playerPos.Length < 3)
             return false;
+
+        // Reject tampered/corrupt saves with non-finite coordinates.
+        for (int i = 0; i < 3; i++)
+        {
+            if (!float.IsFinite(data.playerPos[i]))
+                return false;
+        }
 
         if (data.hasSavedPlayerPosition)
             return true;

@@ -60,7 +60,9 @@ public class CharacterHeaderUI : MonoBehaviour
             xpInfoText.text = $"{playerData.currentXP}/{playerData.xpToNextLevel}";
 
         if (xpFill != null)
-            xpFill.fillAmount = (float)playerData.currentXP / playerData.xpToNextLevel;
+            xpFill.fillAmount = playerData.xpToNextLevel > 0
+                ? (float)playerData.currentXP / playerData.xpToNextLevel
+                : 0f;
 
         if (stars != null)
         {

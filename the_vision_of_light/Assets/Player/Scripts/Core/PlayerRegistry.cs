@@ -37,7 +37,8 @@ namespace VisionOfLight.Player
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                // Destroy only the duplicate component — never the whole player object.
+                Destroy(this);
                 return;
             }
 

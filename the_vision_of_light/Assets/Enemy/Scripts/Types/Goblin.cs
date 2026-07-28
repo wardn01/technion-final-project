@@ -112,7 +112,8 @@ namespace VisionOfLight.Enemy
         /// <summary>Animation event on Throw clip — spawns <see cref="BoneProjectile"/>.</summary>
         public void ShootBone()
         {
-            if (RangedStats == null || target == null || bonePrefab == null || throwPoint == null)
+            // Animation events can fire while blending into death — no posthumous throws.
+            if (isDead || RangedStats == null || target == null || bonePrefab == null || throwPoint == null)
                 return;
 
             GameObject boneObj = Instantiate(bonePrefab, throwPoint.position, throwPoint.rotation);

@@ -275,10 +275,33 @@ namespace VisionOfLight.Player
             }
         }
 
+        // Cached Resources scan — save loads resolve item names several times per world
+        // entry, and each LoadAll("") walks the entire Resources folder. Entries can be
+        // unloaded by Unity's automatic asset cleanup, so validate before reuse.
+        private static ItemData[] cachedItemAssets;
+
+        /// <summary>All ItemData assets under Resources, cached across loads.</summary>
+        public static ItemData[] GetAllItemAssets()
+        {
+            bool valid = cachedItemAssets != null && cachedItemAssets.Length > 0;
+            if (valid)
+            {
+                for (int i = 0; i < cachedItemAssets.Length; i++)
+                {
+                    if (cachedItemAssets[i] == null) { valid = false; break; }
+                }
+            }
+
+            if (!valid)
+                cachedItemAssets = Resources.LoadAll<ItemData>("");
+
+            return cachedItemAssets;
+        }
+
         /// <summary>Rehydrates hotbar slots from saved item names after loading.</summary>
         public void RestoreAfterLoad()
         {
-            ItemData[] allItems = Resources.LoadAll<ItemData>("");
+            ItemData[] allItems = GetAllItemAssets();
             for (int j = 0; j < loadouts.Length; j++)
             {
                 if (loadouts[j].savedHotbarItemNames == null) continue;

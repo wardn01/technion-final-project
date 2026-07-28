@@ -29,7 +29,8 @@ public static class TeleportUnlockRegistry
         }
 
         // Pre-migration saves have an empty list — allow one-time PlayerPrefs import on Start.
-        if (unlockedTeleportIds.Count == 0)
+        // Migrated saves and freshly created worlds must never inherit global legacy unlocks.
+        if (unlockedTeleportIds.Count == 0 && !data.teleportDataMigrated)
             AllowLegacyPlayerPrefsFallback = true;
     }
 
@@ -39,6 +40,7 @@ public static class TeleportUnlockRegistry
             return;
 
         data.unlockedTeleportIds = new List<int>(unlockedTeleportIds);
+        data.teleportDataMigrated = true;
     }
 
     public static bool IsUnlocked(int teleportId)

@@ -140,11 +140,12 @@ public class PlayerAttributesUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Delays the UI refresh slightly to ensure all dependent data components have finished initialization.
+    /// Refreshes on open. Must not use Invoke: this screen only opens while the game
+    /// is paused (timeScale = 0) and Invoke uses scaled time, so it would never fire.
     /// </summary>
     private void OnEnable()
     {
-        Invoke(nameof(RefreshUI), 0.02f);
+        RefreshUI();
     }
 
     /// <summary>

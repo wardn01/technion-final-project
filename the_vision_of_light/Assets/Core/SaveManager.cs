@@ -20,6 +20,16 @@ public static class SaveManager
         return Path.Combine(Application.persistentDataPath, "save_" + slotIndex + ".json");
     }
 
+    /// <summary>True when a save file (or its backup) exists on disk for this slot.</summary>
+    public static bool SaveFileExists(int slotIndex)
+    {
+        if (slotIndex < 0)
+            return false;
+
+        string path = GetSavePath(slotIndex);
+        return File.Exists(path) || File.Exists(path + ".bak");
+    }
+
     /// <summary>Serializes and writes the slot atomically. Keeps the previous file as .bak.</summary>
     public static void SaveGame(int slotIndex, GameData data)
     {

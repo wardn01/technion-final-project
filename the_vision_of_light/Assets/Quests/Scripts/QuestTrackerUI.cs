@@ -40,6 +40,11 @@ public class QuestTrackerUI : MonoBehaviour
     private int currentDisplayedStep = -1;
     private bool isTransitioning = false;
 
+    // Text caching — avoids Split/Join and distance string allocations every frame.
+    private QuestData lastTextQuest;
+    private int lastTextStep = -1;
+    private int lastShownDistance = int.MinValue;
+
     private Vector2 visiblePosition;
     private Vector2 hiddenLeft;
     #endregion
@@ -49,6 +54,13 @@ public class QuestTrackerUI : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+    }
+
+    private void OnDisable()
+    {
+        // Coroutines die when the HUD is hidden (e.g. pause menu deactivates it) —
+        // never leave the transition latch stuck, or Update would be blocked forever.
+        isTransitioning = false;
     }
 
     /// <summary>
@@ -108,7 +120,8 @@ public class QuestTrackerUI : MonoBehaviour
             yield return StartCoroutine(SlideUI(trackerPanelRect, hiddenLeft, true));
         }
 
-        yield return new WaitForSeconds(0.4f);
+        // Unscaled so a pause mid-transition cannot stall the HUD slide.
+        yield return new WaitForSecondsRealtime(0.4f);
 
         currentDisplayedQuest = newQuest;
         currentDisplayedStep = newStep;
@@ -127,12 +140,21 @@ public class QuestTrackerUI : MonoBehaviour
     {
         if (quest == null) return;
 
-        questTitleText.text = quest.questTitle;
-        string desc = quest.GetDescriptionForStep(stepIndex);
-        string[] words = desc.Split(' ');
+        // Title/description only change with the quest or step — rebuilding the
+        // strings every frame allocated garbage during normal gameplay.
+        if (quest != lastTextQuest || stepIndex != lastTextStep)
+        {
+            lastTextQuest = quest;
+            lastTextStep = stepIndex;
+            lastShownDistance = int.MinValue;
 
-        if (words.Length > 7) questDescText.text = string.Join(" ", words, 0, 7) + " ...";
-        else questDescText.text = desc;
+            questTitleText.text = quest.questTitle;
+            string desc = quest.GetDescriptionForStep(stepIndex);
+            string[] words = desc.Split(' ');
+
+            if (words.Length > 7) questDescText.text = string.Join(" ", words, 0, 7) + " ...";
+            else questDescText.text = desc;
+        }
 
         if (distanceText != null)
         {
@@ -141,7 +163,14 @@ public class QuestTrackerUI : MonoBehaviour
                 if (!distanceText.gameObject.activeSelf) distanceText.gameObject.SetActive(true);
 
                 float distance = Vector3.Distance(player.position, quest.GetTargetForStep(stepIndex));
-                distanceText.text = Mathf.RoundToInt(distance).ToString() + "m";
+                int rounded = Mathf.RoundToInt(distance);
+
+                // Only rebuild the string when the visible value actually changes.
+                if (rounded != lastShownDistance)
+                {
+                    lastShownDistance = rounded;
+                    distanceText.text = rounded.ToString() + "m";
+                }
 
                 if (distance < 15f) distanceText.color = Color.green;
                 else distanceText.color = new Color(1f, 0.8f, 0f);
@@ -163,7 +192,7 @@ public class QuestTrackerUI : MonoBehaviour
 
         while (Vector2.Distance(rect.anchoredPosition, targetPos) > 0.5f)
         {
-            rect.anchoredPosition = Vector2.MoveTowards(rect.anchoredPosition, targetPos, slideSpeed * Time.deltaTime);
+            rect.anchoredPosition = Vector2.MoveTowards(rect.anchoredPosition, targetPos, slideSpeed * Time.unscaledDeltaTime);
             yield return null;
         }
 

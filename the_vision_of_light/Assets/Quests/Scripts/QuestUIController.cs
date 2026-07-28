@@ -79,6 +79,11 @@ public class QuestUIController : MonoBehaviour
                 float dist = Vector3.Distance(player.position, QuestManager.Instance.GetCurrentObjectiveTarget());
                 distanceText.text = Mathf.RoundToInt(dist).ToString() + "m";
             }
+            else
+            {
+                // Hide instead of showing a stale distance from a previously viewed quest.
+                distanceText.gameObject.SetActive(false);
+            }
         }
         else if (distanceText != null)
         {

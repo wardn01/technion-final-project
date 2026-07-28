@@ -154,9 +154,9 @@ public class QuestBossEncounter : MonoBehaviour
 
     private void SubscribeToChest()
     {
-        if (rewardChest == null)
-            rewardChest = GetComponentInChildren<WorldChest>(true);
-
+        // AutoWireIfNeeded already searched the (inactive-inclusive) hierarchy in Awake.
+        // Re-scanning children here would run every frame from Update whenever no chest
+        // exists — if it was not found once, it will never appear later.
         if (rewardChest == null || rewardChest == subscribedChest)
             return;
 

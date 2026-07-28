@@ -51,6 +51,13 @@ public class TutorialUIManager : MonoBehaviour
     private int currentActiveStep = -1;
     private bool isTransitioning = false;
 
+    private void OnDisable()
+    {
+        // Coroutines die when the HUD is hidden (e.g. pause menu deactivates it) —
+        // never leave the transition latch stuck, or hints would freeze forever.
+        isTransitioning = false;
+    }
+
     private Vector2 visiblePosition;
     private Vector2 hiddenLeft;
 
@@ -194,7 +201,8 @@ public class TutorialUIManager : MonoBehaviour
         if (tutorialPanelRect.gameObject.activeSelf)
             yield return StartCoroutine(SlideUI(tutorialPanelRect, hiddenLeft, true));
 
-        yield return new WaitForSeconds(0.4f);
+        // Unscaled so a pause mid-transition cannot stall the hint slide.
+        yield return new WaitForSecondsRealtime(0.4f);
 
         currentActiveState = newState;
         currentActiveStep = newStep;
@@ -243,7 +251,7 @@ public class TutorialUIManager : MonoBehaviour
 
         while (Vector2.Distance(rect.anchoredPosition, targetPos) > 0.5f)
         {
-            rect.anchoredPosition = Vector2.MoveTowards(rect.anchoredPosition, targetPos, slideSpeed * Time.deltaTime);
+            rect.anchoredPosition = Vector2.MoveTowards(rect.anchoredPosition, targetPos, slideSpeed * Time.unscaledDeltaTime);
             yield return null;
         }
 

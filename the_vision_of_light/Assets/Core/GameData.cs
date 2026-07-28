@@ -44,6 +44,12 @@ public class GameData
     /// <summary>Unlocked world teleport point IDs for this save slot.</summary>
     public List<int> unlockedTeleportIds = new List<int>();
 
+    /// <summary>
+    /// True once teleport data is slot-based. Old saves (false) may import legacy
+    /// global PlayerPrefs unlocks once; new worlds start true so they never inherit them.
+    /// </summary>
+    public bool teleportDataMigrated;
+
     /// <summary>When all guardians were defeated per chest (UTC seconds) for hourly respawn.</summary>
     public List<ChestGuardianDefeatTime> chestGuardianDefeatTimes = new List<ChestGuardianDefeatTime>();
 
