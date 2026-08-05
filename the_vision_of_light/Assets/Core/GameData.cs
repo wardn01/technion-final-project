@@ -15,6 +15,10 @@ public class GameData
     public bool hasSavedPlayerPosition;
     public float currentTime;
     public string worldName;
+
+    /// <summary>Last time this slot was entered/saved, shown in the Play menu (dd/MM/yyyy).</summary>
+    public string lastJoinedDate;
+
     public List<SavedItem> inventoryItems = new List<SavedItem>();
     
     public string playerDataJson;

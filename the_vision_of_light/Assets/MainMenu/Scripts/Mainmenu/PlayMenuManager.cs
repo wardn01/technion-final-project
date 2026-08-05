@@ -119,6 +119,8 @@ public class PlayMenuManager : MonoBehaviour
                     PlayerPrefs.SetInt($"Slot_{i}_Exists", 1);
                     if (!string.IsNullOrEmpty(recovered.worldName))
                         PlayerPrefs.SetString($"Slot_{i}_Name", recovered.worldName);
+                    if (!string.IsNullOrEmpty(recovered.lastJoinedDate))
+                        PlayerPrefs.SetString($"Slot_{i}_LastJoin", recovered.lastJoinedDate);
                     PlayerPrefs.Save();
                     slotExists = true;
                     Debug.LogWarning($"[Save] Restored missing slot metadata for slot {i} from its save file.");
@@ -136,6 +138,8 @@ public class PlayMenuManager : MonoBehaviour
                 
                 TMP_Text slotText = newSlot.transform.Find("Title")?.GetComponent<TMP_Text>();
                 if(slotText != null) slotText.text = worldName;
+
+                ApplyLastJoinText(newSlot, i);
 
                 int slotIndex = i; // Local copy for the closure
                 
@@ -329,6 +333,12 @@ public class PlayMenuManager : MonoBehaviour
     /// </summary>
     public void LoadWorld(int slotIndex)
     {
+        // Stamp "last joined" as soon as the player enters this world.
+        GameData joinData = SaveManager.LoadGame(slotIndex) ?? new GameData();
+        if (string.IsNullOrEmpty(joinData.worldName))
+            joinData.worldName = PlayerPrefs.GetString($"Slot_{slotIndex}_Name", $"World {slotIndex}");
+        SaveManager.SaveGame(slotIndex, joinData);
+
         PlayerPrefs.SetInt("SelectedSlot", slotIndex);
         PlayerPrefs.Save();
 
@@ -342,6 +352,36 @@ public class PlayMenuManager : MonoBehaviour
         {
             SceneManager.LoadScene("World");
         }
+    }
+
+    /// <summary>Fills the slot's LastJoin TMP from save data / PlayerPrefs.</summary>
+    private static void ApplyLastJoinText(GameObject slotRoot, int slotIndex)
+    {
+        if (slotRoot == null)
+            return;
+
+        Transform lastJoin = slotRoot.transform.Find("LastJoin");
+        if (lastJoin == null)
+            return;
+
+        TMP_Text lastJoinText = lastJoin.GetComponent<TMP_Text>();
+        if (lastJoinText == null)
+            return;
+
+        string date = PlayerPrefs.GetString($"Slot_{slotIndex}_LastJoin", "");
+        if (string.IsNullOrEmpty(date))
+        {
+            GameData data = SaveManager.LoadGame(slotIndex);
+            if (data != null && !string.IsNullOrEmpty(data.lastJoinedDate))
+            {
+                date = data.lastJoinedDate;
+                PlayerPrefs.SetString($"Slot_{slotIndex}_LastJoin", date);
+                PlayerPrefs.Save();
+            }
+        }
+
+        lastJoinText.text = date;
+        lastJoin.gameObject.SetActive(!string.IsNullOrEmpty(date));
     }
     #endregion
 

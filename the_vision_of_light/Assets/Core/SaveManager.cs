@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.IO;
 
 /// <summary>
@@ -14,6 +15,19 @@ public static class SaveManager
 {
     /// <summary>Defensive cap — a valid save is a few KB; anything huge is corrupt/tampered.</summary>
     private const long MaxSaveFileBytes = 16 * 1024 * 1024;
+
+    public const string LastJoinedDateFormat = "dd/MM/yyyy";
+
+    /// <summary>Updates <see cref="GameData.lastJoinedDate"/> and mirrors it in PlayerPrefs.</summary>
+    public static void StampLastJoined(int slotIndex, GameData data)
+    {
+        if (data == null || slotIndex < 0)
+            return;
+
+        string date = DateTime.Now.ToString(LastJoinedDateFormat);
+        data.lastJoinedDate = date;
+        PlayerPrefs.SetString("Slot_" + slotIndex + "_LastJoin", date);
+    }
 
     private static string GetSavePath(int slotIndex)
     {
@@ -51,6 +65,8 @@ public static class SaveManager
 
         try
         {
+            StampLastJoined(slotIndex, data);
+
             string json = JsonUtility.ToJson(data);
             File.WriteAllText(tempPath, json);
 
@@ -157,6 +173,7 @@ public static class SaveManager
 
         PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_Exists");
         PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_Name");
+        PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_LastJoin");
         PlayerPrefs.Save();
         Debug.Log("Deleted save file for Slot " + slotIndex);
     }
