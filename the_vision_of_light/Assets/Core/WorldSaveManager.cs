@@ -113,10 +113,8 @@ public class WorldSaveManager : MonoBehaviour
             // Restore Player Data
             if (activePlayerData != null)
             {
-                // Ascension phases are inspector-authored config, not runtime state. The saved JSON
-                // is produced from a blank PlayerData whose phases array is empty, so cache the
-                // configured phases and restore them after the overwrite to avoid wiping them.
-                AscensionPhase[] configuredPhases = activePlayerData.ascensionPhases;
+                // Use the BeforeSceneLoad snapshot — never clone the live asset after JSON may have wiped refs.
+                AscensionPhase[] configuredPhases = PlayerData.GetConfiguredAscensionPhases();
 
                 // Always start from defaults: FromJsonOverwrite only writes fields present in
                 // the JSON, and this is a shared asset — without the reset, fields missing from
@@ -127,11 +125,13 @@ public class WorldSaveManager : MonoBehaviour
                 {
                     JsonUtility.FromJsonOverwrite(data.playerDataJson, activePlayerData);
                     activePlayerData.ascensionPhases = configuredPhases;
+                    activePlayerData.EnsureAscensionPhasesConfigured();
                     activePlayerData.RestoreAfterLoad();
                 }
                 else
                 {
                     activePlayerData.ascensionPhases = configuredPhases;
+                    activePlayerData.EnsureAscensionPhasesConfigured();
                 }
             }
         }
@@ -147,6 +147,7 @@ public class WorldSaveManager : MonoBehaviour
             if (activePlayerData != null)
             {
                 activePlayerData.ResetToDefault();
+                activePlayerData.ascensionPhases = PlayerData.GetConfiguredAscensionPhases();
             }
         }
     }

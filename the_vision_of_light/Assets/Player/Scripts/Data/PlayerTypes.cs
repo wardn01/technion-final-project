@@ -8,6 +8,12 @@ namespace VisionOfLight.Player
     {
         public ItemData item;
         public int amount;
+
+        /// <summary>
+        /// Survives <see cref="JsonUtility"/> (unlike <see cref="item"/>) so requirements
+        /// can be re-linked after save/load.
+        /// </summary>
+        public string itemName;
     }
 
     /// <summary>Level cap increase and material costs for one ascension tier.</summary>

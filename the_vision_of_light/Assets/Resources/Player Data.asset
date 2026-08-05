@@ -22,78 +22,106 @@ MonoBehaviour:
   - newLevelCap: 20
     requiredItems:
     - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+      itemName: Bone
       amount: 5
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 80
   - newLevelCap: 30
     requiredItems:
     - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+      itemName: Bone
       amount: 8
     - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      itemName: Goblin Bone Plate
       amount: 3
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 150
   - newLevelCap: 40
     requiredItems:
     - item: {fileID: 11400000, guid: b5127ef4b2f1de94ba728d8421903411, type: 2}
+      itemName: Bone
       amount: 10
     - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      itemName: Goblin Bone Plate
       amount: 6
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 250
   - newLevelCap: 50
     requiredItems:
     - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      itemName: Goblin Bone Plate
       amount: 8
     - item: {fileID: 11400000, guid: e03af66cc75852644b34937dbd0fa9a6, type: 2}
+      itemName: Azure Imp Gel
       amount: 4
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 400
   - newLevelCap: 60
     requiredItems:
     - item: {fileID: 11400000, guid: e32b19427207bfa4e9b1c278fe26df50, type: 2}
+      itemName: Goblin Bone Plate
       amount: 10
     - item: {fileID: 11400000, guid: e03af66cc75852644b34937dbd0fa9a6, type: 2}
+      itemName: Azure Imp Gel
       amount: 6
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 600
   - newLevelCap: 70
     requiredItems:
     - item: {fileID: 11400000, guid: e03af66cc75852644b34937dbd0fa9a6, type: 2}
+      itemName: Azure Imp Gel
       amount: 8
     - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+      itemName: Glowing Ore
       amount: 4
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 850
   - newLevelCap: 80
     requiredItems:
     - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+      itemName: Glowing Ore
       amount: 8
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 1200
   - newLevelCap: 90
     requiredItems:
     - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
+      itemName: Shattered Golem Fragment
       amount: 10
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      itemName: Bear Fang
       amount: 5
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 1600
   - newLevelCap: 100
     requiredItems:
     - item: {fileID: 11400000, guid: e21a34275c19fd14f93aa9894fe65e47, type: 2}
+      itemName: Shattered Golem Fragment
       amount: 14
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      itemName: Bear Fang
       amount: 10
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 2200
   - newLevelCap: 100
     requiredItems:
     - item: {fileID: 11400000, guid: b9f8db43f6c58314c9c017fc3cdf32a8, type: 2}
+      itemName: Glowing Ore
       amount: 16
     - item: {fileID: 11400000, guid: ce4b24829184d044e8653c46adc7e2af, type: 2}
+      itemName: Bear Fang
       amount: 18
     - item: {fileID: 11400000, guid: 99f511a9f6fb10a4fbddc4cfc55999ee, type: 2}
+      itemName: Gold coin 0
       amount: 3500
   currentAscensionIndex: 0
   availableStatPoints: 2

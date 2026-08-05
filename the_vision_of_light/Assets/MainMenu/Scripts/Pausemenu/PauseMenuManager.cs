@@ -491,14 +491,12 @@ public class PauseMenuManager : MonoBehaviour
 
             if (playerProfile != null && !string.IsNullOrEmpty(data.playerDataJson))
             {
-                // Ascension phases are inspector-authored config, not runtime state. Saves are
-                // generated from a blank PlayerData instance whose JSON carries an empty phases
-                // array, so we cache the configured phases and restore them after the overwrite.
-                AscensionPhase[] configuredPhases = playerProfile.ascensionPhases;
+                AscensionPhase[] configuredPhases = PlayerData.GetConfiguredAscensionPhases();
 
                 JsonUtility.FromJsonOverwrite(data.playerDataJson, playerProfile);
 
                 playerProfile.ascensionPhases = configuredPhases;
+                playerProfile.EnsureAscensionPhasesConfigured();
 
                 playerProfile.RestoreAfterLoad();
                 playerProfile.LoadBuild(playerProfile.currentActiveLoadout);

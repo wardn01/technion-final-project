@@ -255,48 +255,64 @@ public class PlayerAttributesUI : MonoBehaviour
         if (playerData == null) return;
         var data = playerData;
 
-        if (data.ascensionPhases != null && data.currentAscensionIndex < data.ascensionPhases.Length)
+        // Always restore next-ascend materials so the player can see what to farm.
+        data.EnsureAscensionPhasesConfigured();
+
+        if (data.ascensionPhases == null || data.currentAscensionIndex < 0 ||
+            data.currentAscensionIndex >= data.ascensionPhases.Length)
         {
-            if (ascendGroup) ascendGroup.SetActive(true);
-            var phase = data.ascensionPhases[data.currentAscensionIndex];
+            if (ascendGroup) ascendGroup.SetActive(false);
+            return;
+        }
 
-            for (int i = 0; requiredItemSlots != null && i < requiredItemSlots.Length; i++)
+        if (ascendGroup) ascendGroup.SetActive(true);
+        AscensionPhase phase = data.ascensionPhases[data.currentAscensionIndex];
+
+        int shown = 0;
+        for (int i = 0; requiredItemSlots != null && i < requiredItemSlots.Length; i++)
+        {
+            if (requiredItemSlots[i]?.slotObject == null) continue;
+
+            if (phase != null && phase.requiredItems != null && i < phase.requiredItems.Length)
             {
-                if (requiredItemSlots[i]?.slotObject == null) continue;
+                ItemRequirement req = phase.requiredItems[i];
 
-                if (phase.requiredItems != null && i < phase.requiredItems.Length)
-                {
-                    var req = phase.requiredItems[i];
-                    
-                    if (req.item == null) continue; 
-
-                    requiredItemSlots[i].slotObject.SetActive(true);
-
-                    if (requiredItemSlots[i].itemIcon != null)
-                        requiredItemSlots[i].itemIcon.sprite = req.item.itemIcon;
-
-                    int currentAmount = 0;
-                    if (InventoryManager.Instance != null)
-                    {
-                        currentAmount = InventoryManager.Instance.GetItemAmount(req.item);
-                    }
-
-                    string colorTag = currentAmount >= req.amount ? "<color=green>" : "<color=red>";
-                    
-                    if (requiredItemSlots[i].amountText != null)
-                        requiredItemSlots[i].amountText.text = $"{colorTag}{currentAmount}</color>/{req.amount}";
-                }
-                else 
+                if (req == null || req.item == null)
                 {
                     requiredItemSlots[i].slotObject.SetActive(false);
+                    continue;
                 }
+
+                requiredItemSlots[i].slotObject.SetActive(true);
+                shown++;
+
+                if (requiredItemSlots[i].itemIcon != null)
+                {
+                    requiredItemSlots[i].itemIcon.sprite = req.item.itemIcon;
+                    requiredItemSlots[i].itemIcon.enabled = req.item.itemIcon != null;
+                    requiredItemSlots[i].itemIcon.preserveAspect = true;
+                    requiredItemSlots[i].itemIcon.color = Color.white;
+                }
+
+                int currentAmount = InventoryManager.Instance != null
+                    ? InventoryManager.Instance.GetItemAmount(req.item)
+                    : 0;
+
+                string colorTag = currentAmount >= req.amount ? "<color=green>" : "<color=red>";
+                if (requiredItemSlots[i].amountText != null)
+                    requiredItemSlots[i].amountText.text = $"{colorTag}{currentAmount}</color>/{req.amount}";
             }
-            if (ascendBtn) ascendBtn.interactable = data.CanAscend();
+            else
+            {
+                requiredItemSlots[i].slotObject.SetActive(false);
+            }
         }
-        else if (ascendGroup) 
-        {
-            ascendGroup.SetActive(false);
-        }
+
+        if (shown == 0)
+            Debug.LogWarning("[Attributes] Ascension materials missing — check Player Data ascensionPhases item refs.");
+
+        // Preview always visible; button only when level + materials are ready.
+        if (ascendBtn) ascendBtn.interactable = data.CanAscend();
     }
 
     #endregion

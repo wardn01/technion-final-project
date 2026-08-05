@@ -61,18 +61,227 @@ namespace VisionOfLight.Player
         public AscensionPhase[] ascensionPhases;
         public int currentAscensionIndex = 0;
 
+        /// <summary>
+        /// Snapshot of inspector-authored phases taken before any save JSON can wipe ItemData refs.
+        /// </summary>
+        private static AscensionPhase[] cachedConfiguredPhases;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetAscensionCache()
+        {
+            cachedConfiguredPhases = null;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void CacheConfiguredAscensionPhases()
+        {
+            RefreshAscensionCache();
+        }
+
+        private static void RefreshAscensionCache()
+        {
+            PlayerData template = Resources.Load<PlayerData>("Player Data");
+            if (template == null || template.ascensionPhases == null)
+                return;
+
+            AscensionPhase[] clone = CloneAscensionPhases(template.ascensionPhases);
+            SyncItemNames(clone);
+            RepairItemReferences(clone);
+
+            if (HasValidAscensionItemRefs(clone))
+                cachedConfiguredPhases = clone;
+        }
+
+        /// <summary>Fresh deep-copy of the authored ascension table (materials + amounts).</summary>
+        public static AscensionPhase[] GetConfiguredAscensionPhases()
+        {
+            if (!HasValidAscensionItemRefs(cachedConfiguredPhases))
+                RefreshAscensionCache();
+
+            return CloneAscensionPhases(cachedConfiguredPhases);
+        }
+
+        /// <summary>
+        /// Always re-applies authored material requirements so the Attributes UI can preview
+        /// the next ascend costs. Keeps <see cref="currentAscensionIndex"/> intact.
+        /// </summary>
+        public void EnsureAscensionPhasesConfigured()
+        {
+            AscensionPhase[] configured = GetConfiguredAscensionPhases();
+            if (configured == null || configured.Length == 0)
+            {
+                // Last resort: repair whatever is already on this asset via itemName / Resources.
+                SyncItemNames(ascensionPhases);
+                RepairItemReferences(ascensionPhases);
+                return;
+            }
+
+            ascensionPhases = configured;
+        }
+
+        private static bool HasValidAscensionItemRefs(AscensionPhase[] phases)
+        {
+            if (phases == null || phases.Length == 0)
+                return false;
+
+            for (int i = 0; i < phases.Length; i++)
+            {
+                AscensionPhase phase = phases[i];
+                if (phase?.requiredItems == null || phase.requiredItems.Length == 0)
+                    continue;
+
+                for (int j = 0; j < phase.requiredItems.Length; j++)
+                {
+                    if (phase.requiredItems[j] != null && phase.requiredItems[j].item != null)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void SyncItemNames(AscensionPhase[] phases)
+        {
+            if (phases == null)
+                return;
+
+            for (int i = 0; i < phases.Length; i++)
+            {
+                ItemRequirement[] reqs = phases[i]?.requiredItems;
+                if (reqs == null)
+                    continue;
+
+                for (int j = 0; j < reqs.Length; j++)
+                {
+                    if (reqs[j] == null)
+                        continue;
+
+                    if (reqs[j].item != null)
+                        reqs[j].itemName = reqs[j].item.name;
+                }
+            }
+        }
+
+        private static void RepairItemReferences(AscensionPhase[] phases)
+        {
+            if (phases == null)
+                return;
+
+            ItemData[] allItems = GetAllItemAssets();
+
+            for (int i = 0; i < phases.Length; i++)
+            {
+                ItemRequirement[] reqs = phases[i]?.requiredItems;
+                if (reqs == null)
+                    continue;
+
+                for (int j = 0; j < reqs.Length; j++)
+                {
+                    ItemRequirement req = reqs[j];
+                    if (req == null || req.item != null)
+                        continue;
+
+                    if (string.IsNullOrEmpty(req.itemName))
+                        continue;
+
+                    req.item = FindItemByName(allItems, req.itemName);
+                }
+            }
+        }
+
+        private static ItemData FindItemByName(ItemData[] allItems, string itemName)
+        {
+            if (string.IsNullOrEmpty(itemName))
+                return null;
+
+            if (allItems != null)
+            {
+                for (int i = 0; i < allItems.Length; i++)
+                {
+                    ItemData item = allItems[i];
+                    if (item != null && item.name == itemName)
+                        return item;
+                }
+            }
+
+            ItemData fromMaterial = Resources.Load<ItemData>("Material/" + itemName);
+            if (fromMaterial != null)
+                return fromMaterial;
+
+            ItemData direct = Resources.Load<ItemData>(itemName);
+            if (direct != null)
+                return direct;
+
+            if (itemName == "Gold coin" || itemName == "Gold Coin" || itemName == "Gold coin 0")
+                return Resources.Load<ItemData>("Gold coin 0");
+
+            return null;
+        }
+
+        /// <summary>
+        /// Deep-copies ascension config so <see cref="JsonUtility.FromJsonOverwrite"/> cannot
+        /// null out ItemData references on the live array (it mutates arrays in place).
+        /// </summary>
+        public static AscensionPhase[] CloneAscensionPhases(AscensionPhase[] source)
+        {
+            if (source == null)
+                return null;
+
+            AscensionPhase[] copy = new AscensionPhase[source.Length];
+            for (int i = 0; i < source.Length; i++)
+            {
+                AscensionPhase phase = source[i];
+                if (phase == null)
+                {
+                    copy[i] = null;
+                    continue;
+                }
+
+                ItemRequirement[] reqCopy = null;
+                if (phase.requiredItems != null)
+                {
+                    reqCopy = new ItemRequirement[phase.requiredItems.Length];
+                    for (int j = 0; j < phase.requiredItems.Length; j++)
+                    {
+                        ItemRequirement req = phase.requiredItems[j];
+                        reqCopy[j] = req == null
+                            ? null
+                            : new ItemRequirement
+                            {
+                                item = req.item,
+                                amount = req.amount,
+                                itemName = req.item != null ? req.item.name : req.itemName
+                            };
+                    }
+                }
+
+                copy[i] = new AscensionPhase
+                {
+                    newLevelCap = phase.newLevelCap,
+                    requiredItems = reqCopy
+                };
+            }
+
+            return copy;
+        }
+
         /// <summary>Returns true when the player meets level and item requirements for the next ascension.</summary>
         public bool CanAscend()
         {
+            EnsureAscensionPhasesConfigured();
+
+            if (ascensionPhases == null || ascensionPhases.Length == 0) return false;
             if (currentLevel < maxLevelCap) return false;
-            if (currentAscensionIndex >= ascensionPhases.Length) return false;
+            if (currentAscensionIndex < 0 || currentAscensionIndex >= ascensionPhases.Length) return false;
 
             AscensionPhase phase = ascensionPhases[currentAscensionIndex];
             if (phase.requiredItems == null || phase.requiredItems.Length == 0) return true;
 
+            if (InventoryManager.Instance == null) return false;
+
             foreach (var req in phase.requiredItems)
             {
-                if (req.item == null) continue;
+                if (req == null || req.item == null) return false;
                 if (InventoryManager.Instance.GetItemAmount(req.item) < req.amount)
                     return false;
             }
@@ -83,6 +292,7 @@ namespace VisionOfLight.Player
         /// <summary>Consumes ascension materials and raises <see cref="maxLevelCap"/> when eligible.</summary>
         public void TryAscend()
         {
+            EnsureAscensionPhasesConfigured();
             if (!CanAscend()) return;
 
             AscensionPhase phase = ascensionPhases[currentAscensionIndex];
@@ -92,9 +302,7 @@ namespace VisionOfLight.Player
                 foreach (var req in phase.requiredItems)
                 {
                     if (req.item != null)
-                    {
                         InventoryManager.Instance.RemoveItem(req.item, req.amount);
-                    }
                 }
             }
 
@@ -255,6 +463,8 @@ namespace VisionOfLight.Player
         /// <summary>Syncs active loadout and serializes hotbar item names before writing save data.</summary>
         public void PrepareForSave()
         {
+            SyncItemNames(ascensionPhases);
+
             if (QuickSlotManager.Instance != null)
             {
                 SaveBuild(currentActiveLoadout);

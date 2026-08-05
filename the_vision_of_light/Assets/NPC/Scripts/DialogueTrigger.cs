@@ -67,8 +67,11 @@ public class DialogueTrigger : MonoBehaviour
         if (!ShouldMoveOutside())
             return;
 
-        transform.position = outsideLocation.position;
-        transform.rotation = outsideLocation.rotation;
+        // Move the NPC prefab root when scripts live on a child (e.g. Albedo's
+        // StoryNPC/DialogueTrigger on "Player" while QuestIcon is a sibling).
+        Transform moveTarget = GetRelocationRoot();
+        moveTarget.position = outsideLocation.position;
+        moveTarget.rotation = outsideLocation.rotation;
 
         StoryNPC storyNPC = GetComponent<StoryNPC>();
         if (storyNPC != null)
@@ -77,6 +80,32 @@ public class DialogueTrigger : MonoBehaviour
             ApplyStandingPoseFallback();
 
         hasMovedOutside = true;
+    }
+
+    /// <summary>
+    /// Prefab root that owns this NPC. Climb one level when this trigger is on a child
+    /// and the parent is the single-NPC prefab root (not a shared scene "NPC" folder).
+    /// </summary>
+    private Transform GetRelocationRoot()
+    {
+        Transform parent = transform.parent;
+        if (parent == null)
+            return transform;
+
+        DialogueTrigger[] onParentSubtree = parent.GetComponentsInChildren<DialogueTrigger>(true);
+        if (onParentSubtree.Length != 1 || onParentSubtree[0] != this)
+            return transform;
+
+        // Scene groups (e.g. "NPC") contain many DialogueTriggers — don't move those.
+        if (parent.parent != null)
+        {
+            DialogueTrigger[] onGrandparentSubtree =
+                parent.parent.GetComponentsInChildren<DialogueTrigger>(true);
+            if (onGrandparentSubtree.Length == 1)
+                return transform;
+        }
+
+        return parent;
     }
 
     private void ApplyStandingPoseFallback()

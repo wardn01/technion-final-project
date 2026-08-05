@@ -1,8 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// A world-space 2D marker (e.g. above an NPC or objective) that becomes visible only while one of
-/// its related quests is active. While visible it bobs up and down and faces the camera (billboard).
+/// A world-space 2D marker (e.g. "!" above an NPC) that becomes visible while a related
+/// quest chapter is active on a matching step — or while the current objective target
+/// is near this marker (same place the minimap "!" points to).
 /// </summary>
 public class QuestMarkerUI : MonoBehaviour
 {
@@ -11,8 +12,24 @@ public class QuestMarkerUI : MonoBehaviour
     /// <summary>Quests that should make this marker visible while active.</summary>
     public QuestData[] relatedQuests;
 
-    /// <summary>Which step index shows this marker. -1 = visible for the whole chapter (legacy).</summary>
+    /// <summary>
+    /// Legacy single step. Used when <see cref="requiredSteps"/> is empty.
+    /// -1 = visible for the whole chapter.
+    /// </summary>
     public int requiredStep = -1;
+
+    /// <summary>
+    /// Preferred: steps where this NPC/objective should show "!".
+    /// Example: talk at 0 and return at 2 → { 0, 2 }.
+    /// Empty = fall back to <see cref="requiredStep"/>.
+    /// </summary>
+    public int[] requiredSteps;
+
+    [Tooltip("Also show when QuestManager's current objective target is near this transform (matches minimap !).")]
+    public bool showWhenObjectiveNearby = true;
+
+    [Tooltip("How close the objective target must be to this marker (meters).")]
+    public float nearbyObjectiveDistance = 8f;
     #endregion
 
     #region Camera Settings
@@ -36,60 +53,146 @@ public class QuestMarkerUI : MonoBehaviour
     private Vector3 startPos;
 
     #region Unity Lifecycle
+    private void Awake()
+    {
+        ResolveSprite();
+        if (markerSprite != null)
+            markerSprite.enabled = false;
+    }
+
     private void Start()
     {
         if (targetCamera == null)
-        {
             targetCamera = Camera.main;
-        }
 
-        if (markerSprite == null)
-        {
-            markerSprite = GetComponent<SpriteRenderer>();
-        }
-
+        ResolveSprite();
         startPos = transform.localPosition;
+        RefreshVisibility();
     }
 
-    /// <summary>
-    /// Shows/hides the marker based on quest state, and animates the bob + billboard while visible.
-    /// </summary>
+    private void OnEnable()
+    {
+        RefreshVisibility();
+    }
+
     private void LateUpdate()
     {
-        if (QuestManager.Instance == null || markerSprite == null || relatedQuests == null || relatedQuests.Length == 0) return;
+        if (markerSprite == null)
+            ResolveSprite();
 
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+
+        bool visible = ShouldShowMarker();
+
+        if (markerSprite != null)
+        {
+            if (visible && !markerSprite.gameObject.activeSelf)
+                markerSprite.gameObject.SetActive(true);
+
+            if (markerSprite.enabled != visible)
+                markerSprite.enabled = visible;
+        }
+
+        if (!visible || markerSprite == null)
+            return;
+
+        float newY = startPos.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
+        transform.localPosition = new Vector3(startPos.x, newY, startPos.z);
+
+        if (targetCamera != null)
+            transform.forward = targetCamera.transform.forward;
+    }
+    #endregion
+
+    #region Visibility
+    private void RefreshVisibility()
+    {
+        if (markerSprite == null)
+            ResolveSprite();
+
+        if (markerSprite != null)
+            markerSprite.enabled = ShouldShowMarker();
+    }
+
+    private bool ShouldShowMarker()
+    {
+        if (QuestManager.Instance == null)
+            return false;
+
+        if (MatchesConfiguredQuestStep())
+            return true;
+
+        // Minimap already points here — show the world "!" above the NPC/objective too.
+        if (showWhenObjectiveNearby && IsCurrentObjectiveNearby())
+            return true;
+
+        return false;
+    }
+
+    private bool MatchesConfiguredQuestStep()
+    {
+        if (relatedQuests == null || relatedQuests.Length == 0)
+            return false;
+
+        int currentState = QuestManager.Instance.mainQuestState;
         int currentStep = QuestManager.Instance.questStepIndex;
-        bool isAnyQuestActive = false;
 
         foreach (QuestData quest in relatedQuests)
         {
-            if (quest == null) continue;
+            if (quest == null)
+                continue;
 
-            bool stateMatches = QuestManager.Instance.mainQuestState == quest.stateId;
-            bool stepMatches = requiredStep < 0 || currentStep == requiredStep;
+            if (currentState != quest.stateId)
+                continue;
 
-            if (stateMatches && stepMatches)
-            {
-                isAnyQuestActive = true;
-                break;
-            }
+            if (StepMatches(currentStep))
+                return true;
         }
 
-        if (markerSprite.enabled != isAnyQuestActive)
+        return false;
+    }
+
+    private bool IsCurrentObjectiveNearby()
+    {
+        if (!QuestManager.Instance.CurrentObjectiveHasTarget())
+            return false;
+
+        Vector3 target = QuestManager.Instance.GetCurrentObjectiveTarget();
+        float maxDist = Mathf.Max(0.5f, nearbyObjectiveDistance);
+
+        // Compare on XZ so a marker floating above the head still counts.
+        Vector3 flatTarget = target;
+        flatTarget.y = 0f;
+        Vector3 flatHere = transform.position;
+        flatHere.y = 0f;
+        return (flatTarget - flatHere).sqrMagnitude <= maxDist * maxDist;
+    }
+
+    private bool StepMatches(int currentStep)
+    {
+        if (requiredSteps != null && requiredSteps.Length > 0)
         {
-            markerSprite.enabled = isAnyQuestActive;
-        }
-
-        if (isAnyQuestActive)
-        {
-            float newY = startPos.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
-            transform.localPosition = new Vector3(startPos.x, newY, startPos.z);
-
-            if (targetCamera != null)
+            for (int i = 0; i < requiredSteps.Length; i++)
             {
-                transform.forward = targetCamera.transform.forward;
+                if (requiredSteps[i] == currentStep)
+                    return true;
             }
+
+            return false;
         }
+
+        return requiredStep < 0 || currentStep == requiredStep;
+    }
+
+    private void ResolveSprite()
+    {
+        if (markerSprite != null)
+            return;
+
+        markerSprite = GetComponent<SpriteRenderer>();
+        if (markerSprite == null)
+            markerSprite = GetComponentInChildren<SpriteRenderer>(true);
     }
     #endregion
 }

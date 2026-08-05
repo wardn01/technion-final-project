@@ -1421,7 +1421,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9138844078060676550}
-  - {fileID: 7332998193895381840}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 174.932, z: 0}
 --- !u!1 &5098465320731322733
@@ -1641,10 +1640,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 2.4, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalScale: {x: 0.45, y: 0.45, z: 0.45}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 7488286217184875949}
+  m_Father: {fileID: 9138844078060676550}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5664720217281571770
 SpriteRenderer:
@@ -1693,7 +1692,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 200
   m_MaskInteraction: 0
   m_Sprite: {fileID: 727011104, guid: 359a10cd875de6c47b8b66f1e482be5c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1719,7 +1718,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestMarkerUI
   relatedQuests:
   - {fileID: 11400000, guid: cddfde19a65d6b144a46fab7dc2e2725, type: 2}
-  requiredStep: 0
+  - {fileID: 11400000, guid: f82c4e1a9b3d56789012abcdef345678, type: 2}
+  requiredStep: -1
+  requiredSteps:
+  - 0
+  - 2
+  - 4
+  - 6
+  showWhenObjectiveNearby: 1
+  nearbyObjectiveDistance: 12
   targetCamera: {fileID: 0}
   markerSprite: {fileID: 5664720217281571770}
   bobSpeed: 2
@@ -1857,6 +1864,7 @@ Transform:
   - {fileID: 8602504379538135232}
   - {fileID: 8902713896908300586}
   - {fileID: 6299636034022221644}
+  - {fileID: 7332998193895381840}
   m_Father: {fileID: 7488286217184875949}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &8077935891593539226
