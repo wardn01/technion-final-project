@@ -10,36 +10,9 @@ using VisionOfLight.Player;
 [RequireComponent(typeof(Collider))]
 public class WorldAmbienceZone : MonoBehaviour
 {
+    #region Active Zones
+
     private static readonly List<WorldAmbienceZone> ActiveZones = new List<WorldAmbienceZone>();
-
-    [Header("Clip")]
-    [Tooltip("Looping ambience — crowd murmur, snow wind, etc. Not music.")]
-    public AudioClip ambienceClip;
-
-    [Tooltip("Playback volume for this ambience layer.")]
-    [Range(0f, 1f)]
-    public float volume = 0.35f;
-
-    [Tooltip("Seconds to fade in/out when entering or leaving.")]
-    [Min(0f)]
-    public float fadeSeconds = 1.2f;
-
-    [Header("Exploration Music")]
-    [Tooltip("ON for snow: keep Exploration playing but lower its volume while inside this zone.")]
-    public bool duckExplorationMusic;
-
-    [Header("Combat")]
-    [Tooltip("Fade this ambience out while combat / boss music is playing; fades back in after the fight.")]
-    public bool muteDuringCombat = true;
-
-    [Header("Optional")]
-    [Tooltip("If empty, uses AudioMixerHub SFX group when configured.")]
-    public UnityEngine.Audio.AudioMixerGroup outputGroup;
-
-    private Collider zoneCollider;
-    private AudioSource audioSource;
-    private Coroutine fadeRoutine;
-    private bool wasAudible;
 
     /// <summary>True if the player is inside any ambience zone that ducks exploration music.</summary>
     public static bool ShouldDuckExploration(Vector3 playerPosition)
@@ -59,6 +32,59 @@ public class WorldAmbienceZone : MonoBehaviour
 
         return false;
     }
+
+    #endregion
+
+    #region Clip
+
+    [Header("Clip")]
+    [Tooltip("Looping ambience — crowd murmur, snow wind, etc. Not music.")]
+    public AudioClip ambienceClip;
+
+    [Tooltip("Playback volume for this ambience layer.")]
+    [Range(0f, 1f)]
+    public float volume = 0.35f;
+
+    [Tooltip("Seconds to fade in/out when entering or leaving.")]
+    [Min(0f)]
+    public float fadeSeconds = 1.2f;
+
+    #endregion
+
+    #region Exploration Music
+
+    [Header("Exploration Music")]
+    [Tooltip("ON for snow: keep Exploration playing but lower its volume while inside this zone.")]
+    public bool duckExplorationMusic;
+
+    #endregion
+
+    #region Combat
+
+    [Header("Combat")]
+    [Tooltip("Fade this ambience out while combat / boss music is playing; fades back in after the fight.")]
+    public bool muteDuringCombat = true;
+
+    #endregion
+
+    #region Optional
+
+    [Header("Optional")]
+    [Tooltip("If empty, uses AudioMixerHub SFX group when configured.")]
+    public UnityEngine.Audio.AudioMixerGroup outputGroup;
+
+    #endregion
+
+    #region Runtime State
+
+    private Collider zoneCollider;
+    private AudioSource audioSource;
+    private Coroutine fadeRoutine;
+    private bool wasAudible;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -128,6 +154,10 @@ public class WorldAmbienceZone : MonoBehaviour
         FadeTo(shouldBeAudible ? volume : 0f);
     }
 
+    #endregion
+
+    #region Playback
+
     private bool Contains(Vector3 position)
     {
         if (zoneCollider == null || !zoneCollider.enabled || !gameObject.activeInHierarchy)
@@ -172,4 +202,6 @@ public class WorldAmbienceZone : MonoBehaviour
 
         fadeRoutine = null;
     }
+
+    #endregion
 }

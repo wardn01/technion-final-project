@@ -9,9 +9,15 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(AudioSource))]
     public class EnemyAudioEmitter : MonoBehaviour
     {
+        #region Serialized Fields
         public EnemyAudioData audioData;
-        private AudioSource audioSource;
+        #endregion
 
+        #region Private State
+        private AudioSource audioSource;
+        #endregion
+
+        #region Unity Lifecycle
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
@@ -19,7 +25,9 @@ namespace VisionOfLight.Enemy
             audioSource.playOnAwake = false;
             AudioMixerHub.Route(audioSource, AudioMixerHub.Bus.SFX);
         }
+        #endregion
 
+        #region Playback
         /// <summary>Plays a random clip for <paramref name="actionName"/>. Called from <see cref="EnemyBase.PlayEnemySound"/>.</summary>
         public void PlayClip(string actionName)
         {
@@ -51,5 +59,6 @@ namespace VisionOfLight.Enemy
 
             AudioSource.PlayClipAtPoint(clip, worldPosition, entry.volume);
         }
+        #endregion
     }
 }

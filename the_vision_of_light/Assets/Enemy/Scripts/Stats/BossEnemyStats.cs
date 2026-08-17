@@ -7,6 +7,7 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public abstract class BossEnemyStats : EnemyBaseStats
     {
+        #region Serialized Fields
         [Header("Phase 1 Combat")]
         [SerializeField] private float phase1Damage = 100f;
         [SerializeField] private float attackRange = 2f;
@@ -26,7 +27,9 @@ namespace VisionOfLight.Enemy
         [SerializeField] private float aggroLeashDistance = 32f;
         [Tooltip("Boss farther than this from spawn also triggers camp reset.")]
         [SerializeField] private float maxLeashDistance = 35f;
+        #endregion
 
+        #region Public Accessors
         public float Phase1Damage => phase1Damage;
         public float AttackRange => attackRange;
         public float Phase1AttackCooldown => phase1AttackCooldown;
@@ -36,5 +39,6 @@ namespace VisionOfLight.Enemy
         public float HeavyAttackDamage => heavyAttackDamage;
         public float AggroLeashDistance => aggroLeashDistance;
         public float MaxLeashDistance => maxLeashDistance;
+        #endregion
     }
 }

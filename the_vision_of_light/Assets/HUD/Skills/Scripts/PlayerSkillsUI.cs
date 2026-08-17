@@ -10,6 +10,8 @@ using VisionOfLight.Player;
 /// </summary>
 public class PlayerSkillsUI : MonoBehaviour
 {
+    #region References & Layout
+
     [Header("References")]
     [Tooltip("Player combat script that owns weapon state and timers.")]
     public PlayerCombat combatScript;
@@ -62,12 +64,20 @@ public class PlayerSkillsUI : MonoBehaviour
     public AudioClip eReadySound;
     public AudioClip qReadySound;
 
+    #endregion
+
+    #region Runtime State
+
     private int lastETimerValue = -1;
     private bool wasEReady = true;
     private bool wasQReady = true;
 
     private string lastWeaponName = "";
     private Coroutine currentPulseCoroutine;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Start()
     {
@@ -92,6 +102,10 @@ public class PlayerSkillsUI : MonoBehaviour
         HandleSkillE();
         HandleSkillQ();
     }
+
+    #endregion
+
+    #region Weapon UI
 
     /// <summary>Index into weaponUIs for the equipped weapon, or -1 if none match.</summary>
     private int GetCurrentUIIndex()
@@ -133,6 +147,10 @@ public class PlayerSkillsUI : MonoBehaviour
 
         lastWeaponName = currentName;
     }
+
+    #endregion
+
+    #region Skill E
 
     /// <summary>Cooldown fill, countdown text, ready LED, and ready sound for skill E.</summary>
     private void HandleSkillE()
@@ -191,6 +209,10 @@ public class PlayerSkillsUI : MonoBehaviour
         if (ui.eFrameLed != null)
             ui.eFrameLed.SetActive(isEReady);
     }
+
+    #endregion
+
+    #region Skill Q
 
     /// <summary>Q charge dots/fill, ready LED, and ready sound when E hits reach required count.</summary>
     private void HandleSkillQ()
@@ -255,6 +277,10 @@ public class PlayerSkillsUI : MonoBehaviour
         UpdateQChargeDots(ui, currentCount, visibleSlots);
     }
 
+    #endregion
+
+    #region Animation
+
     /// <summary>Quick scale bounce when the E cooldown number ticks down.</summary>
     private IEnumerator PulseText(Transform textTransform)
     {
@@ -273,4 +299,6 @@ public class PlayerSkillsUI : MonoBehaviour
 
         textTransform.localScale = originalScale;
     }
+
+    #endregion
 }

@@ -6,17 +6,24 @@ using UnityEngine;
 /// </summary>
 public class QuestStepTrigger : MonoBehaviour
 {
+    #region Quest Requirements
     [Header("Quest Requirements")]
     public int requiredState;
     public int requiredStep;
+    #endregion
 
+    #region Behaviour
     [Header("Behaviour")]
     public bool completeQuestOnTrigger;
     public QuestData questForRewards;
+    #endregion
 
+    #region Optional Settings
     [Header("Optional")]
     public bool disableAfterTrigger = true;
+    #endregion
 
+    #region Trigger Collision
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player") || QuestManager.Instance == null) return;
@@ -30,4 +37,5 @@ public class QuestStepTrigger : MonoBehaviour
         if (disableAfterTrigger)
             gameObject.SetActive(false);
     }
+    #endregion
 }

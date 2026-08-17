@@ -7,11 +7,18 @@ using VisionOfLight.Enemy;
 using VisionOfLight.Player;
 using VisionOfLight.Chest;
 
+/// <summary>
+/// Pause overlay, Esc/hotkey sub-screens (map, inventory, setup, quests, stats, bestiary),
+/// and world save/load for the selected slot. Persistent singleton across scenes.
+/// </summary>
 [DefaultExecutionOrder(200)]
 public class PauseMenuManager : MonoBehaviour
 {
+    #region Singleton
     public static PauseMenuManager Instance { get; private set; }
+    #endregion
 
+    #region UI Panels
     [Header("Main UI Panels")]
     public GameObject pauseMainPanel;
     public GameObject settingsMenuUI;
@@ -35,7 +42,9 @@ public class PauseMenuManager : MonoBehaviour
 
     [Header("UI Buttons")]
     public Button backBtn;
+    #endregion
 
+    #region Player & Runtime State
     [Header("Player & Data")]
     public Transform playerTransform;
     public PlayerData playerProfile;
@@ -46,7 +55,9 @@ public class PauseMenuManager : MonoBehaviour
     private GameObject currentActiveSubScreen = null;
     private bool worldDataLoadedOnce;
     private bool worldRestoreScheduled;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null)
@@ -146,7 +157,10 @@ public class PauseMenuManager : MonoBehaviour
             QuickSlotManager.Instance.UpdateUI();
         }
     }
+    #endregion
 
+    #region Pause / Resume
+    /// <summary>Back: close settings, then sub-screen, then pause/resume the game.</summary>
     public void HandleBackButton()
     {
         if (settingsMenuUI != null && settingsMenuUI.activeSelf)
@@ -179,6 +193,7 @@ public class PauseMenuManager : MonoBehaviour
         else Pause();
     }
 
+    /// <summary>Opens the pause panel and freezes gameplay time.</summary>
     public void Pause()
     {
         CloseAllSubScreens();
@@ -196,6 +211,7 @@ public class PauseMenuManager : MonoBehaviour
         GameplayCursorPolicy.RequestApply();
     }
 
+    /// <summary>Closes pause UI and resumes gameplay time.</summary>
     public void Resume()
     {
         CloseAllSubScreens();
@@ -224,7 +240,9 @@ public class PauseMenuManager : MonoBehaviour
         if (quickSlotBar != null)
             quickSlotBar.SetActive(show);
     }
+    #endregion
 
+    #region Sub Screens
     private void OpenSubScreen(GameObject screenToOpen, bool keepQuickSlots)
     {
         CloseAllSubScreens();
@@ -337,7 +355,10 @@ public class PauseMenuManager : MonoBehaviour
 
     public void OpenSettings() => settingsMenuUI?.SetActive(true);
     public void CloseSettings() => settingsMenuUI?.SetActive(false);
+    #endregion
 
+    #region Save / Load
+    /// <summary>Writes the current world, inventory, player, quests, chests, teleports, and stats to the selected slot.</summary>
     public void SaveGameSilently()
     {
         ResolveWorldReferences();
@@ -401,6 +422,7 @@ public class PauseMenuManager : MonoBehaviour
         SaveManager.SaveGame(currentSlot, data);
     }
 
+    /// <summary>Saves the slot then returns to the Main Menu scene.</summary>
     public void SaveAndExit()
     {
         SaveGameSilently();
@@ -588,7 +610,9 @@ public class PauseMenuManager : MonoBehaviour
         else
             playerTransform.SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
     }
+    #endregion
 
+    #region Scene References
     /// <summary>
     /// Copies serialized World-scene bindings from a scene-local manager into this persistent instance.
     /// </summary>
@@ -716,4 +740,5 @@ public class PauseMenuManager : MonoBehaviour
         backBtn.onClick.RemoveListener(HandleBackButton);
         backBtn.onClick.AddListener(HandleBackButton);
     }
+    #endregion
 }

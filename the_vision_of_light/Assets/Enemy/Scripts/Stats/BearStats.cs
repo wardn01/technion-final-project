@@ -10,6 +10,7 @@ namespace VisionOfLight.Enemy
     [CreateAssetMenu(fileName = "BearData", menuName = "Game Data/Enemy/Animal/Bear Stats")]
     public class BearStats : AnimalEnemyStats
     {
+        #region Serialized Fields
         [Header("Bear Life Cycle")]
         [Tooltip("Seconds the bear stays asleep while patrolling area is clear.")]
         [SerializeField] private float sleepDuration = 12f;
@@ -23,11 +24,14 @@ namespace VisionOfLight.Enemy
         [SerializeField] private float heavyAttackMultiplier = 1.5f;
         [Tooltip("Attack index 3 damage as a multiplier of animalDamage.")]
         [SerializeField] private float slamAttackMultiplier = 2f;
+        #endregion
 
+        #region Public Accessors
         public float SleepDuration => sleepDuration;
         public float WalkDuration => walkDuration;
         public float AggroLeashDistance => aggroLeashDistance;
         public float HeavyAttackMultiplier => heavyAttackMultiplier;
         public float SlamAttackMultiplier => slamAttackMultiplier;
+        #endregion
     }
 }

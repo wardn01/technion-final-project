@@ -7,6 +7,9 @@ using UnityEngine.Audio;
 /// </summary>
 public static class AudioMixerHub
 {
+    #region Bus
+
+    /// <summary>Named mixer output groups used for routing and volume sliders.</summary>
     public enum Bus
     {
         Music,
@@ -15,10 +18,18 @@ public static class AudioMixerHub
         Dialogue
     }
 
+    #endregion
+
+    #region Constants
+
     private static readonly string[] SliderKeys =
         { "MasterVol", "MusicVol", "DialogueVol", "SFXVol", "UIVol" };
 
     private const string LegacyHealMarkerKey = "AudioSliderPrefsHealed_v1";
+
+    #endregion
+
+    #region Runtime State
 
     private static AudioMixer s_mixer;
     private static AudioMixerGroup s_music;
@@ -26,6 +37,13 @@ public static class AudioMixerHub
     private static AudioMixerGroup s_ui;
     private static AudioMixerGroup s_dialogue;
     private static bool s_configured;
+
+    /// <summary>True after <see cref="Configure"/> has been called with a valid mixer.</summary>
+    public static bool IsConfigured => s_configured && s_mixer != null;
+
+    #endregion
+
+    #region Boot
 
     /// <summary>
     /// Old builds saved corrupt volume prefs (0 / garbage bits) that fully mute mixer groups.
@@ -62,8 +80,11 @@ public static class AudioMixerHub
             PlayerPrefs.Save();
     }
 
-    public static bool IsConfigured => s_configured && s_mixer != null;
+    #endregion
 
+    #region Configuration
+
+    /// <summary>Registers the mixer and auto-resolves all bus groups by name.</summary>
     public static void Configure(AudioMixer mixer)
     {
         if (mixer == null)
@@ -77,6 +98,7 @@ public static class AudioMixerHub
         s_configured = true;
     }
 
+    /// <summary>Registers the mixer with explicit group overrides for each bus.</summary>
     public static void Configure(
         AudioMixer mixer,
         AudioMixerGroup music,
@@ -94,6 +116,10 @@ public static class AudioMixerHub
         s_dialogue = dialogue != null ? dialogue : FindGroup(mixer, "Dialogue");
         s_configured = true;
     }
+
+    #endregion
+
+    #region Volume
 
     /// <summary>Applies saved slider prefs (0–100) to exposed mixer parameters.</summary>
     public static void ApplySavedVolumes()
@@ -122,6 +148,17 @@ public static class AudioMixerHub
         return value;
     }
 
+    private static void ApplySlider(string parameter, float sliderValue)
+    {
+        float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
+        s_mixer.SetFloat(parameter, volume);
+    }
+
+    #endregion
+
+    #region Routing
+
+    /// <summary>Assigns an <see cref="AudioSource"/> to the requested mixer bus.</summary>
     public static void Route(AudioSource source, Bus bus)
     {
         if (source == null || !s_configured)
@@ -132,6 +169,7 @@ public static class AudioMixerHub
             source.outputAudioMixerGroup = group;
     }
 
+    /// <summary>Returns the configured mixer group for a bus, or null if not set up.</summary>
     public static AudioMixerGroup GetGroup(Bus bus)
     {
         return bus switch
@@ -142,12 +180,6 @@ public static class AudioMixerHub
             Bus.Dialogue => s_dialogue,
             _ => null
         };
-    }
-
-    private static void ApplySlider(string parameter, float sliderValue)
-    {
-        float volume = Mathf.Log10(Mathf.Clamp(sliderValue / 100f, 0.0001f, 1f)) * 20f;
-        s_mixer.SetFloat(parameter, volume);
     }
 
     private static AudioMixerGroup FindGroup(AudioMixer mixer, string name)
@@ -164,4 +196,6 @@ public static class AudioMixerHub
 
         return matches[0];
     }
+
+    #endregion
 }

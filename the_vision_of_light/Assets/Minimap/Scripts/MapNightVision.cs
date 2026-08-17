@@ -7,10 +7,13 @@ using UnityEngine.Rendering;
 /// </summary>
 public class MapNightVision : MonoBehaviour
 {
+    #region Private State
     private Quaternion savedSunRotation;
     private float savedSunIntensity;
     private Color savedSunColor;
+    #endregion
 
+    #region Unity Lifecycle
     private void OnEnable()
     {
         RenderPipelineManager.beginCameraRendering += OnBeginCamera;
@@ -22,7 +25,9 @@ public class MapNightVision : MonoBehaviour
         RenderPipelineManager.beginCameraRendering -= OnBeginCamera;
         RenderPipelineManager.endCameraRendering -= OnEndCamera;
     }
+    #endregion
 
+    #region Camera Detection
     private static bool IsMapRenderCamera(Camera cam)
     {
         if (cam == null) return false;
@@ -32,7 +37,9 @@ public class MapNightVision : MonoBehaviour
 
         return false;
     }
+    #endregion
 
+    #region Render Pipeline Hooks
     private void OnBeginCamera(ScriptableRenderContext context, Camera cam)
     {
         if (!IsMapRenderCamera(cam)
@@ -63,4 +70,5 @@ public class MapNightVision : MonoBehaviour
         sun.intensity = savedSunIntensity;
         sun.color = savedSunColor;
     }
+    #endregion
 }

@@ -7,12 +7,18 @@ using UnityEngine;
 /// </summary>
 public static class PlayerStatsTracker
 {
+    #region Private State
     private static readonly PlayerStatistics runtime = new PlayerStatistics();
     private static readonly Dictionary<string, int> monsterKillLookup = new Dictionary<string, int>();
+    #endregion
 
+    #region Public Accessors
     /// <summary>Live counters for the current session (also mirrored into GameData on save).</summary>
     public static PlayerStatistics Stats => runtime;
+    #endregion
 
+    #region Save / Load
+    /// <summary>Restores runtime counters from the active save slot.</summary>
     public static void ApplyFromSave(GameData data)
     {
         if (data == null || data.playerStatistics == null)
@@ -26,6 +32,7 @@ public static class PlayerStatsTracker
         RebuildLookupFromRuntime();
     }
 
+    /// <summary>Writes runtime counters back into the active save slot.</summary>
     public static void WriteToSave(GameData data)
     {
         if (data == null)
@@ -37,7 +44,9 @@ public static class PlayerStatsTracker
         SyncLookupIntoRuntime();
         data.playerStatistics.CopyFrom(runtime);
     }
+    #endregion
 
+    #region Combat Statistics
     /// <summary>Records final damage applied to an enemy (after defense), split by weapon element.</summary>
     public static void AddDamage(float amount, WeaponItemData.WeaponElement element = WeaponItemData.WeaponElement.None)
     {
@@ -62,7 +71,9 @@ public static class PlayerStatsTracker
                 break;
         }
     }
+    #endregion
 
+    #region Kill Tracking
     /// <summary>
     /// Records a kill. Prefer <paramref name="monsterId"/> = EnemyBaseStats asset name (e.g. OrcData).
     /// Always increments <see cref="PlayerStatistics.totalEnemiesKilled"/>.
@@ -82,6 +93,7 @@ public static class PlayerStatsTracker
         SyncLookupIntoRuntime();
     }
 
+    /// <summary>Returns the kill count for a specific monster id, or zero when unknown.</summary>
     public static int GetKillCount(string monsterId)
     {
         if (string.IsNullOrWhiteSpace(monsterId))
@@ -90,31 +102,40 @@ public static class PlayerStatsTracker
         return monsterKillLookup.TryGetValue(monsterId, out int count) ? count : 0;
     }
 
+    /// <summary>True when the player has defeated at least one enemy of this type.</summary>
     public static bool IsDiscovered(string monsterId)
     {
         return GetKillCount(monsterId) > 0;
     }
+    #endregion
 
+    #region Activity Counters
+    /// <summary>Increments the chest-opened counter.</summary>
     public static void RecordChestOpened()
     {
         runtime.chestsOpened++;
     }
 
+    /// <summary>Increments the wave-cleared counter.</summary>
     public static void RecordWaveCleared()
     {
         runtime.wavesCleared++;
     }
 
+    /// <summary>Increments the player-death counter.</summary>
     public static void RecordDeath()
     {
         runtime.timesDied++;
     }
 
+    /// <summary>Increments the potion-consumed counter.</summary>
     public static void RecordPotionConsumed()
     {
         runtime.potionsConsumed++;
     }
+    #endregion
 
+    #region Private Helpers
     private static void RebuildLookupFromRuntime()
     {
         monsterKillLookup.Clear();
@@ -150,7 +171,9 @@ public static class PlayerStatsTracker
             });
         }
     }
+    #endregion
 
+    #region Editor
 #if UNITY_EDITOR
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -159,4 +182,5 @@ public static class PlayerStatsTracker
         monsterKillLookup.Clear();
     }
 #endif
+    #endregion
 }

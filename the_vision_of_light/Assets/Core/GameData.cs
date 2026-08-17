@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>One inventory stack stored inside a save file (item name + amount).</summary>
 [System.Serializable]
 public class SavedItem
 {
@@ -8,9 +9,14 @@ public class SavedItem
     public int amount;
 }
 
+/// <summary>
+/// Serializable snapshot of one world slot: player, quests, inventory, teleports, chests, and stats.
+/// Written/read by <see cref="SaveManager"/> as JSON.
+/// </summary>
 [System.Serializable]
 public class GameData
 {
+    #region World
     public float[] playerPos = new float[3];
     public bool hasSavedPlayerPosition;
     public float currentTime;
@@ -18,16 +24,23 @@ public class GameData
 
     /// <summary>Last time this slot was entered/saved, shown in the Play menu (dd/MM/yyyy).</summary>
     public string lastJoinedDate;
+    #endregion
 
+    #region Inventory & Player
     public List<SavedItem> inventoryItems = new List<SavedItem>();
     
     public string playerDataJson;
+    #endregion
 
+    #region Quests
     public int mainQuestState;
     public int questStepIndex;
 
     /// <summary>Chapter 1 bed cinematic finished — skip intro/awakening on reload.</summary>
     public bool hasCompletedChapter01Awakening;
+    #endregion
+
+    #region Survival
 
     /// <summary>True when this save includes a health value (false for older saves).</summary>
     public bool hasSavedHealth;
@@ -35,7 +48,9 @@ public class GameData
 
     public bool hasSavedStamina;
     public float savedCurrentStamina;
+    #endregion
 
+    #region World Progress
     /// <summary>One-time challenge stones that were cleared (trialId per stone).</summary>
     public List<string> completedOneTimeTrials = new List<string>();
 
@@ -59,8 +74,10 @@ public class GameData
 
     /// <summary>Lifetime combat / exploration achievement counters for this save slot.</summary>
     public PlayerStatistics playerStatistics = new PlayerStatistics();
+    #endregion
 }
 
+/// <summary>Per-species kill counter stored inside <see cref="PlayerStatistics"/>.</summary>
 [System.Serializable]
 public class MonsterKillEntry
 {
@@ -68,6 +85,7 @@ public class MonsterKillEntry
     public int killCount;
 }
 
+/// <summary>Lifetime combat and exploration counters for one save slot.</summary>
 [System.Serializable]
 public class PlayerStatistics
 {
@@ -137,6 +155,7 @@ public class PlayerStatistics
     }
 }
 
+/// <summary>UTC timestamp when a chest's guardians were last all defeated (hourly respawn).</summary>
 [System.Serializable]
 public class ChestGuardianDefeatTime
 {

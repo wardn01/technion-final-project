@@ -7,6 +7,8 @@ using TMPro;
 /// </summary>
 public class PickupNotification : MonoBehaviour
 {
+    #region UI References
+
     [Header("UI References")]
     public Image itemIcon;
     public TextMeshProUGUI itemText;
@@ -19,9 +21,17 @@ public class PickupNotification : MonoBehaviour
     [Tooltip("Seconds to fade from full alpha to zero.")]
     public float fadeTime = 1f;
 
+    #endregion
+
+    #region Runtime State
+
     private ItemData item;
     private int displayedAmount;
     private float timer;
+
+    #endregion
+
+    #region Public API
 
     /// <summary>Initializes icon, name x amount, and visibility timer.</summary>
     public void Setup(ItemData item, int amount)
@@ -57,18 +67,9 @@ public class PickupNotification : MonoBehaviour
         return true;
     }
 
-    private void RefreshText()
-    {
-        if (itemText != null && item != null)
-            itemText.text = $"{item.itemName} x{displayedAmount}";
-    }
+    #endregion
 
-    private void ResetTimer()
-    {
-        timer = showTime;
-        if (canvasGroup != null)
-            canvasGroup.alpha = 1f;
-    }
+    #region Unity Lifecycle
 
     private void Update()
     {
@@ -84,4 +85,23 @@ public class PickupNotification : MonoBehaviour
         if (canvasGroup == null || canvasGroup.alpha <= 0f)
             Destroy(gameObject);
     }
+
+    #endregion
+
+    #region Helpers
+
+    private void RefreshText()
+    {
+        if (itemText != null && item != null)
+            itemText.text = $"{item.itemName} x{displayedAmount}";
+    }
+
+    private void ResetTimer()
+    {
+        timer = showTime;
+        if (canvasGroup != null)
+            canvasGroup.alpha = 1f;
+    }
+
+    #endregion
 }

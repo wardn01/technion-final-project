@@ -9,13 +9,24 @@ using System.Collections.Generic;
 /// </summary>
 public class ShopkeeperNPC : MonoBehaviour
 {
+    #region NPC Data
+
     [Header("NPC Data")]
     public NPCData myData;
 
+    /// <summary>Items sold by this shopkeeper, sourced from <see cref="myData"/>.</summary>
     public List<ItemData> itemsToSell => myData != null ? myData.itemsToSell : new List<ItemData>();
+
+    #endregion
+
+    #region Map Settings
 
     [Header("Map Settings")]
     public Transform mapIconObject;
+
+    #endregion
+
+    #region Overhead UI
 
     [Header("Overhead UI (World Space)")]
     public GameObject overheadUI;
@@ -26,8 +37,16 @@ public class ShopkeeperNPC : MonoBehaviour
     [Tooltip("Overhead canvas stays visible within this world distance.")]
     public float iconVisibleDistance = 15f;
 
+    #endregion
+
+    #region Runtime State
+
     private bool isPlayerInRange;
     private Transform playerTransform;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Start()
     {
@@ -47,20 +66,6 @@ public class ShopkeeperNPC : MonoBehaviour
 
             SetupMapIcon();
         }
-    }
-
-    private void SetupMapIcon()
-    {
-        if (mapIconObject == null || myData.npcIcon == null)
-            return;
-
-        SpriteRenderer sr = mapIconObject.GetComponent<SpriteRenderer>();
-        if (sr == null)
-            sr = mapIconObject.gameObject.AddComponent<SpriteRenderer>();
-
-        sr.sprite = myData.npcIcon;
-        sr.sortingOrder = 10;
-        mapIconObject.gameObject.layer = LayerMask.NameToLayer("Minimap");
     }
 
     private void Update()
@@ -120,17 +125,6 @@ public class ShopkeeperNPC : MonoBehaviour
             DialogueManager.Instance.StartDialogue(myData.npcName, myData.welcomeDialogue, true, this);
     }
 
-    private void FaceEachOtherInstantly()
-    {
-        if (playerTransform == null)
-            return;
-
-        Vector3 playerDir = transform.position - playerTransform.position;
-        playerDir.y = 0;
-        if (playerDir != Vector3.zero)
-            playerTransform.rotation = Quaternion.LookRotation(playerDir);
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -155,4 +149,35 @@ public class ShopkeeperNPC : MonoBehaviour
         DialogueManager.Instance?.EndDialogue();
         ShopManager.Instance.CloseShop();
     }
+
+    #endregion
+
+    #region Helpers
+
+    private void SetupMapIcon()
+    {
+        if (mapIconObject == null || myData.npcIcon == null)
+            return;
+
+        SpriteRenderer sr = mapIconObject.GetComponent<SpriteRenderer>();
+        if (sr == null)
+            sr = mapIconObject.gameObject.AddComponent<SpriteRenderer>();
+
+        sr.sprite = myData.npcIcon;
+        sr.sortingOrder = 10;
+        mapIconObject.gameObject.layer = LayerMask.NameToLayer("Minimap");
+    }
+
+    private void FaceEachOtherInstantly()
+    {
+        if (playerTransform == null)
+            return;
+
+        Vector3 playerDir = transform.position - playerTransform.position;
+        playerDir.y = 0;
+        if (playerDir != Vector3.zero)
+            playerTransform.rotation = Quaternion.LookRotation(playerDir);
+    }
+
+    #endregion
 }

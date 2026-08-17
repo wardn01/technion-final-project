@@ -6,6 +6,9 @@ using UnityEngine;
 /// </summary>
 public static class WorldBoundsMaskUtility
 {
+    #region Circle Mask Generation
+
+    /// <summary>Builds a circle mask texture for minimap fog overlays.</summary>
     /// <param name="texSize">Texture resolution (square).</param>
     /// <param name="areaSize">Covered area size in target units (UI or world).</param>
     /// <param name="circleCenterOffset">Circle center offset from the area center, same units.</param>
@@ -69,4 +72,6 @@ public static class WorldBoundsMaskUtility
         tex.Apply(false, true);
         return tex;
     }
+
+    #endregion
 }

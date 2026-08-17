@@ -1,15 +1,24 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
+/// <summary>
+/// Drives the in-world day/night cycle: sun rotation, ambient light, fog, and sky material strength.
+/// Exposes a singleton so other systems (e.g. minimap night vision) can read or override sun state.
+/// </summary>
 [ExecuteAlways]
 public class DayNightCycle : MonoBehaviour
 {
+    #region Singleton
     public static DayNightCycle Instance { get; private set; }
+    #endregion
 
+    #region Time Settings
     [Header("Time Settings")]
     [Range(0, 24)] public float currentTime = 8f;
     public float timeMultiplier = 60f;
+    #endregion
 
+    #region Sun & Moon Settings
     [Header("Sun & Moon Settings")]
     public Light sunLight;
     public Transform sunMesh; 
@@ -20,23 +29,31 @@ public class DayNightCycle : MonoBehaviour
     [Header("Sun Colors")]
     public Color sunriseColor = new Color(1f, 0.7f, 0.45f);
     public Color dayColor = Color.white;
+    #endregion
 
+    #region Ambient Lighting
     [Header("Ambient Lighting")]
     public Color dayAmbientColor = new Color(0.9f, 0.92f, 1f);
     public Color nightAmbientColor = new Color(0.02f, 0.02f, 0.1f);
+    #endregion
 
+    #region Fog
     [Header("Fog")]
     public bool useFog = true;
     public Color dayFogColor = new Color(0.78f, 0.88f, 1f);
     public Color nightFogColor = new Color(0.01f, 0.01f, 0.05f);
     [Range(0f, 0.05f)] public float dayFogDensity = 0.0015f;
     [Range(0f, 0.05f)] public float nightFogDensity = 0.004f;
+    #endregion
 
+    #region Materials
     [Header("Materials")]
     public Material skyDomeMaterial;
     public Material cloudsMaterial;
     public string strengthProperty = "_Strength";
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null)
@@ -61,7 +78,9 @@ public class DayNightCycle : MonoBehaviour
     }
 
     private void OnValidate() { UpdateAtmosphere(); }
+    #endregion
 
+    #region Atmosphere Update
     void UpdateAtmosphere()
     {
         if (sunLight == null) return;
@@ -112,4 +131,5 @@ public class DayNightCycle : MonoBehaviour
         if (skyDomeMaterial != null) skyDomeMaterial.SetFloat(strengthProperty, Mathf.Lerp(0.01f, 1f, t));
         if (cloudsMaterial != null) cloudsMaterial.SetFloat(strengthProperty, Mathf.Lerp(0.1f, 2f, t));
     }
+    #endregion
 }

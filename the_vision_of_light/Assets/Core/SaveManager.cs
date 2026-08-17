@@ -13,11 +13,21 @@ using System.IO;
 /// </summary>
 public static class SaveManager
 {
+    #region Constants
     /// <summary>Defensive cap — a valid save is a few KB; anything huge is corrupt/tampered.</summary>
     private const long MaxSaveFileBytes = 16 * 1024 * 1024;
 
     public const string LastJoinedDateFormat = "dd/MM/yyyy";
+    #endregion
 
+    #region Paths
+    private static string GetSavePath(int slotIndex)
+    {
+        return Path.Combine(Application.persistentDataPath, "save_" + slotIndex + ".json");
+    }
+    #endregion
+
+    #region Save / Load / Delete
     /// <summary>Updates <see cref="GameData.lastJoinedDate"/> and mirrors it in PlayerPrefs.</summary>
     public static void StampLastJoined(int slotIndex, GameData data)
     {
@@ -27,11 +37,6 @@ public static class SaveManager
         string date = DateTime.Now.ToString(LastJoinedDateFormat);
         data.lastJoinedDate = date;
         PlayerPrefs.SetString("Slot_" + slotIndex + "_LastJoin", date);
-    }
-
-    private static string GetSavePath(int slotIndex)
-    {
-        return Path.Combine(Application.persistentDataPath, "save_" + slotIndex + ".json");
     }
 
     /// <summary>True when a save file (or its backup) exists on disk for this slot.</summary>
@@ -177,4 +182,5 @@ public static class SaveManager
         PlayerPrefs.Save();
         Debug.Log("Deleted save file for Slot " + slotIndex);
     }
+    #endregion
 }

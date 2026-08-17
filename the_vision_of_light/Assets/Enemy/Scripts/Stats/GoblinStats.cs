@@ -9,6 +9,7 @@ namespace VisionOfLight.Enemy
     [CreateAssetMenu(fileName = "GoblinData", menuName = "Game Data/Enemy/Normal/Goblin Stats")]
     public class GoblinStats : NormalEnemyStats
     {
+        #region Serialized Fields
         [Header("Ranged Combat (Bone Throw)")]
         [Tooltip("Max distance to stand still and throw bones.")]
         [SerializeField] private float rangedAttackRange = 11f;
@@ -19,11 +20,14 @@ namespace VisionOfLight.Enemy
         [Tooltip("Throw damage as % of scaled currentAttack.")]
         [SerializeField] private float rangedDamage = 75f;
         [SerializeField] private float rangedAttackCooldown = 2.5f;
+        #endregion
 
+        #region Public Accessors
         public float RangedAttackRange => rangedAttackRange;
         public float MeleeChargeRange => meleeChargeRange;
         public float ProjectileSpeed => projectileSpeed;
         public float RangedDamage => rangedDamage;
         public float RangedAttackCooldown => rangedAttackCooldown;
+        #endregion
     }
 }

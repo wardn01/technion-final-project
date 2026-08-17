@@ -10,6 +10,8 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(SphereCollider))]
     public class StoneProjectile : MonoBehaviour
     {
+        #region Serialized Fields
+
         [SerializeField] private float lifeTime = 12f;
         [SerializeField] private float playerHitPadding = 0.08f;
         [SerializeField] private float minAirTimeBeforeDamage = 0.08f;
@@ -19,6 +21,10 @@ namespace VisionOfLight.Enemy
         [SerializeField] private float autoSettleDelay = 0.25f;
         [SerializeField] private float sinkSpeed = 0.07f;
         [SerializeField] private float maxSinkDepth = 0.38f;
+
+        #endregion
+
+        #region Runtime State
 
         private const float FallbackCapsuleRadius = 0.3f;
         private const float FallbackCapsuleHeight = 2f;
@@ -40,6 +46,13 @@ namespace VisionOfLight.Enemy
         private EnemyAudioEmitter audioEmitter;
         private int groundMask;
 
+        // Shared buffer — this runs every physics tick per flying stone, so it must not allocate.
+        private static readonly RaycastHit[] groundHitsBuffer = new RaycastHit[16];
+
+        #endregion
+
+        #region Unity Lifecycle
+
         private void Awake()
         {
             physicsSphere = GetComponent<SphereCollider>();
@@ -56,16 +69,41 @@ namespace VisionOfLight.Enemy
             Destroy(gameObject, lifeTime);
         }
 
+        private void FixedUpdate()
+        {
+            if (!hasLaunched)
+                return;
+
+            if (isAtRest)
+            {
+                UpdateRestingStone();
+                lastCheckPosition = transform.position;
+                return;
+            }
+
+            Vector3 segmentStart = lastCheckPosition;
+            HandlePlayerHit(segmentStart, transform.position);
+            TrackAutoSettle();
+            lastCheckPosition = transform.position;
+        }
+
+        #endregion
+
+        #region Public API
+
+        /// <summary>Sets impact damage from the thrower's scaled attack.</summary>
         public void SetDamage(float dmgAmount)
         {
             damage = dmgAmount;
         }
 
+        /// <summary>Routes impact audio through the thrower's emitter.</summary>
         public void BindAudio(EnemyAudioEmitter emitter)
         {
             audioEmitter = emitter;
         }
 
+        /// <summary>Locks the player transform for capsule hit detection.</summary>
         public void SetTarget(Transform target)
         {
             playerTarget = target;
@@ -81,6 +119,7 @@ namespace VisionOfLight.Enemy
                 : playerTarget.GetComponent<CharacterController>();
         }
 
+        /// <summary>Called after launch velocity is applied — enables flight physics and hit checks.</summary>
         public void NotifyLaunched()
         {
             hasLaunched = true;
@@ -106,23 +145,9 @@ namespace VisionOfLight.Enemy
             SetFlyingPhysics();
         }
 
-        private void FixedUpdate()
-        {
-            if (!hasLaunched)
-                return;
+        #endregion
 
-            if (isAtRest)
-            {
-                UpdateRestingStone();
-                lastCheckPosition = transform.position;
-                return;
-            }
-
-            Vector3 segmentStart = lastCheckPosition;
-            HandlePlayerHit(segmentStart, transform.position);
-            TrackAutoSettle();
-            lastCheckPosition = transform.position;
-        }
+        #region Hit Detection
 
         private void TryHandlePlayerCollider(Collider other)
         {
@@ -162,6 +187,10 @@ namespace VisionOfLight.Enemy
             audioEmitter?.PlayClipAt("StoneImpact", transform.position);
             SettleStone();
         }
+
+        #endregion
+
+        #region Ground / Settle
 
         private void TrackAutoSettle()
         {
@@ -266,9 +295,6 @@ namespace VisionOfLight.Enemy
                 rb.position = pos;
         }
 
-        // Shared buffer — this runs every physics tick per flying stone, so it must not allocate.
-        private static readonly RaycastHit[] groundHitsBuffer = new RaycastHit[16];
-
         private bool TryFindGroundPosition(float worldX, float worldZ, out Vector3 groundedPosition)
         {
             groundedPosition = transform.position;
@@ -315,6 +341,10 @@ namespace VisionOfLight.Enemy
             groundedPosition = new Vector3(worldX, bestY + radius, worldZ);
             return true;
         }
+
+        #endregion
+
+        #region Helpers
 
         private void SeparateFromPlayerHorizontally(Vector3 capsuleBottom, Vector3 capsuleTop, float playerRadius)
         {
@@ -426,5 +456,7 @@ namespace VisionOfLight.Enemy
         {
             return Mathf.Max(target.lossyScale.x, target.lossyScale.z);
         }
+
+        #endregion
     }
 }

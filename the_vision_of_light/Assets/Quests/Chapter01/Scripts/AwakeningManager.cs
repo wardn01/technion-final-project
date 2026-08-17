@@ -4,9 +4,16 @@ using System.Collections;
 using Unity.Cinemachine;
 using VisionOfLight.Player;
 
+/// <summary>
+/// Chapter 1 awakening cinematic: black-screen fades, sit-up / stand-up animation,
+/// camera hand-off to gameplay, and save after the player reaches the stand point.
+/// Skipped when loading a save past the fresh-story start; can defer to <see cref="IntroCutsceneManager"/>.
+/// </summary>
 [DefaultExecutionOrder(50)]
 public class AwakeningManager : MonoBehaviour
 {
+    #region Session State
+
     public static bool HasCompletedAwakening { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -15,13 +22,23 @@ public class AwakeningManager : MonoBehaviour
         HasCompletedAwakening = false;
     }
 
+    /// <summary>Resets awakening completion for a fresh Chapter 1 session.</summary>
     public static void ResetSessionState()
     {
         HasCompletedAwakening = false;
     }
+
+    #endregion
+
+    #region UI Elements
+
     [Header("UI Elements")]
     public Image blackScreen;
-    public GameObject mainCanvas; 
+    public GameObject mainCanvas;
+
+    #endregion
+
+    #region Cinematic Elements
 
     [Header("Cinematic Elements")]
     public Animator cinematicAnimator;
@@ -29,10 +46,18 @@ public class AwakeningManager : MonoBehaviour
     public GameObject realPlayer;
     public CinemachineCamera sleepCamera;
 
+    #endregion
+
+    #region Timings
+
     [Header("Timings")]
     public float sitUpDuration = 3.0f;
     public float standUpDuration = 2.0f;
     public float cameraBlendTime = 1.5f;
+
+    #endregion
+
+    #region Markers
 
     [Header("Markers")]
     public Transform sitPoint;
@@ -40,11 +65,19 @@ public class AwakeningManager : MonoBehaviour
 
     public float playerSpawnYOffset = 0.1f;
 
+    #endregion
+
+    #region Intro
+
     [Header("Intro")]
     [Tooltip("When assigned and playing the intro, awakening waits for IntroCutsceneManager.")]
     public IntroCutsceneManager introCutsceneManager;
 
     private bool awakeningStarted;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -67,6 +100,24 @@ public class AwakeningManager : MonoBehaviour
         StartAwakening();
     }
 
+    #endregion
+
+    #region Public API
+
+    /// <summary>Called by <see cref="IntroCutsceneManager"/> after the placeholder intro finishes.</summary>
+    public void StartAwakening()
+    {
+        if (awakeningStarted || ShouldSkipAwakening())
+            return;
+
+        awakeningStarted = true;
+        StartCoroutine(AwakeningRoutine());
+    }
+
+    #endregion
+
+    #region Skip & Setup
+
     private IntroCutsceneManager ResolveIntroReference()
     {
         if (introCutsceneManager == null)
@@ -77,16 +128,6 @@ public class AwakeningManager : MonoBehaviour
         }
 
         return introCutsceneManager;
-    }
-
-    /// <summary>Called by <see cref="IntroCutsceneManager"/> after the placeholder intro finishes.</summary>
-    public void StartAwakening()
-    {
-        if (awakeningStarted || ShouldSkipAwakening())
-            return;
-
-        awakeningStarted = true;
-        StartCoroutine(AwakeningRoutine());
     }
 
     private bool ShouldSkipAwakening()
@@ -156,6 +197,10 @@ public class AwakeningManager : MonoBehaviour
         HasCompletedAwakening = true;
         WorldSaveManager.Instance?.MarkChapter01AwakeningComplete();
     }
+
+    #endregion
+
+    #region Awakening Routine
 
     private IEnumerator AwakeningRoutine()
     {
@@ -259,9 +304,13 @@ public class AwakeningManager : MonoBehaviour
             mainCanvas.SetActive(true);
 
         PauseMenuManager.Instance?.SaveGameSilently();
-        
+
         MarkAwakeningComplete();
     }
+
+    #endregion
+
+    #region Fade Helpers
 
     private IEnumerator FadeAlpha(float startAlpha, float endAlpha, float duration)
     {
@@ -288,4 +337,6 @@ public class AwakeningManager : MonoBehaviour
         c.a = alpha;
         blackScreen.color = c;
     }
+
+    #endregion
 }

@@ -1,14 +1,23 @@
 using UnityEngine;
 
+/// <summary>
+/// Projects the current quest objective onto the circular minimap and clamps the icon
+/// to the rim when the target is off-screen.
+/// </summary>
 public class MinimapQuestMarker : MonoBehaviour
 {
+    #region UI References
     [Header("UI References")]
-    public RectTransform markerIcon; 
-    public RectTransform minimapRect; 
+    public RectTransform markerIcon;
+    public RectTransform minimapRect;
+    #endregion
 
+    #region World References
     [Header("World References")]
-    public Camera minimapCamera; 
+    public Camera minimapCamera;
+    #endregion
 
+    #region Unity Lifecycle
     private void LateUpdate()
     {
         if (markerIcon == null || minimapRect == null)
@@ -34,7 +43,7 @@ public class MinimapQuestMarker : MonoBehaviour
                 (viewportPos.y - 0.5f) * minimapRect.rect.height
             );
 
-            float minimapRadius = (minimapRect.rect.width / 2f) - 15f; 
+            float minimapRadius = (minimapRect.rect.width / 2f) - 15f;
 
             if (viewportPos.z < 0)
             {
@@ -49,4 +58,5 @@ public class MinimapQuestMarker : MonoBehaviour
             markerIcon.anchoredPosition = uiPos;
         }
     }
+    #endregion
 }

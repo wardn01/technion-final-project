@@ -6,11 +6,21 @@ using UnityEngine;
 /// </summary>
 public class UIManager : MonoBehaviour
 {
+    #region Singleton
+
     public static UIManager Instance { get; private set; }
+
+    #endregion
+
+    #region State
 
     [HideInInspector]
     [Tooltip("Set by DialogueManager when conversation UI is shown.")]
     public bool isDialogueOpen = false;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -25,4 +35,6 @@ public class UIManager : MonoBehaviour
         if (Instance == this)
             Instance = null;
     }
+
+    #endregion
 }

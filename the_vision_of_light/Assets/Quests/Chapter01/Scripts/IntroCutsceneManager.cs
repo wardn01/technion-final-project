@@ -11,6 +11,8 @@ using VisionOfLight.Player;
 [DefaultExecutionOrder(-300)]
 public class IntroCutsceneManager : MonoBehaviour
 {
+    #region Session State
+
     public static bool HasFinishedIntro { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -19,10 +21,15 @@ public class IntroCutsceneManager : MonoBehaviour
         HasFinishedIntro = false;
     }
 
+    /// <summary>Resets intro completion for a fresh Chapter 1 session.</summary>
     public static void ResetSessionState()
     {
         HasFinishedIntro = false;
     }
+
+    #endregion
+
+    #region UI
 
     [Header("UI")]
     [Tooltip("Full-screen black overlay with intro text.")]
@@ -31,10 +38,18 @@ public class IntroCutsceneManager : MonoBehaviour
     public Image overlayImage;
     public TextMeshProUGUI introText;
 
+    #endregion
+
+    #region Copy
+
     [Header("Copy")]
     [TextArea(3, 6)]
     public string introMessage =
         "The Shadow Entity attacked the village...\nThe Magic Stone was stolen...\nYour friends did not survive...";
+
+    #endregion
+
+    #region Timings
 
     [Header("Timings")]
     [Tooltip("Seconds between each typed character.")]
@@ -51,6 +66,10 @@ public class IntroCutsceneManager : MonoBehaviour
 
     [Tooltip("Pause on the empty black screen before awakening begins.")]
     public float holdBeforeAwakening = 1f;
+
+    #endregion
+
+    #region Audio
 
     [Header("Audio")]
     public AudioSource typeAudioSource;
@@ -71,16 +90,45 @@ public class IntroCutsceneManager : MonoBehaviour
     [Range(0.8f, 1.2f)]
     public float typePitchMax = 1.05f;
 
+    #endregion
+
+    #region Flow
+
     [Header("Flow")]
     public AwakeningManager awakeningManager;
 
     private bool isPlaying;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
         ResolveFlowReferences();
         ResolveTypeAudioSource();
     }
+
+    private void Start()
+    {
+        ResetSessionStateIfNeeded();
+
+        ResolveFlowReferences();
+        ResolveUiReferences();
+
+        if (!ShouldPlayIntro())
+        {
+            HasFinishedIntro = true;
+            HideIntroPresentation();
+            return;
+        }
+
+        StartCoroutine(IntroRoutine());
+    }
+
+    #endregion
+
+    #region Public API
 
     /// <summary>True when this manager should run the intro and drive awakening afterward.</summary>
     public bool ShouldPlayIntro()
@@ -135,22 +183,31 @@ public class IntroCutsceneManager : MonoBehaviour
             introText = introOverlay.GetComponentInChildren<TextMeshProUGUI>(true);
     }
 
-    private void Start()
+    /// <summary>Prepares intro text element before the typewriter begins.</summary>
+    public void ShowIntroPresentation()
     {
-        ResetSessionStateIfNeeded();
-
-        ResolveFlowReferences();
-        ResolveUiReferences();
-
-        if (!ShouldPlayIntro())
-        {
-            HasFinishedIntro = true;
-            HideIntroPresentation();
+        if (introText == null)
             return;
-        }
 
-        StartCoroutine(IntroRoutine());
+        introText.gameObject.SetActive(true);
+        introText.text = string.Empty;
+        introText.alpha = 1f;
     }
+
+    /// <summary>Hides intro copy so awakening can reuse <see cref="AwakeningManager.blackScreen"/>.</summary>
+    public void HideIntroPresentation()
+    {
+        if (introText == null)
+            return;
+
+        introText.text = string.Empty;
+        introText.alpha = 0f;
+        introText.gameObject.SetActive(false);
+    }
+
+    #endregion
+
+    #region Intro Playback
 
     private IEnumerator IntroRoutine()
     {
@@ -199,27 +256,17 @@ public class IntroCutsceneManager : MonoBehaviour
         AwakeningManager.ResetSessionState();
     }
 
-    /// <summary>Prepares intro text element before the typewriter begins.</summary>
-    public void ShowIntroPresentation()
+    private void ActivateQuest01()
     {
-        if (introText == null)
+        if (QuestManager.Instance == null)
             return;
 
-        introText.gameObject.SetActive(true);
-        introText.text = string.Empty;
-        introText.alpha = 1f;
+        QuestManager.Instance.BeginStoryQuest(0);
     }
 
-    /// <summary>Hides intro copy so awakening can reuse <see cref="AwakeningManager.blackScreen"/>.</summary>
-    public void HideIntroPresentation()
-    {
-        if (introText == null)
-            return;
+    #endregion
 
-        introText.text = string.Empty;
-        introText.alpha = 0f;
-        introText.gameObject.SetActive(false);
-    }
+    #region Typewriter
 
     private void ResolveTypeAudioSource()
     {
@@ -305,13 +352,9 @@ public class IntroCutsceneManager : MonoBehaviour
         typeAudioSource.pitch = 1f;
     }
 
-    private void ActivateQuest01()
-    {
-        if (QuestManager.Instance == null)
-            return;
+    #endregion
 
-        QuestManager.Instance.BeginStoryQuest(0);
-    }
+    #region Helpers
 
     private void SetOverlayAlpha(float alpha)
     {
@@ -335,4 +378,6 @@ public class IntroCutsceneManager : MonoBehaviour
         if (ShopManager.Instance != null)
             ShopManager.Instance.SetPlayerFreeze(frozen);
     }
+
+    #endregion
 }

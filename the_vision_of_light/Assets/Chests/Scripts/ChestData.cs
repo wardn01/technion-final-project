@@ -15,6 +15,7 @@ namespace VisionOfLight.Chest
     [CreateAssetMenu(fileName = "NewChestLootTable", menuName = "Vision Of Light/Chest Loot Table")]
     public class ChestLootTable : ScriptableObject
     {
+        #region Loot Table
         [System.Serializable]
         public struct Entry
         {
@@ -32,7 +33,9 @@ namespace VisionOfLight.Chest
 
         [Tooltip("Items granted when a chest using this table is opened.")]
         public Entry[] entries;
+        #endregion
 
+        #region Grant
         /// <summary>Adds every valid entry to the player inventory, applying drop chance and random amount.</summary>
         public void GrantToPlayer()
         {
@@ -72,5 +75,6 @@ namespace VisionOfLight.Chest
 
             return false;
         }
+        #endregion
     }
 }

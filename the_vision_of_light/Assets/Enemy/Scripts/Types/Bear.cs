@@ -9,11 +9,17 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(EnemyAudioEmitter))]
     public class Bear : AnimalEnemy
     {
+        #region Runtime State
+
         private float cycleTimer;
         private bool isAggroed;
         private bool isRoaring;
 
         private BearStats BearData => stats as BearStats;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         protected override IEnumerator Start()
         {
@@ -78,29 +84,9 @@ namespace VisionOfLight.Enemy
             base.TakeDamage(amount, playHitReaction, element);
         }
 
-        private void EnterAggro(bool playRoar)
-        {
-            if (isDead) return;
+        #endregion
 
-            isAggroed = true;
-            SetSleepState(false);
-
-            if (playRoar && anim != null && !isRoaring)
-            {
-                anim.SetTrigger("Buff");
-                isRoaring = true;
-                StopAgent();
-                cycleTimer = 0f;
-            }
-        }
-
-        private void ResetAggro()
-        {
-            isAggroed = false;
-            isRoaring = false;
-        }
-
-        private bool IsSleeping() => anim != null && anim.GetBool("IsSleeping");
+        #region Combat / AI
 
         /// <summary>Chase/attack while aggroed — keeps pursuing within leash (unlike peaceful patrol).</summary>
         private void AggroCombatUpdate()
@@ -152,6 +138,43 @@ namespace VisionOfLight.Enemy
             }
         }
 
+        protected override void PerformAttack()
+        {
+            if (anim == null) return;
+
+            int randomAttack = Random.Range(1, 4);
+            anim.SetInteger("AttackIndex", randomAttack);
+            anim.SetTrigger("Attack");
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private void EnterAggro(bool playRoar)
+        {
+            if (isDead) return;
+
+            isAggroed = true;
+            SetSleepState(false);
+
+            if (playRoar && anim != null && !isRoaring)
+            {
+                anim.SetTrigger("Buff");
+                isRoaring = true;
+                StopAgent();
+                cycleTimer = 0f;
+            }
+        }
+
+        private void ResetAggro()
+        {
+            isAggroed = false;
+            isRoaring = false;
+        }
+
+        private bool IsSleeping() => anim != null && anim.GetBool("IsSleeping");
+
         private void SetSleepState(bool sleep)
         {
             if (anim != null)
@@ -165,14 +188,9 @@ namespace VisionOfLight.Enemy
             }
         }
 
-        protected override void PerformAttack()
-        {
-            if (anim == null) return;
+        #endregion
 
-            int randomAttack = Random.Range(1, 4);
-            anim.SetInteger("AttackIndex", randomAttack);
-            anim.SetTrigger("Attack");
-        }
+        #region Animation Events
 
         /// <summary>Animation event — applies damage based on <c>AttackIndex</c>.</summary>
         public void AnimHit()
@@ -201,5 +219,7 @@ namespace VisionOfLight.Enemy
 
         /// <summary>Animation event — ends the wake-up roar and resumes combat.</summary>
         public void EndBuff() => isRoaring = false;
+
+        #endregion
     }
 }

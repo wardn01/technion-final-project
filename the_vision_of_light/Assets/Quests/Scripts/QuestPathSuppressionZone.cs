@@ -7,13 +7,16 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class QuestPathSuppressionZone : MonoBehaviour
 {
+    #region Unity Lifecycle
     private void Awake()
     {
         Collider col = GetComponent<Collider>();
         if (col != null && !col.isTrigger)
             col.isTrigger = true;
     }
+    #endregion
 
+    #region Trigger Collision
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -25,4 +28,5 @@ public class QuestPathSuppressionZone : MonoBehaviour
         if (other.CompareTag("Player"))
             QuestPathSuppression.ExitZone();
     }
+    #endregion
 }

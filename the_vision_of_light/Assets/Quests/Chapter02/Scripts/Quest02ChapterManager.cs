@@ -6,13 +6,18 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Quest02ChapterManager : QuestChapterManager
 {
+    #region Chapter Identity
     public override int ChapterStateId => 1;
+    #endregion
 
+    #region Chapter Objectives
     [Header("Chapter 02 Objectives")]
     public QuestKillObjective beachMonsters;
     public QuestKillObjective millMonsters;
     public QuestShopObjective buyPotionObjective;
+    #endregion
 
+    #region Reference Resolution
     public override void ResolveReferences()
     {
         QuestKillObjective[] killObjectives = FindObjectsByType<QuestKillObjective>(
@@ -32,4 +37,5 @@ public class Quest02ChapterManager : QuestChapterManager
 
         buyPotionObjective ??= FindFirstObjectByType<QuestShopObjective>(FindObjectsInactive.Include);
     }
+    #endregion
 }

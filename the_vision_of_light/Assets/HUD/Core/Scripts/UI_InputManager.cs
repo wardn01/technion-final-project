@@ -9,7 +9,13 @@ using VisionOfLight.Player;
 /// </summary>
 public class UI_InputManager : MonoBehaviour
 {
+    #region Singleton
+
     public static UI_InputManager Instance { get; private set; }
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -51,6 +57,10 @@ public class UI_InputManager : MonoBehaviour
 
         HandleHotkeys();
     }
+
+    #endregion
+
+    #region Hotkeys
 
     /// <summary>
     /// Opens or closes pause-menu sub-screens via KeybindManager (Tab/I, C, M, J).
@@ -185,27 +195,9 @@ public class UI_InputManager : MonoBehaviour
         }
     }
 
-    private bool IsShopOrDialogueOpen()
-    {
-        bool isShop = ShopManager.Instance != null
-                      && ShopManager.Instance.shopPanel != null
-                      && ShopManager.Instance.shopPanel.activeSelf;
-        bool isDialogue = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
-        return isShop || isDialogue;
-    }
+    #endregion
 
-    private static bool IsPlayerDead()
-    {
-        if (PlayerRegistry.Instance != null && PlayerRegistry.Instance.Health != null)
-            return PlayerRegistry.Instance.Health.isDead;
-
-        GameObject player = SharedInteractPromptUtility.GetPlayerGameObject();
-        if (player == null)
-            return false;
-
-        PlayerHealth health = player.GetComponent<PlayerHealth>();
-        return health != null && health.isDead;
-    }
+    #region Escape
 
     /// <summary>
     /// Escape priority: close shop → end dialogue → pause back → open pause menu.
@@ -237,4 +229,32 @@ public class UI_InputManager : MonoBehaviour
 
         PauseMenuManager.Instance?.Pause();
     }
+
+    #endregion
+
+    #region Helpers
+
+    private bool IsShopOrDialogueOpen()
+    {
+        bool isShop = ShopManager.Instance != null
+                      && ShopManager.Instance.shopPanel != null
+                      && ShopManager.Instance.shopPanel.activeSelf;
+        bool isDialogue = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
+        return isShop || isDialogue;
+    }
+
+    private static bool IsPlayerDead()
+    {
+        if (PlayerRegistry.Instance != null && PlayerRegistry.Instance.Health != null)
+            return PlayerRegistry.Instance.Health.isDead;
+
+        GameObject player = SharedInteractPromptUtility.GetPlayerGameObject();
+        if (player == null)
+            return false;
+
+        PlayerHealth health = player.GetComponent<PlayerHealth>();
+        return health != null && health.isDead;
+    }
+
+    #endregion
 }

@@ -7,12 +7,22 @@ using TMPro;
 [RequireComponent(typeof(Collider))]
 public class VillagerQuestNPC : MonoBehaviour
 {
+    #region Constants
+
     private const int AwakeningStep = 0;
     private const int ReturnStep = 2;
+
+    #endregion
+
+    #region Identity
 
     [Header("Identity")]
     public string npcDisplayName = "Albedo";
     public string interactPromptName = "Albedo";
+
+    #endregion
+
+    #region Quest 01 Dialogue
 
     [Header("Quest 01 Dialogue")]
     [Tooltip("Step 0 — first talk after waking up.")]
@@ -21,17 +31,33 @@ public class VillagerQuestNPC : MonoBehaviour
     [Tooltip("Step 2 — return after visiting the graves.")]
     public DialogueData returnDialogue;
 
+    #endregion
+
+    #region Quest Routing
+
     [Header("Quest Routing")]
     public int questStateId = 0;
     public QuestData questChapter;
+
+    #endregion
+
+    #region Optional UI
 
     [Header("Optional UI")]
     public GameObject overheadUI;
     public TextMeshProUGUI overheadNameText;
 
+    #endregion
+
+    #region Runtime State
+
     private bool isPlayerInRange;
     private Transform playerTransform;
     private Animator npcAnimator;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Start()
     {
@@ -80,6 +106,31 @@ public class VillagerQuestNPC : MonoBehaviour
         ShopManager.Instance?.HideInteractPrompt();
         BeginDialogue(dialogue, activeStep);
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Player"))
+            return;
+
+        isPlayerInRange = true;
+        playerTransform = other.transform;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player"))
+            return;
+
+        isPlayerInRange = false;
+        ShopManager.Instance?.HideInteractPrompt();
+
+        if (DialogueManager.Instance != null && DialogueManager.Instance.isDialogueOpen)
+            DialogueManager.Instance.EndDialogue();
+    }
+
+    #endregion
+
+    #region Dialogue
 
     private bool TryGetActiveDialogue(out DialogueData dialogue, out int step)
     {
@@ -148,6 +199,10 @@ public class VillagerQuestNPC : MonoBehaviour
             QuestManager.Instance.CompleteCurrentQuest(questChapter);
     }
 
+    #endregion
+
+    #region Helpers
+
     private void FacePlayer()
     {
         if (playerTransform == null)
@@ -159,24 +214,5 @@ public class VillagerQuestNPC : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(direction);
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.CompareTag("Player"))
-            return;
-
-        isPlayerInRange = true;
-        playerTransform = other.transform;
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("Player"))
-            return;
-
-        isPlayerInRange = false;
-        ShopManager.Instance?.HideInteractPrompt();
-
-        if (DialogueManager.Instance != null && DialogueManager.Instance.isDialogueOpen)
-            DialogueManager.Instance.EndDialogue();
-    }
+    #endregion
 }

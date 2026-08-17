@@ -9,12 +9,17 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Quest01ChapterManager : QuestChapterManager
 {
+    #region Chapter Identity
     public override int ChapterStateId => 0;
+    #endregion
 
+    #region Chapter Components
     [Header("Chapter 01 Components")]
     public IntroCutsceneManager intro;
     public AwakeningManager awakening;
+    #endregion
 
+    #region Reference Resolution
     public override void ResolveReferences()
     {
         intro ??= GetComponent<IntroCutsceneManager>();
@@ -32,7 +37,9 @@ public class Quest01ChapterManager : QuestChapterManager
         intro.ResolveUiReferences(awakening);
         WireHouseDoorQuestPathFlags();
     }
+    #endregion
 
+    #region Door Wiring
     private static void WireHouseDoorQuestPathFlags()
     {
         DoorTeleporter[] doors = FindObjectsByType<DoorTeleporter>(
@@ -57,4 +64,5 @@ public class Quest01ChapterManager : QuestChapterManager
             }
         }
     }
+    #endregion
 }

@@ -8,16 +8,30 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public class BoneProjectile : MonoBehaviour
     {
+        #region Serialized Fields
+
         [SerializeField] private float lifeTime = 10f;
+
+        #endregion
+
+        #region Runtime State
 
         private float damage;
         private bool canDamage = true;
         private bool hasDamagedPlayer;
 
+        #endregion
+
+        #region Unity Lifecycle
+
         private void Start()
         {
             Destroy(gameObject, lifeTime);
         }
+
+        #endregion
+
+        #region Combat
 
         /// <summary>Sets impact damage from the thrower's scaled attack.</summary>
         public void SetDamage(float dmgAmount)
@@ -41,5 +55,7 @@ namespace VisionOfLight.Enemy
             if (collision.gameObject.TryGetComponent(out PlayerHealth pHealth))
                 pHealth.TakeDamage(damage);
         }
+
+        #endregion
     }
 }

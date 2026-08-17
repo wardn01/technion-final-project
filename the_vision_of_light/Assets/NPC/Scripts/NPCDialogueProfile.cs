@@ -9,8 +9,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NPCDialogueProfile", menuName = "NPC/Dialogue Profile")]
 public class NPCDialogueProfile : ScriptableObject
 {
+    #region Profile
     [Tooltip("Must match NPCData.npcName (e.g. Albedo).")]
     public string npcName;
 
     public List<QuestDialogueEntry> entries = new List<QuestDialogueEntry>();
+    #endregion
 }

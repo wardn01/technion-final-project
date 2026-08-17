@@ -8,6 +8,8 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(EnemyAudioEmitter))]
     public class Goblin : NormalEnemy
     {
+        #region Serialized Fields
+
         [Header("Goblin Visuals")]
         [SerializeField] private GameObject swordModel;
 
@@ -15,7 +17,15 @@ namespace VisionOfLight.Enemy
         [SerializeField] private GameObject bonePrefab;
         [SerializeField] private Transform throwPoint;
 
+        #endregion
+
+        #region Runtime State
+
         private GoblinStats RangedStats => stats as GoblinStats;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         protected override void Update()
         {
@@ -80,6 +90,10 @@ namespace VisionOfLight.Enemy
             }
         }
 
+        #endregion
+
+        #region Combat / AI
+
         private void HandleAttack(bool isMelee)
         {
             if (isMelee && MeleeStats == null) return;
@@ -108,6 +122,12 @@ namespace VisionOfLight.Enemy
                 if (anim != null) anim.SetTrigger("RangedAttack");
             }
         }
+
+        protected override void PerformAttack() { }
+
+        #endregion
+
+        #region Animation Events
 
         /// <summary>Animation event on Throw clip — spawns <see cref="BoneProjectile"/>.</summary>
         public void ShootBone()
@@ -140,7 +160,9 @@ namespace VisionOfLight.Enemy
                 MeleeStats.NormalAttackRange);
         }
 
-        protected override void PerformAttack() { }
+        #endregion
+
+        #region Camp Reset
 
         protected override void TriggerCampReset()
         {
@@ -153,5 +175,7 @@ namespace VisionOfLight.Enemy
             if (swordModel != null) swordModel.SetActive(false);
             base.TriggerCampReset();
         }
+
+        #endregion
     }
 }

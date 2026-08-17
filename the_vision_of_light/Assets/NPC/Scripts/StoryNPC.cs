@@ -8,6 +8,7 @@ using System.Collections;
 /// </summary>
 public class StoryNPC : MonoBehaviour
 {
+    #region Serialized Fields
     [Header("NPC Data")]
     public NPCData myData;
 
@@ -26,7 +27,9 @@ public class StoryNPC : MonoBehaviour
     public float stepDistance = 0.5f;
     public float stepDuration = 1f;
     public float standUpDuration = 1.5f;
+    #endregion
 
+    #region Runtime State
     private bool isPlayerInRange;
     private bool hasStoodUp;
     private bool isBusy;
@@ -35,7 +38,9 @@ public class StoryNPC : MonoBehaviour
     private Animator myAnimator;
     private DialogueTrigger questTrigger;
     private Collider npcCollider;
+    #endregion
 
+    #region Unity Lifecycle
     private void Start()
     {
         GameObject player = SharedInteractPromptUtility.GetPlayerGameObject();
@@ -57,7 +62,9 @@ public class StoryNPC : MonoBehaviour
             SetupMapIcon();
         }
     }
+    #endregion
 
+    #region Map Icon
     private void SetupMapIcon()
     {
         if (mapIconObject == null)
@@ -79,7 +86,9 @@ public class StoryNPC : MonoBehaviour
         sr.sortingOrder = 10;
         mapIconObject.gameObject.layer = LayerMask.NameToLayer("Minimap");
     }
+    #endregion
 
+    #region Interaction
     private void Update()
     {
         bool isDialogueOpen = UIManager.Instance != null && UIManager.Instance.isDialogueOpen;
@@ -282,7 +291,9 @@ public class StoryNPC : MonoBehaviour
         if (myAnimator != null)
             myAnimator.SetBool("IsWalking", false);
     }
+    #endregion
 
+    #region Collision
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -331,4 +342,5 @@ public class StoryNPC : MonoBehaviour
 
         SnapToStandingIdle();
     }
+    #endregion
 }

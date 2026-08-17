@@ -8,8 +8,12 @@ namespace VisionOfLight.Chest
     /// </summary>
     public static class ChestGuardianRespawnRegistry
     {
+        #region Private State
         private static readonly Dictionary<string, double> defeatedAtUtcByChestId = new Dictionary<string, double>();
+        #endregion
 
+        #region Save / Load
+        /// <summary>Restores guardian defeat timestamps from the active save slot.</summary>
         public static void ApplyFromSave(GameData data)
         {
             defeatedAtUtcByChestId.Clear();
@@ -26,6 +30,7 @@ namespace VisionOfLight.Chest
             }
         }
 
+        /// <summary>Writes guardian defeat timestamps back into the active save slot.</summary>
         public static void WriteToSave(GameData data)
         {
             if (data == null)
@@ -45,7 +50,10 @@ namespace VisionOfLight.Chest
                 });
             }
         }
+        #endregion
 
+        #region Defeat Tracking
+        /// <summary>Returns the UTC defeat time for a chest, if recorded.</summary>
         public static bool TryGetDefeatedTime(string chestId, out double defeatedAtUtc)
         {
             defeatedAtUtc = 0d;
@@ -56,6 +64,7 @@ namespace VisionOfLight.Chest
             return defeatedAtUtcByChestId.TryGetValue(chestId, out defeatedAtUtc);
         }
 
+        /// <summary>Records that all guardians for the chest were defeated at the current UTC time.</summary>
         public static void MarkAllDefeated(string chestId)
         {
             if (string.IsNullOrEmpty(chestId))
@@ -64,6 +73,7 @@ namespace VisionOfLight.Chest
             defeatedAtUtcByChestId[chestId] = GetUtcNow();
         }
 
+        /// <summary>Clears the stored defeat time for a chest (e.g. after guardians respawn).</summary>
         public static void ClearDefeatedTime(string chestId)
         {
             if (string.IsNullOrEmpty(chestId))
@@ -71,10 +81,14 @@ namespace VisionOfLight.Chest
 
             defeatedAtUtcByChestId.Remove(chestId);
         }
+        #endregion
 
+        #region Time
+        /// <summary>Returns the current UTC time as Unix seconds.</summary>
         public static double GetUtcNow()
         {
             return System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         }
+        #endregion
     }
 }

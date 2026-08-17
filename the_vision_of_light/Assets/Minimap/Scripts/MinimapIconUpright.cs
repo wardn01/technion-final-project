@@ -5,8 +5,11 @@ using UnityEngine;
 /// </summary>
 public class MinimapIconUpright : MonoBehaviour
 {
+    #region Private State
     private Transform minimapCamera;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         minimapCamera = MinimapFollow.CameraTransform;
@@ -21,4 +24,5 @@ public class MinimapIconUpright : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(90f, minimapCamera.eulerAngles.y, 0f);
     }
+    #endregion
 }

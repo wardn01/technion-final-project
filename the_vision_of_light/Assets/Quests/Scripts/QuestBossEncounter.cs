@@ -10,6 +10,8 @@ using VisionOfLight.Enemy;
 /// </summary>
 public class QuestBossEncounter : MonoBehaviour
 {
+    #region Quest Gate
+
     [Header("Quest Gate")]
     [Tooltip("OFF = always available (use while placing / testing before the chapter exists).")]
     public bool gateWithQuest = false;
@@ -23,6 +25,10 @@ public class QuestBossEncounter : MonoBehaviour
     [Tooltip("When the boss is first defeated during the unlock step, call QuestManager.AdvanceStep.")]
     public bool advanceQuestOnFirstKill = true;
 
+    #endregion
+
+    #region Encounter
+
     [Header("Encounter")]
     [Tooltip("Parent that holds the boss + gold chest. Toggled on unlock. Leave empty to toggle Boss + Chest refs.")]
     public GameObject encounterContent;
@@ -33,6 +39,10 @@ public class QuestBossEncounter : MonoBehaviour
     [Tooltip("Gold chest next to the boss (DefeatEnemies + 1h respawn).")]
     public WorldChest rewardChest;
 
+    #endregion
+
+    #region Defeat UI
+
     [Header("Defeat UI (same as Wave)")]
     [Tooltip("Uses ChallengeTimerUI — same panel as Challenge Complete. Shows on EVERY kill, not only the quest.")]
     public bool showDefeatResultUi = true;
@@ -40,9 +50,17 @@ public class QuestBossEncounter : MonoBehaviour
     [TextArea(1, 2)]
     public string defeatMessage = "Boss Defeated";
 
+    #endregion
+
+    #region Runtime State
+
     private bool isEncounterActive;
     private bool firstKillQuestHandled;
     private WorldChest subscribedChest;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -76,6 +94,10 @@ public class QuestBossEncounter : MonoBehaviour
         RefreshEncounterAvailability();
         SubscribeToChest();
     }
+
+    #endregion
+
+    #region Availability
 
     private void AutoWireIfNeeded()
     {
@@ -152,6 +174,10 @@ public class QuestBossEncounter : MonoBehaviour
             rewardChest.gameObject.SetActive(active);
     }
 
+    #endregion
+
+    #region Chest Events
+
     private void SubscribeToChest()
     {
         // AutoWireIfNeeded already searched the (inactive-inclusive) hierarchy in Awake.
@@ -201,10 +227,16 @@ public class QuestBossEncounter : MonoBehaviour
         QuestManager.Instance.AdvanceStep(requiredState, requiredStep);
     }
 
+    #endregion
+
 #if UNITY_EDITOR
+    #region Editor
+
     private void OnValidate()
     {
         AutoWireIfNeeded();
     }
+
+    #endregion
 #endif
 }

@@ -7,6 +7,7 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public abstract class NormalEnemyStats : EnemyBaseStats
     {
+        #region Serialized Fields
         [Header("Melee Combat Stats")]
         [Tooltip("Attack damage as % of scaled currentAttack (100 = full attack stat).")]
         [SerializeField] private float normalDamage = 100f;
@@ -15,10 +16,13 @@ namespace VisionOfLight.Enemy
 
         [Header("Camp Reset Settings")]
         [SerializeField] private float maxLeashDistance = 25f; 
+        #endregion
 
+        #region Public Accessors
         public float NormalDamage => normalDamage;
         public float NormalAttackRange => normalAttackRange;
         public float NormalAttackCooldown => normalAttackCooldown;
         public float MaxLeashDistance => maxLeashDistance; 
+        #endregion
     }
 }

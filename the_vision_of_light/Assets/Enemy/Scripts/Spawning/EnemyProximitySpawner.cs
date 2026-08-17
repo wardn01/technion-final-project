@@ -11,6 +11,8 @@ namespace VisionOfLight.Enemy
     [DisallowMultipleComponent]
     public class EnemyProximitySpawner : MonoBehaviour
     {
+        #region Spawn Entry
+
         [System.Serializable]
         public class SpawnEntry
         {
@@ -21,9 +23,17 @@ namespace VisionOfLight.Enemy
             public Transform[] spawnPoints;
         }
 
+        #endregion
+
+        #region Enemies
+
         [Header("Enemies")]
         [Tooltip("Enemy prefabs and how many of each to spawn.")]
         public SpawnEntry[] enemies;
+
+        #endregion
+
+        #region Activation
 
         [Header("Activation")]
         [Tooltip("Player must be within this distance for enemies to spawn.")]
@@ -35,12 +45,20 @@ namespace VisionOfLight.Enemy
         [Tooltip("Seconds between distance checks. Higher = cheaper.")]
         public float checkInterval = 0.3f;
 
+        #endregion
+
+        #region Respawn
+
         [Header("Respawn")]
         [Tooltip("If true, enemies respawn only after the player leaves and returns. If false, respawn after a cooldown while the player stays.")]
         public bool respawnOnlyAfterLeaving = true;
 
         [Tooltip("When respawnOnlyAfterLeaving is false: seconds after all enemies die before respawning while the player stays.")]
         public float respawnCooldown = 60f;
+
+        #endregion
+
+        #region Spawn Placement
 
         [Header("Spawn Placement")]
         [Tooltip("Random horizontal spread when no spawn points are assigned.")]
@@ -49,11 +67,19 @@ namespace VisionOfLight.Enemy
         [Tooltip("Vertical offset so enemies drop onto the ground/NavMesh.")]
         public float spawnHeightOffset = 1.5f;
 
+        #endregion
+
+        #region Runtime State
+
         private readonly List<EnemyBase> spawnedEnemies = new List<EnemyBase>();
         private Transform playerTransform;
         private bool isSpawned;
         private float nextCheckTime;
         private float clearedTime = -1f;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Update()
         {
@@ -84,6 +110,10 @@ namespace VisionOfLight.Enemy
             if (!respawnOnlyAfterLeaving)
                 HandleInPlaceRespawn();
         }
+
+        #endregion
+
+        #region Spawn Logic
 
         private bool CanSpawnNow()
         {
@@ -186,7 +216,11 @@ namespace VisionOfLight.Enemy
             return transform.rotation;
         }
 
+        #endregion
+
 #if UNITY_EDITOR
+        #region Editor
+
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.9f);
@@ -195,6 +229,8 @@ namespace VisionOfLight.Enemy
             Gizmos.color = new Color(1f, 0.8f, 0.2f, 0.4f);
             Gizmos.DrawWireSphere(transform.position, activationRadius + deactivationBuffer);
         }
+
+        #endregion
 #endif
     }
 }

@@ -8,6 +8,8 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(EnemyAudioEmitter))]
     public class Imp : NormalEnemy
     {
+        #region Animation Events
+
         /// <summary>Animation event — applies melee damage at the swing frame.</summary>
         public void AnimHit()
         {
@@ -16,6 +18,10 @@ namespace VisionOfLight.Enemy
             float damageMultiplier = MeleeStats.NormalDamage / 100f;
             ExecuteMeleeAttack(damageMultiplier, MeleeStats.NormalAttackRange);
         }
+
+        #endregion
+
+        #region Combat / AI
 
         protected override void PerformAttack()
         {
@@ -56,5 +62,7 @@ namespace VisionOfLight.Enemy
 
             anim.SetFloat("Speed", blend);
         }
+
+        #endregion
     }
 }

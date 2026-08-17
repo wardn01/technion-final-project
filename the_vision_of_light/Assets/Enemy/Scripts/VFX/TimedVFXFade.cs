@@ -8,12 +8,15 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public class TimedVFXFade : MonoBehaviour
     {
+        #region Private State
         private float targetScale = 1f;
         private float totalLifetime = 1f;
         private float fadeInDuration = 0.15f;
         private float fadeOutDuration = 0.3f;
         private float elapsed;
+        #endregion
 
+        #region Configuration
         /// <summary>Configures scale and fade timing after the VFX is spawned.</summary>
         public void Configure(float scale, float lifetime, float fadeIn, float fadeOut)
         {
@@ -23,7 +26,9 @@ namespace VisionOfLight.Enemy
             fadeOutDuration = Mathf.Max(0.01f, fadeOut);
             transform.localScale = Vector3.zero;
         }
+        #endregion
 
+        #region Unity Lifecycle
         private void Update()
         {
             elapsed += Time.deltaTime;
@@ -52,5 +57,6 @@ namespace VisionOfLight.Enemy
 
             transform.localScale = Vector3.one * scaleMultiplier;
         }
+        #endregion
     }
 }

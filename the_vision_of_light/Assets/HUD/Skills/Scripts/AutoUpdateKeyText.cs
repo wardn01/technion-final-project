@@ -8,10 +8,20 @@ using TMPro;
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class AutoUpdateKeyText : MonoBehaviour
 {
+    #region Serialized Fields
+
     [Tooltip("Key in KeybindManager.keys, e.g. \"SkillE\" or \"SkillQ\".")]
     public string actionName;
 
+    #endregion
+
+    #region Runtime State
+
     private TextMeshProUGUI myText;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Start()
     {
@@ -38,6 +48,10 @@ public class AutoUpdateKeyText : MonoBehaviour
             myText.text = FormatKey(currentKey);
     }
 
+    #endregion
+
+    #region Helpers
+
     /// <summary>Short display string; mouse keys use TMP sprite tags.</summary>
     private string FormatKey(KeyCode key)
     {
@@ -52,4 +66,6 @@ public class AutoUpdateKeyText : MonoBehaviour
             default: return key.ToString();
         }
     }
+
+    #endregion
 }

@@ -12,6 +12,8 @@ using VisionOfLight.Player;
 [DefaultExecutionOrder(-50)]
 public class WorldMusicManager : MonoBehaviour
 {
+    #region Singleton
+
     public static WorldMusicManager Instance { get; private set; }
 
     /// <summary>True while combat or a boss fight drives the music (ambience zones duck themselves).</summary>
@@ -28,6 +30,7 @@ public class WorldMusicManager : MonoBehaviour
         }
     }
 
+    /// <summary>High-level music states driven by player location and nearby enemies.</summary>
     public enum MusicMood
     {
         Exploration,
@@ -36,6 +39,10 @@ public class WorldMusicManager : MonoBehaviour
         OrcBoss,
         GolemBoss
     }
+
+    #endregion
+
+    #region Mixer & Tracks
 
     [Header("Mixer")]
     [Tooltip("Assets/MainMenu/Audio/MainAudioMixer. Required so the Music settings slider works.")]
@@ -108,6 +115,10 @@ public class WorldMusicManager : MonoBehaviour
     [Min(0f)]
     public float combatExitDelay = 2.5f;
 
+    #endregion
+
+    #region Runtime State
+
     private AudioSource audioSource;
     private Coroutine fadeRoutine;
     /// <summary>Clip we are currently playing OR fading toward. Set immediately so polls don't restart the fade.</summary>
@@ -117,6 +128,10 @@ public class WorldMusicManager : MonoBehaviour
     private float nextPollTime;
     private float combatClearAt = -1f;
     private bool isPlayerInSnow;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -164,6 +179,11 @@ public class WorldMusicManager : MonoBehaviour
         EvaluateMood();
     }
 
+    #endregion
+
+    #region Mood Detection
+
+    /// <summary>Forces a mood immediately or via crossfade (used at boot and for debug overrides).</summary>
     public void ForceMood(MusicMood mood, bool immediate = false)
     {
         currentMood = mood;
@@ -323,6 +343,10 @@ public class WorldMusicManager : MonoBehaviour
         };
     }
 
+    #endregion
+
+    #region Playback
+
     private void PlayClip(AudioClip clip, float targetVolume, bool immediate)
     {
         currentTargetVolume = targetVolume;
@@ -408,4 +432,6 @@ public class WorldMusicManager : MonoBehaviour
         audioSource.volume = targetVolume;
         fadeRoutine = null;
     }
+
+    #endregion
 }

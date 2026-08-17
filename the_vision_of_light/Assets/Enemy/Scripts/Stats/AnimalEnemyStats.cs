@@ -8,14 +8,18 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public abstract class AnimalEnemyStats : EnemyBaseStats
     {
+        #region Serialized Fields
         [Header("Animal Combat Stats")]
         [Tooltip("Attack damage as % of scaled currentAttack.")]
         [SerializeField] private float animalDamage = 100f;
         [SerializeField] private float attackRange = 2.5f;
         [SerializeField] private float attackCooldown = 2f;
+        #endregion
 
+        #region Public Accessors
         public float AnimalDamage => animalDamage;
         public float AttackRange => attackRange;
         public float AttackCooldown => attackCooldown;
+        #endregion
     }
 }

@@ -10,6 +10,8 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(EnemyAudioEmitter))]
     public class Orc : BossEnemy
     {
+        #region State
+
         private const float EnrageSequenceTimeout = 8f;
 
         private bool isEnraged;
@@ -19,11 +21,18 @@ namespace VisionOfLight.Enemy
         private float enrageSequenceStartTime;
         private bool wasPlayingRageCombatAnimation;
 
+        /// <summary>Health fraction at which the enrage cutscene triggers.</summary>
         public float EnrageHealthPercent => BossStats != null ? BossStats.EnrageHealthPercentage : 0.5f;
+
+        /// <summary>True once the phase-2 enrage sequence has started.</summary>
         public bool IsEnrageTriggered => phase2Triggered;
 
         protected override bool IsInPhase2 => isEnraged;
         protected override bool SuppressHitReaction => isInvincible || isEnraged;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         protected override void Update()
         {
@@ -69,23 +78,11 @@ namespace VisionOfLight.Enemy
             base.Update();
         }
 
-        private bool IsPlayingRageCombatAnimation()
-        {
-            if (anim == null)
-                return false;
+        #endregion
 
-            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
-            return state.IsName("RageAttack") || state.IsName("rage");
-        }
+        #region Enrage
 
-        private void HoldRageCombatPosition()
-        {
-            StopAgent();
-            FaceTarget();
-            if (anim != null)
-                anim.SetFloat("Speed", 0f);
-        }
-
+        /// <summary>Caps damage at the enrage threshold and starts the phase-2 cutscene.</summary>
         public override void TakeDamage(
             float damage,
             bool playHitReaction = true,
@@ -193,6 +190,47 @@ namespace VisionOfLight.Enemy
             BossHealthBarUI.Instance?.HideOrcRageMeter();
         }
 
+        /// <summary>Called from rage animation event when the cutscene finishes.</summary>
+        public void EndEnrage()
+        {
+            ForceCompleteEnrageSequence();
+        }
+
+        private void ForceCompleteEnrageSequence()
+        {
+            if (!isInEnrageSequence && !isInvincible)
+                return;
+
+            isInEnrageSequence = false;
+            isInvincible = false;
+
+            if (IsPlayingRageCombatAnimation())
+                HoldRageCombatPosition();
+            else
+                ResetCombatStates();
+        }
+
+        private bool IsPlayingRageCombatAnimation()
+        {
+            if (anim == null)
+                return false;
+
+            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+            return state.IsName("RageAttack") || state.IsName("rage");
+        }
+
+        private void HoldRageCombatPosition()
+        {
+            StopAgent();
+            FaceTarget();
+            if (anim != null)
+                anim.SetFloat("Speed", 0f);
+        }
+
+        #endregion
+
+        #region Combat / Animation Events
+
         protected override void PerformAttack()
         {
             int attackIndex = isEnraged ? Random.Range(3, 5) : Random.Range(1, 3);
@@ -229,29 +267,15 @@ namespace VisionOfLight.Enemy
             }
         }
 
-        /// <summary>Called from rage animation event when the cutscene finishes.</summary>
-        public void EndEnrage()
-        {
-            ForceCompleteEnrageSequence();
-        }
-
-        private void ForceCompleteEnrageSequence()
-        {
-            if (!isInEnrageSequence && !isInvincible)
-                return;
-
-            isInEnrageSequence = false;
-            isInvincible = false;
-
-            if (IsPlayingRageCombatAnimation())
-                HoldRageCombatPosition();
-            else
-                ResetCombatStates();
-        }
-
+        /// <summary>Animation event — ends the attack clip and resumes movement.</summary>
         public override void EndAttack() => ResetCombatStates();
 
+        /// <summary>Animation event — ends the hit reaction clip.</summary>
         public override void EndHit() => ResetCombatStates();
+
+        #endregion
+
+        #region Camp Reset
 
         protected override void OnCampReset()
         {
@@ -262,5 +286,7 @@ namespace VisionOfLight.Enemy
             wasPlayingRageCombatAnimation = false;
             enrageSequenceStartTime = 0f;
         }
+
+        #endregion
     }
 }

@@ -7,11 +7,16 @@ using VisionOfLight.Enemy;
 [DisallowMultipleComponent]
 public class Quest03ChapterManager : QuestChapterManager
 {
+    #region Chapter Identity
     public override int ChapterStateId => 2;
+    #endregion
 
+    #region Chapter References
     [Header("Chapter 03 References")]
     public ChallengeStone waveStone;
+    #endregion
 
+    #region Reference Resolution
     public override void ResolveReferences()
     {
         if (waveStone != null)
@@ -40,4 +45,5 @@ public class Quest03ChapterManager : QuestChapterManager
         if (waveObject != null)
             waveStone = waveObject.GetComponent<ChallengeStone>();
     }
+    #endregion
 }

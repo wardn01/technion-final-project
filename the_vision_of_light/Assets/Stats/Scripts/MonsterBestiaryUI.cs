@@ -11,7 +11,13 @@ using VisionOfLight.Enemy;
 /// </summary>
 public class MonsterBestiaryUI : MonoBehaviour
 {
+    #region Singleton
+
     public static MonsterBestiaryUI Instance { get; private set; }
+
+    #endregion
+
+    #region Catalog & UI
 
     [Header("Catalog")]
     public MonsterBestiaryCatalog catalog;
@@ -60,12 +66,20 @@ public class MonsterBestiaryUI : MonoBehaviour
     [Tooltip("When on, every catalog monster is shown unlocked (names, icons, loot).")]
     public bool revealAllForTest;
 
+    #endregion
+
+    #region Runtime State
+
     private readonly List<Button> listButtons = new List<Button>();
     private readonly List<TextMeshProUGUI> listLabels = new List<TextMeshProUGUI>();
     private readonly List<Image> listIcons = new List<Image>();
     private int selectedIndex = -1;
     private Sprite cachedLockedIcon;
     private GameObject lootRowTemplate;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -137,6 +151,10 @@ public class MonsterBestiaryUI : MonoBehaviour
         if (Instance == this)
             Instance = null;
     }
+
+    #endregion
+
+    #region Refresh / List
 
     /// <summary>Rebuilds the list and refreshes the selected detail panel.</summary>
     public void Refresh()
@@ -368,6 +386,11 @@ public class MonsterBestiaryUI : MonoBehaviour
         return button;
     }
 
+    #endregion
+
+    #region Detail Panel
+
+    /// <summary>Selects a catalog entry by index and updates list styling plus the detail panel.</summary>
     public void SelectIndex(int index)
     {
         if (catalog == null || catalog.entries == null)
@@ -560,6 +583,10 @@ public class MonsterBestiaryUI : MonoBehaviour
         rt.localScale = Vector3.one;
     }
 
+    #endregion
+
+    #region Loot
+
     private void EnsureLootRowTemplate()
     {
         if (lootRowTemplate != null)
@@ -690,6 +717,10 @@ public class MonsterBestiaryUI : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Helpers
+
     private static TextMeshProUGUI FindNamedTmp(Transform root, string childName)
     {
         if (root == null)
@@ -746,4 +777,6 @@ public class MonsterBestiaryUI : MonoBehaviour
         if (field != null)
             field.text = value ?? string.Empty;
     }
+
+    #endregion
 }

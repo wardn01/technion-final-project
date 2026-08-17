@@ -10,7 +10,7 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(EnemyAudioEmitter))]
     public class MiniGolem : NormalEnemy
     {
-        public static readonly List<MiniGolem> activeGolems = new List<MiniGolem>();
+        #region Serialized Fields
 
         [Header("Ranged Attack")]
         [SerializeField] private GameObject stonePrefab;
@@ -21,6 +21,12 @@ namespace VisionOfLight.Enemy
         [Tooltip("Resume chasing after the attack clip reaches this normalized time.")]
         [SerializeField] [Range(0.5f, 1f)] private float attackAnimFinishThreshold = 0.88f;
 
+        #endregion
+
+        #region Runtime State
+
+        public static readonly List<MiniGolem> activeGolems = new List<MiniGolem>();
+
         private bool isSpawning;
         private bool agentControlLocked;
         private Vector3 lockedPos;
@@ -30,6 +36,10 @@ namespace VisionOfLight.Enemy
         private MiniGolemStats RangedStats => stats as MiniGolemStats;
 
         private const float PeerSeparationRadius = 1.15f;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         protected override void OnEnable()
         {
@@ -53,66 +63,6 @@ namespace VisionOfLight.Enemy
                 anim.applyRootMotion = false;
 
             RegisterAgentSettings();
-        }
-
-        /// <summary>Called by <see cref="Golem"/> on spawn — plays emerge animation and locks movement.</summary>
-        public void InitializeAsSummon(Golem owner = null)
-        {
-            summoningGolem = owner;
-            isSpawning = true;
-
-            if (agent != null)
-            {
-                agent.isStopped = true;
-                agent.ResetPath();
-            }
-
-            if (anim != null)
-                anim.Play("spawn", 0, 0f);
-        }
-
-        private void RegisterAgentSettings()
-        {
-            if (agent != null)
-                agent.avoidancePriority = 45 + (Mathf.Abs(GetInstanceID()) % 15);
-
-            if (summoningGolem == null || !TryGetComponent(out Collider selfCollider))
-                return;
-
-            if (summoningGolem.TryGetComponent(out Collider golemCollider))
-                Physics.IgnoreCollision(selfCollider, golemCollider, true);
-        }
-
-        protected override void UpdateBlendTree()
-        {
-            if (anim == null)
-                return;
-
-            if (isAttackingBase || isSpawning || isHitBase)
-            {
-                anim.SetFloat("Speed", 0f);
-                return;
-            }
-
-            if (agent == null || stats == null)
-                return;
-
-            // Blend tree: 0 = Idle, 0.5 = Walk, 1 = Walk @ 1.8x (run substitute)
-            float velocity = agent.velocity.magnitude;
-            float walkSpeed = stats.WalkSpeed;
-            float runSpeed = stats.RunSpeed;
-
-            float blend;
-            if (velocity < 0.05f)
-                blend = 0f;
-            else if (velocity <= walkSpeed)
-                blend = walkSpeed > 0f ? Mathf.Lerp(0f, 0.5f, velocity / walkSpeed) : 0.5f;
-            else
-                blend = runSpeed > walkSpeed
-                    ? Mathf.Lerp(0.5f, 1f, (velocity - walkSpeed) / (runSpeed - walkSpeed))
-                    : 1f;
-
-            anim.SetFloat("Speed", blend);
         }
 
         protected override void Update()
@@ -195,6 +145,74 @@ namespace VisionOfLight.Enemy
                 ChaseBehavior();
             else
                 PatrolBehavior();
+        }
+
+        #endregion
+
+        #region Summon Setup
+
+        /// <summary>Called by <see cref="Golem"/> on spawn — plays emerge animation and locks movement.</summary>
+        public void InitializeAsSummon(Golem owner = null)
+        {
+            summoningGolem = owner;
+            isSpawning = true;
+
+            if (agent != null)
+            {
+                agent.isStopped = true;
+                agent.ResetPath();
+            }
+
+            if (anim != null)
+                anim.Play("spawn", 0, 0f);
+        }
+
+        private void RegisterAgentSettings()
+        {
+            if (agent != null)
+                agent.avoidancePriority = 45 + (Mathf.Abs(GetInstanceID()) % 15);
+
+            if (summoningGolem == null || !TryGetComponent(out Collider selfCollider))
+                return;
+
+            if (summoningGolem.TryGetComponent(out Collider golemCollider))
+                Physics.IgnoreCollision(selfCollider, golemCollider, true);
+        }
+
+        #endregion
+
+        #region Combat / AI
+
+        protected override void UpdateBlendTree()
+        {
+            if (anim == null)
+                return;
+
+            if (isAttackingBase || isSpawning || isHitBase)
+            {
+                anim.SetFloat("Speed", 0f);
+                return;
+            }
+
+            if (agent == null || stats == null)
+                return;
+
+            // Blend tree: 0 = Idle, 0.5 = Walk, 1 = Walk @ 1.8x (run substitute)
+            float velocity = agent.velocity.magnitude;
+            float walkSpeed = stats.WalkSpeed;
+            float runSpeed = stats.RunSpeed;
+
+            float blend;
+            if (velocity < 0.05f)
+                blend = 0f;
+            else if (velocity <= walkSpeed)
+                blend = walkSpeed > 0f ? Mathf.Lerp(0f, 0.5f, velocity / walkSpeed) : 0.5f;
+            else
+                blend = runSpeed > walkSpeed
+                    ? Mathf.Lerp(0.5f, 1f, (velocity - walkSpeed) / (runSpeed - walkSpeed))
+                    : 1f;
+
+            anim.SetFloat("Speed", blend);
         }
 
         private void ApplyPeerSeparation()
@@ -355,6 +373,58 @@ namespace VisionOfLight.Enemy
                 agent.Warp(transform.position);
         }
 
+        protected override void PerformAttack() { }
+
+        /// <summary>Delays combat reset until the attack clip passes the finish threshold.</summary>
+        public override void ResetCombatStates()
+        {
+            if (TryGetAttackAnimationNormalizedTime(out float normalizedTime) && normalizedTime < attackAnimFinishThreshold)
+                return;
+
+            UnlockAgentControl();
+            base.ResetCombatStates();
+        }
+
+        private void TryFinishAttackAnimation()
+        {
+            if (!TryGetAttackAnimationNormalizedTime(out float normalizedTime))
+            {
+                ResetCombatStates();
+                return;
+            }
+
+            if (normalizedTime >= attackAnimFinishThreshold)
+                ResetCombatStates();
+        }
+
+        private bool TryGetAttackAnimationNormalizedTime(out float normalizedTime)
+        {
+            normalizedTime = 0f;
+            if (anim == null) return false;
+
+            AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
+
+            if (currentState.IsName("Attack01") || currentState.IsName("Attack02"))
+            {
+                normalizedTime = currentState.normalizedTime;
+                return true;
+            }
+            else if (nextState.IsName("Attack01") || nextState.IsName("Attack02"))
+            {
+                // We are currently transitioning INTO the attack animation.
+                // Don't abort the attack!
+                normalizedTime = 0f;
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Animation Events
+
         /// <summary>Animation event on Attack01 clip — spawns <see cref="MiniGolemStoneProjectile"/>.</summary>
         public void ShootStone()
         {
@@ -405,16 +475,22 @@ namespace VisionOfLight.Enemy
             ExecuteMeleeAttack(damageMultiplier, MeleeStats.NormalAttackRange);
         }
 
-        protected override void PerformAttack() { }
+        #endregion
 
-        public override void ResetCombatStates()
+        #region Helpers
+
+        private void IgnoreStoneCollisionWithSelf(GameObject stoneObj)
         {
-            if (TryGetAttackAnimationNormalizedTime(out float normalizedTime) && normalizedTime < attackAnimFinishThreshold)
+            if (!TryGetComponent(out Collider selfCollider))
                 return;
 
-            UnlockAgentControl();
-            base.ResetCombatStates();
+            foreach (Collider stoneCollider in stoneObj.GetComponentsInChildren<Collider>())
+                Physics.IgnoreCollision(stoneCollider, selfCollider, true);
         }
+
+        #endregion
+
+        #region Camp Reset
 
         protected override void TriggerCampReset()
         {
@@ -429,49 +505,6 @@ namespace VisionOfLight.Enemy
             base.TriggerCampReset();
         }
 
-        private void TryFinishAttackAnimation()
-        {
-            if (!TryGetAttackAnimationNormalizedTime(out float normalizedTime))
-            {
-                ResetCombatStates();
-                return;
-            }
-
-            if (normalizedTime >= attackAnimFinishThreshold)
-                ResetCombatStates();
-        }
-
-        private bool TryGetAttackAnimationNormalizedTime(out float normalizedTime)
-        {
-            normalizedTime = 0f;
-            if (anim == null) return false;
-
-            AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
-            AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
-
-            if (currentState.IsName("Attack01") || currentState.IsName("Attack02"))
-            {
-                normalizedTime = currentState.normalizedTime;
-                return true;
-            }
-            else if (nextState.IsName("Attack01") || nextState.IsName("Attack02"))
-            {
-                // We are currently transitioning INTO the attack animation.
-                // Don't abort the attack!
-                normalizedTime = 0f;
-                return true;
-            }
-
-            return false;
-        }
-
-        private void IgnoreStoneCollisionWithSelf(GameObject stoneObj)
-        {
-            if (!TryGetComponent(out Collider selfCollider))
-                return;
-
-            foreach (Collider stoneCollider in stoneObj.GetComponentsInChildren<Collider>())
-                Physics.IgnoreCollision(stoneCollider, selfCollider, true);
-        }
+        #endregion
     }
 }

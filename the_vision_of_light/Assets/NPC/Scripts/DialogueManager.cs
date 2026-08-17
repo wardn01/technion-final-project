@@ -12,8 +12,11 @@ using Unity.Cinemachine;
 /// </summary>
 public class DialogueManager : MonoBehaviour
 {
+    #region Singleton
     public static DialogueManager Instance { get; private set; }
+    #endregion
 
+    #region UI Elements
     [Header("UI Elements")]
     public GameObject dialoguePanel;
     public GameObject hudScreen;
@@ -31,7 +34,9 @@ public class DialogueManager : MonoBehaviour
     [Header("Settings")]
     [Tooltip("Delay between characters while typing (seconds).")]
     public float typingSpeed = 0.04f;
+    #endregion
 
+    #region Runtime State
     [HideInInspector]
     public bool isDialogueOpen = false;
 
@@ -46,7 +51,9 @@ public class DialogueManager : MonoBehaviour
     private CinemachineCamera npcCamera;
     private CinemachineCamera playerCamera;
     private System.Action onDialogueEndCallback;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null)
@@ -80,7 +87,9 @@ public class DialogueManager : MonoBehaviour
         if (declineButton != null)
             declineButton.GetComponent<Button>().onClick.AddListener(DeclineQuest);
     }
+    #endregion
 
+    #region Dialogue Flow
     /// <summary>Opens the panel, enqueues lines, and shows the first sentence.</summary>
     public void StartDialogue(
         string npcName,
@@ -227,7 +236,9 @@ public class DialogueManager : MonoBehaviour
             leaveButton.SetActive(true);
         }
     }
+    #endregion
 
+    #region Shop & Quest Buttons
     /// <summary>Re-opens shop/leave buttons when returning from the shop panel.</summary>
     public void ShowShopOptions()
     {
@@ -257,7 +268,10 @@ public class DialogueManager : MonoBehaviour
         onDialogueEndCallback = null;
         EndDialogue();
     }
+    #endregion
 
+    #region Close
+    /// <summary>Hides the panel, restores HUD/cursor, and runs the optional quest callback.</summary>
     public void EndDialogue()
     {
         SetNPCTalkingState(false);
@@ -294,4 +308,5 @@ public class DialogueManager : MonoBehaviour
             onDialogueEndCallback = null;
         }
     }
+    #endregion
 }

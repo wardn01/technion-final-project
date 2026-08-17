@@ -5,6 +5,7 @@ using VisionOfLight.Enemy;
 [System.Serializable]
 public class MonsterBestiaryEntry
 {
+    #region Serialized Fields
     [Tooltip("Enemy stats ScriptableObject. Asset name is the stable monsterId (e.g. OrcData).")]
     public EnemyBaseStats stats;
 
@@ -17,6 +18,7 @@ public class MonsterBestiaryEntry
     [TextArea(2, 4)]
     [Tooltip("Optional flavor text shown when the entry is unlocked.")]
     public string description;
+    #endregion
 }
 
 /// <summary>
@@ -27,5 +29,7 @@ public class MonsterBestiaryEntry
 [CreateAssetMenu(fileName = "MonsterBestiaryCatalog", menuName = "Game Data/Monster Bestiary Catalog")]
 public class MonsterBestiaryCatalog : ScriptableObject
 {
+    #region Catalog Entries
     public MonsterBestiaryEntry[] entries;
+    #endregion
 }

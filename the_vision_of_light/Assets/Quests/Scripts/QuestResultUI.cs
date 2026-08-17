@@ -10,9 +10,15 @@ using UnityEngine.UI;
 /// </summary>
 public class QuestResultUI : MonoBehaviour
 {
+    #region Singleton
+
     private static QuestResultUI instance;
 
     public static QuestResultUI Instance => instance;
+
+    #endregion
+
+    #region Panel & Audio
 
     [Header("Panel")]
     [Tooltip("Auto-found: ResultQuestPanel under Canvas.")]
@@ -29,9 +35,17 @@ public class QuestResultUI : MonoBehaviour
     public AudioClip successClip;
     [Range(0f, 1f)] public float successVolume = 1f;
 
+    #endregion
+
+    #region Runtime State
+
     private Coroutine hideRoutine;
     private AudioSource audioSource;
     private bool isInitialized;
+
+    #endregion
+
+    #region Factory
 
     /// <summary>
     /// Returns an existing component or creates one on the main Canvas.
@@ -66,6 +80,10 @@ public class QuestResultUI : MonoBehaviour
         return instance;
     }
 
+    #endregion
+
+    #region Unity Lifecycle
+
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -84,11 +102,17 @@ public class QuestResultUI : MonoBehaviour
             instance = null;
     }
 
+    #endregion
+
+    #region Display
+
+    /// <summary>Shows the quest completion banner using the quest's completion message.</summary>
     public void ShowQuestComplete(QuestData quest)
     {
         ShowResult(BuildMessage(quest));
     }
 
+    /// <summary>Shows the result panel with the given message, then hides it after a delay.</summary>
     public void ShowResult(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -111,6 +135,7 @@ public class QuestResultUI : MonoBehaviour
         hideRoutine = StartCoroutine(HideAfterDelay());
     }
 
+    /// <summary>Hides the result panel immediately and cancels any pending hide coroutine.</summary>
     public void HideImmediate()
     {
         StopHideRoutine();
@@ -118,6 +143,10 @@ public class QuestResultUI : MonoBehaviour
         if (resultPanel != null)
             resultPanel.SetActive(false);
     }
+
+    #endregion
+
+    #region Initialization
 
     private void EnsureInitialized()
     {
@@ -139,6 +168,10 @@ public class QuestResultUI : MonoBehaviour
             ? "Quest Complete"
             : quest.completionMessage.Trim();
     }
+
+    #endregion
+
+    #region Helpers
 
     private void ResolveReferences()
     {
@@ -219,4 +252,6 @@ public class QuestResultUI : MonoBehaviour
 
         audioSource.PlayOneShot(successClip, successVolume);
     }
+
+    #endregion
 }

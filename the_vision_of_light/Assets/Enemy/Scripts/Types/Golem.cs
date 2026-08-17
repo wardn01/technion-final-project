@@ -12,6 +12,8 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(GolemAttackVFX))]
     public class Golem : BossEnemy
     {
+        #region Serialized Fields
+
         [Header("Ranged Attack")]
         [SerializeField] private float throwMinDistance = 8f;
         [SerializeField] private float throwMaxDistance = 20f;
@@ -40,8 +42,13 @@ namespace VisionOfLight.Enemy
         [SerializeField] [Range(0.05f, 1f)] private float miniGolemSummonHealthPercent = 0.3f;
         [SerializeField] private int miniGolemCount = 2;
 
+        #endregion
+
+        #region Runtime State
+
         private const float MeleeStandOff = 1.75f;
 
+        /// <summary>Health fraction at which MiniGolems are summoned.</summary>
         public float MiniGolemSummonHealthPercent => miniGolemSummonHealthPercent;
 
         private bool openingSequenceDone;
@@ -64,6 +71,10 @@ namespace VisionOfLight.Enemy
         private bool miniGolemsSummoned;
         private float fightStartTime = -1f;
         private readonly List<GameObject> activeMiniGolems = new List<GameObject>();
+
+        #endregion
+
+        #region AI / Combat
 
         private bool TryGetThrowStats(out float throwDamagePercent, out float projectileSpeed)
         {
@@ -94,6 +105,88 @@ namespace VisionOfLight.Enemy
 
             return target.position - toTarget.normalized * MeleeStandOff;
         }
+
+        protected override void PerformAttack()
+        {
+            if (ShouldJumpAttack())
+            {
+                BeginJumpAttack();
+                return;
+            }
+
+            anim.SetInteger("AttackIndex", Random.Range(0, 2));
+            anim.SetTrigger("Attack");
+        }
+
+        protected override void ChaseBehavior()
+        {
+            if (ShouldThrowStone())
+            {
+                StopAgent();
+                LockThrowFacing();
+                isAttackingBase = true;
+                isThrowing = true;
+                throwAnimStartTime = Time.time;
+                anim.ResetTrigger("Throw");
+                anim.SetTrigger("Throw");
+                return;
+            }
+
+            if (ShouldJumpAttack())
+            {
+                StopAgent();
+                FaceTarget();
+                isAttackingBase = true;
+                lastAttackTime = Time.time;
+                BeginJumpAttack();
+                return;
+            }
+
+            base.ChaseBehavior();
+        }
+
+        private void BeginOpeningSequence()
+        {
+            if (openingSequenceDone || isInOpeningSequence) return;
+
+            EnterAggro();
+            MarkFightStarted();
+            isInOpeningSequence = true;
+            isInStartFightSlap = true;
+            openingAnimReached = false;
+            openingSequenceStartTime = Time.time;
+            StopAgent();
+            anim.SetTrigger("StartFight");
+        }
+
+        private bool IsInStartFightState()
+        {
+            if (anim == null) return false;
+
+            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+            return state.IsName("StartFight");
+        }
+
+        private bool IsInOpeningAnimState()
+        {
+            if (anim == null) return false;
+
+            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+            return state.IsName("StartFight") || state.IsName("JumpAttack");
+        }
+
+        private void ForceEndOpeningSequence()
+        {
+            DisableAnimRootMotion();
+            isInOpeningSequence = false;
+            isInStartFightSlap = false;
+            openingSequenceDone = true;
+            ResetCombatStates();
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
 
         protected override void Update()
         {
@@ -206,17 +299,9 @@ namespace VisionOfLight.Enemy
                 agent.Warp(transform.position);
         }
 
-        protected override void PerformAttack()
-        {
-            if (ShouldJumpAttack())
-            {
-                BeginJumpAttack();
-                return;
-            }
+        #endregion
 
-            anim.SetInteger("AttackIndex", Random.Range(0, 2));
-            anim.SetTrigger("Attack");
-        }
+        #region Jump Attack
 
         private void BeginJumpAttack()
         {
@@ -247,32 +332,17 @@ namespace VisionOfLight.Enemy
             return Random.value <= jumpAttackChance;
         }
 
-        protected override void ChaseBehavior()
+        private bool IsInJumpAttackState()
         {
-            if (ShouldThrowStone())
-            {
-                StopAgent();
-                LockThrowFacing();
-                isAttackingBase = true;
-                isThrowing = true;
-                throwAnimStartTime = Time.time;
-                anim.ResetTrigger("Throw");
-                anim.SetTrigger("Throw");
-                return;
-            }
+            if (anim == null) return false;
 
-            if (ShouldJumpAttack())
-            {
-                StopAgent();
-                FaceTarget();
-                isAttackingBase = true;
-                lastAttackTime = Time.time;
-                BeginJumpAttack();
-                return;
-            }
-
-            base.ChaseBehavior();
+            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+            return state.IsName("JumpAttack");
         }
+
+        #endregion
+
+        #region Throw Stone
 
         private bool ShouldThrowStone()
         {
@@ -310,36 +380,6 @@ namespace VisionOfLight.Enemy
             ResetCombatStates();
         }
 
-        private void BeginOpeningSequence()
-        {
-            if (openingSequenceDone || isInOpeningSequence) return;
-
-            EnterAggro();
-            MarkFightStarted();
-            isInOpeningSequence = true;
-            isInStartFightSlap = true;
-            openingAnimReached = false;
-            openingSequenceStartTime = Time.time;
-            StopAgent();
-            anim.SetTrigger("StartFight");
-        }
-
-        private bool IsInStartFightState()
-        {
-            if (anim == null) return false;
-
-            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
-            return state.IsName("StartFight");
-        }
-
-        private bool IsInJumpAttackState()
-        {
-            if (anim == null) return false;
-
-            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
-            return state.IsName("JumpAttack");
-        }
-
         private bool IsInThrowStoneState()
         {
             if (anim == null) return false;
@@ -348,22 +388,55 @@ namespace VisionOfLight.Enemy
             return state.IsName("ThrowStone");
         }
 
-        private bool IsInOpeningAnimState()
+        private void LockThrowFacing()
         {
-            if (anim == null) return false;
+            Vector3 flatDirection = transform.forward;
+            if (target != null)
+            {
+                flatDirection = target.position - transform.position;
+                flatDirection.y = 0f;
+            }
 
-            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
-            return state.IsName("StartFight") || state.IsName("JumpAttack");
+            if (flatDirection.sqrMagnitude < 0.01f)
+                flatDirection = transform.forward;
+
+            flatDirection.Normalize();
+            throwLockedRotation = Quaternion.LookRotation(flatDirection, Vector3.up);
+            transform.rotation = throwLockedRotation;
+
+            Vector3 origin = throwPoint != null ? throwPoint.position : transform.position + Vector3.up * 2f;
+            if (target != null)
+            {
+                Vector3 aimPoint = target.position + Vector3.up * throwAimHeight;
+                throwLaunchDirection = aimPoint - origin;
+
+                float horizontalDistance = new Vector3(throwLaunchDirection.x, 0f, throwLaunchDirection.z).magnitude;
+                throwLaunchDirection.y -= horizontalDistance * 0.01f;
+            }
+            else
+            {
+                throwLaunchDirection = flatDirection;
+                throwLaunchDirection.y -= 0.04f;
+            }
+
+            if (throwLaunchDirection.sqrMagnitude > 0.01f)
+                throwLaunchDirection.Normalize();
+            else
+                throwLaunchDirection = flatDirection;
         }
 
-        private void ForceEndOpeningSequence()
+        private void IgnoreStoneCollisionWithGolem(GameObject stoneObj)
         {
-            DisableAnimRootMotion();
-            isInOpeningSequence = false;
-            isInStartFightSlap = false;
-            openingSequenceDone = true;
-            ResetCombatStates();
+            if (!TryGetComponent(out CapsuleCollider golemCollider))
+                return;
+
+            foreach (Collider stoneCollider in stoneObj.GetComponentsInChildren<Collider>())
+                Physics.IgnoreCollision(stoneCollider, golemCollider, true);
         }
+
+        #endregion
+
+        #region Root Motion
 
         private void EnableFullRootMotion()
         {
@@ -434,42 +507,9 @@ namespace VisionOfLight.Enemy
                 agent.Warp(transform.position);
         }
 
-        private void LockThrowFacing()
-        {
-            Vector3 flatDirection = transform.forward;
-            if (target != null)
-            {
-                flatDirection = target.position - transform.position;
-                flatDirection.y = 0f;
-            }
+        #endregion
 
-            if (flatDirection.sqrMagnitude < 0.01f)
-                flatDirection = transform.forward;
-
-            flatDirection.Normalize();
-            throwLockedRotation = Quaternion.LookRotation(flatDirection, Vector3.up);
-            transform.rotation = throwLockedRotation;
-
-            Vector3 origin = throwPoint != null ? throwPoint.position : transform.position + Vector3.up * 2f;
-            if (target != null)
-            {
-                Vector3 aimPoint = target.position + Vector3.up * throwAimHeight;
-                throwLaunchDirection = aimPoint - origin;
-
-                float horizontalDistance = new Vector3(throwLaunchDirection.x, 0f, throwLaunchDirection.z).magnitude;
-                throwLaunchDirection.y -= horizontalDistance * 0.01f;
-            }
-            else
-            {
-                throwLaunchDirection = flatDirection;
-                throwLaunchDirection.y -= 0.04f;
-            }
-
-            if (throwLaunchDirection.sqrMagnitude > 0.01f)
-                throwLaunchDirection.Normalize();
-            else
-                throwLaunchDirection = flatDirection;
-        }
+        #region Animation Events
 
         /// <summary>Animation event at end of StartFight — chains into JumpAttack.</summary>
         public void EndStartFight()
@@ -539,15 +579,48 @@ namespace VisionOfLight.Enemy
             }
         }
 
-        private void IgnoreStoneCollisionWithGolem(GameObject stoneObj)
+        /// <summary>Animation event — ends the attack clip and resumes movement.</summary>
+        public override void EndAttack()
         {
-            if (!TryGetComponent(out CapsuleCollider golemCollider))
-                return;
+            DisableAnimRootMotion();
 
-            foreach (Collider stoneCollider in stoneObj.GetComponentsInChildren<Collider>())
-                Physics.IgnoreCollision(stoneCollider, golemCollider, true);
+            if (isThrowing)
+            {
+                isThrowing = false;
+                throwLaunchDirection = Vector3.zero;
+                lastAttackTime = Time.time;
+            }
+
+            if (anim != null)
+            {
+                anim.ResetTrigger("Throw");
+                anim.ResetTrigger("JumpAttack");
+            }
+
+            if (isJumpAttackActive)
+            {
+                isJumpAttackActive = false;
+                lastJumpAttackTime = Time.time;
+                lastAttackTime = Time.time;
+            }
+
+            if (isInOpeningSequence)
+            {
+                isInOpeningSequence = false;
+                openingSequenceDone = true;
+            }
+
+            ResetCombatStates();
         }
 
+        /// <summary>Animation event — ends the hit reaction clip.</summary>
+        public override void EndHit() => ResetCombatStates();
+
+        #endregion
+
+        #region Health / Damage
+
+        /// <summary>Applies damage, enrage threshold, and MiniGolem summon checks.</summary>
         public override void TakeDamage(
             float damage,
             bool playHitReaction = true,
@@ -602,76 +675,15 @@ namespace VisionOfLight.Enemy
                 miniGolemsSummoned);
         }
 
-        public override void EndAttack()
-        {
-            DisableAnimRootMotion();
-
-            if (isThrowing)
-            {
-                isThrowing = false;
-                throwLaunchDirection = Vector3.zero;
-                lastAttackTime = Time.time;
-            }
-
-            if (anim != null)
-            {
-                anim.ResetTrigger("Throw");
-                anim.ResetTrigger("JumpAttack");
-            }
-
-            if (isJumpAttackActive)
-            {
-                isJumpAttackActive = false;
-                lastJumpAttackTime = Time.time;
-                lastAttackTime = Time.time;
-            }
-
-            if (isInOpeningSequence)
-            {
-                isInOpeningSequence = false;
-                openingSequenceDone = true;
-            }
-
-            ResetCombatStates();
-        }
-
-        public override void EndHit() => ResetCombatStates();
-
-        protected override void TriggerCampReset()
-        {
-            if (anim != null)
-            {
-                anim.ResetTrigger("Throw");
-                anim.ResetTrigger("StartFight");
-                anim.ResetTrigger("JumpAttack");
-            }
-
-            base.TriggerCampReset();
-        }
-
-        protected override void OnCampReset()
-        {
-            DisableAnimRootMotion();
-            openingSequenceDone = false;
-            isInOpeningSequence = false;
-            isInStartFightSlap = false;
-            openingAnimReached = false;
-            isEnraged = false;
-            isThrowing = false;
-            throwLaunchDirection = Vector3.zero;
-            isJumpAttackActive = false;
-            lastJumpAttackTime = -999f;
-            lastHitReactionTime = -999f;
-            miniGolemsSummoned = false;
-            fightStartTime = -1f;
-            ClearSummonedMiniGolems();
-        }
-
         protected override void Die()
         {
             ClearSummonedMiniGolems();
             base.Die();
         }
+
+        #endregion
+
+        #region Mini Golem Summon
 
         private void MarkFightStartedIfNeeded()
         {
@@ -776,5 +788,41 @@ namespace VisionOfLight.Enemy
 
             return false;
         }
+
+        #endregion
+
+        #region Camp Reset
+
+        protected override void TriggerCampReset()
+        {
+            if (anim != null)
+            {
+                anim.ResetTrigger("Throw");
+                anim.ResetTrigger("StartFight");
+                anim.ResetTrigger("JumpAttack");
+            }
+
+            base.TriggerCampReset();
+        }
+
+        protected override void OnCampReset()
+        {
+            DisableAnimRootMotion();
+            openingSequenceDone = false;
+            isInOpeningSequence = false;
+            isInStartFightSlap = false;
+            openingAnimReached = false;
+            isEnraged = false;
+            isThrowing = false;
+            throwLaunchDirection = Vector3.zero;
+            isJumpAttackActive = false;
+            lastJumpAttackTime = -999f;
+            lastHitReactionTime = -999f;
+            miniGolemsSummoned = false;
+            fightStartTime = -1f;
+            ClearSummonedMiniGolems();
+        }
+
+        #endregion
     }
 }

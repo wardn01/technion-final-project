@@ -7,10 +7,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Dialogue", menuName = "Game Data/NPC/Dialogue")]
 public class DialogueData : ScriptableObject
 {
+    #region Content
     [Tooltip("Speaker name shown in the dialogue panel header.")]
     public string npcName;
 
     [TextArea(3, 10)]
     [Tooltip("Lines shown one at a time; player clicks Continue between them.")]
     public string[] dialogueLines;
+    #endregion
 }

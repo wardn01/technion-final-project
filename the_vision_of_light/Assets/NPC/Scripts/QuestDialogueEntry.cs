@@ -13,11 +13,16 @@ public enum QuestDialogueAction
 [System.Serializable]
 public class QuestDialogueEntry
 {
+    #region Matching
     public int stateId;
     public int requiredStep;
+    #endregion
+
+    #region Payload
     public DialogueData dialogue;
     public QuestData questData;
 
     [Tooltip("What happens when the player finishes this dialogue.")]
     public QuestDialogueAction onComplete = QuestDialogueAction.None;
+    #endregion
 }

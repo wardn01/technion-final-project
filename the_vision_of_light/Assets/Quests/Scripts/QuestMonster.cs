@@ -6,9 +6,12 @@ using UnityEngine;
 /// </summary>
 public class QuestMonster : MonoBehaviour
 {
+    #region Runtime State
     /// <summary>Ensures the death is only reported a single time.</summary>
     private bool isDead = false;
+    #endregion
 
+    #region Death Notification
     /// <summary>
     /// Called by the enemy's death logic; forwards a single kill notification to the quest manager.
     /// </summary>
@@ -27,4 +30,5 @@ public class QuestMonster : MonoBehaviour
         if (MonsterQuestManager.Instance != null)
             MonsterQuestManager.Instance.MonsterKilled();
     }
+    #endregion
 }

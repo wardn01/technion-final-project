@@ -9,6 +9,7 @@ namespace VisionOfLight.Enemy
     [CreateAssetMenu(fileName = "MiniGolemData", menuName = "Game Data/Enemy/Normal/Mini Golem Stats")]
     public class MiniGolemStats : NormalEnemyStats
     {
+        #region Serialized Fields
         [Header("Ranged Combat (Stone Throw)")]
         [Tooltip("Will not throw while closer than this.")]
         [SerializeField] private float throwMinDistance = 4f;
@@ -20,12 +21,15 @@ namespace VisionOfLight.Enemy
         [Tooltip("Throw damage as % of scaled currentAttack.")]
         [SerializeField] private float throwDamage = 85f;
         [SerializeField] private float rangedAttackCooldown = 2.8f;
+        #endregion
 
+        #region Public Accessors
         public float ThrowMinDistance => throwMinDistance;
         public float RangedAttackRange => rangedAttackRange;
         public float ThrowChance => throwChance;
         public float ProjectileSpeed => projectileSpeed;
         public float ThrowDamage => throwDamage;
         public float RangedAttackCooldown => rangedAttackCooldown;
+        #endregion
     }
 }

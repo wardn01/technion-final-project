@@ -9,6 +9,8 @@ using TMPro;
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class UIFloatingText : MonoBehaviour
 {
+    #region Motion & Lifetime
+
     [Header("Motion (UI units / second)")]
     [Tooltip("Drift to the right while floating.")]
     public float moveSpeedX = 28f;
@@ -30,6 +32,10 @@ public class UIFloatingText : MonoBehaviour
     [Tooltip("How long the pop-in lasts.")]
     public float punchDuration = 0.12f;
 
+    #endregion
+
+    #region Spread Pattern
+
     private static readonly Vector2[] SpreadPattern =
     {
         new Vector2(0f, 0f),
@@ -45,6 +51,10 @@ public class UIFloatingText : MonoBehaviour
     private static int spreadIndex;
     private static float lastSpreadTime;
 
+    #endregion
+
+    #region Runtime State
+
     private RectTransform rectTransform;
     private TextMeshProUGUI textMesh;
     private Color textColor;
@@ -52,64 +62,15 @@ public class UIFloatingText : MonoBehaviour
     private float punchTimer;
     private bool isFading;
 
+    #endregion
+
+    #region Unity Lifecycle
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetSpreadState()
     {
         spreadIndex = 0;
         lastSpreadTime = 0f;
-    }
-
-    /// <summary>Next fan offset when several numbers spawn in quick succession.</summary>
-    public static Vector2 GetNextSpawnOffset()
-    {
-        if (Time.unscaledTime - lastSpreadTime > SpreadResetDelay)
-            spreadIndex = 0;
-
-        lastSpreadTime = Time.unscaledTime;
-        Vector2 offset = SpreadPattern[spreadIndex % SpreadPattern.Length];
-        spreadIndex++;
-        return offset;
-    }
-
-    /// <summary>Aligns a new label to a spawn anchor plus fan offset.</summary>
-    public static void PlaceAtSpawn(RectTransform label, RectTransform spawnAnchor, Vector2 spreadOffset)
-    {
-        if (label == null || spawnAnchor == null)
-            return;
-
-        label.anchorMin = spawnAnchor.anchorMin;
-        label.anchorMax = spawnAnchor.anchorMax;
-        label.pivot = spawnAnchor.pivot;
-        label.anchoredPosition = spawnAnchor.anchoredPosition + spreadOffset;
-    }
-
-    /// <summary>Sets text, color, and starts lifetime. Call after <see cref="PlaceAtSpawn"/>.</summary>
-    public void Setup(string text, Color color)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        rectTransform = GetComponent<RectTransform>();
-        textMesh = GetComponent<TextMeshProUGUI>();
-
-        if (textMesh == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        textMesh.text = text;
-        textColor = color;
-        textMesh.color = color;
-        lifeTimer = lifeTime;
-        punchTimer = punchDuration;
-        isFading = false;
-
-        if (rectTransform != null && punchDuration > 0f)
-            rectTransform.localScale = Vector3.one * punchScale;
     }
 
     private void Update()
@@ -145,4 +106,67 @@ public class UIFloatingText : MonoBehaviour
         if (textColor.a <= 0f)
             Destroy(gameObject);
     }
+
+    #endregion
+
+    #region Static API
+
+    /// <summary>Next fan offset when several numbers spawn in quick succession.</summary>
+    public static Vector2 GetNextSpawnOffset()
+    {
+        if (Time.unscaledTime - lastSpreadTime > SpreadResetDelay)
+            spreadIndex = 0;
+
+        lastSpreadTime = Time.unscaledTime;
+        Vector2 offset = SpreadPattern[spreadIndex % SpreadPattern.Length];
+        spreadIndex++;
+        return offset;
+    }
+
+    /// <summary>Aligns a new label to a spawn anchor plus fan offset.</summary>
+    public static void PlaceAtSpawn(RectTransform label, RectTransform spawnAnchor, Vector2 spreadOffset)
+    {
+        if (label == null || spawnAnchor == null)
+            return;
+
+        label.anchorMin = spawnAnchor.anchorMin;
+        label.anchorMax = spawnAnchor.anchorMax;
+        label.pivot = spawnAnchor.pivot;
+        label.anchoredPosition = spawnAnchor.anchoredPosition + spreadOffset;
+    }
+
+    #endregion
+
+    #region Setup
+
+    /// <summary>Sets text, color, and starts lifetime. Call after <see cref="PlaceAtSpawn"/>.</summary>
+    public void Setup(string text, Color color)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        rectTransform = GetComponent<RectTransform>();
+        textMesh = GetComponent<TextMeshProUGUI>();
+
+        if (textMesh == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        textMesh.text = text;
+        textColor = color;
+        textMesh.color = color;
+        lifeTimer = lifeTime;
+        punchTimer = punchDuration;
+        isFading = false;
+
+        if (rectTransform != null && punchDuration > 0f)
+            rectTransform.localScale = Vector3.one * punchScale;
+    }
+
+    #endregion
 }

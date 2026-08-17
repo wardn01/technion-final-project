@@ -7,9 +7,12 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class QuestPathSuppression
 {
+    #region Private State
     private static int zoneOverlapCount;
     private static bool forcedInterior;
+    #endregion
 
+    #region Boot / Scene Reset
     // Static state must not leak across scene loads: saving & exiting while indoors
     // would otherwise keep the quest path hidden for the whole next session.
     // Zones re-fire OnTriggerEnter for the freshly spawned player, so starting
@@ -29,21 +32,28 @@ public static class QuestPathSuppression
         zoneOverlapCount = 0;
         forcedInterior = false;
     }
+    #endregion
 
+    #region Suppression API
+    /// <summary>True when the quest path should stay hidden (interior zone or forced flag).</summary>
     public static bool IsSuppressed => forcedInterior || zoneOverlapCount > 0;
 
+    /// <summary>Sets whether a door teleporter forced the player into an interior.</summary>
     public static void SetForcedInterior(bool inside)
     {
         forcedInterior = inside;
     }
 
+    /// <summary>Called when the player enters an interior suppression zone.</summary>
     public static void EnterZone()
     {
         zoneOverlapCount++;
     }
 
+    /// <summary>Called when the player exits an interior suppression zone.</summary>
     public static void ExitZone()
     {
         zoneOverlapCount = Mathf.Max(0, zoneOverlapCount - 1);
     }
+    #endregion
 }

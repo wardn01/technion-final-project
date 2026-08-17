@@ -10,8 +10,11 @@ using VisionOfLight.Player;
 /// </summary>
 public class ShopManager : MonoBehaviour
 {
+    #region Singleton
     public static ShopManager Instance { get; private set; }
+    #endregion
 
+    #region UI References
     [Header("UI References")]
     public GameObject shopPanel;
     public GameObject hudScreen;
@@ -34,7 +37,9 @@ public class ShopManager : MonoBehaviour
     public Color normalColor = Color.white;
     public Color selectedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
     private Image currentSelectedSlotImage;
+    #endregion
 
+    #region Economy
     [Header("Economy References")]
     public ItemData goldItemData;
     private ItemData selectedItem;
@@ -47,7 +52,9 @@ public class ShopManager : MonoBehaviour
 
     [HideInInspector] public Animator currentShopkeeperAnim;
     [HideInInspector] public ShopkeeperNPC currentNPC;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         if (Instance == null)
@@ -79,7 +86,9 @@ public class ShopManager : MonoBehaviour
         if (shopPromptUI != null)
             shopPromptUI.SetActive(false);
     }
+    #endregion
 
+    #region Interact Prompt
     /// <summary>Resolves Interact from KeybindManager, saved prefs, or F as fallback.</summary>
     public static KeyCode GetInteractKey()
     {
@@ -108,7 +117,9 @@ public class ShopManager : MonoBehaviour
         if (shopPromptUI != null)
             shopPromptUI.SetActive(false);
     }
+    #endregion
 
+    #region Shop Flow
     /// <summary>Populates shop slots from the given list and selects the first item.</summary>
     public void OpenShop(List<ItemData> itemsToSell)
     {
@@ -247,7 +258,9 @@ public class ShopManager : MonoBehaviour
             GameplayCursorPolicy.RequestApply();
         }
     }
+    #endregion
 
+    #region Buy
     public void SelectItem(ItemData item)
     {
         selectedItem = item;
@@ -315,4 +328,5 @@ public class ShopManager : MonoBehaviour
             goldText.text = currentGold.ToString();
         }
     }
+    #endregion
 }

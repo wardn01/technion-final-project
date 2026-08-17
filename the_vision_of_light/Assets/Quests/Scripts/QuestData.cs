@@ -40,12 +40,15 @@ public class QuestStep
 [CreateAssetMenu(fileName = "New Quest", menuName = "Game Data/Quest/Quest Data")]
 public class QuestData : ScriptableObject
 {
+    #region Identity
     public int stateId;
     public string questTitle;
 
     [TextArea]
     public string questDescription;
+    #endregion
 
+    #region Steps & Rewards
     /// <summary>Ordered objectives for this quest. If empty, the quest uses <see cref="questDescription"/> as a single step.</summary>
     public List<QuestStep> steps = new List<QuestStep>();
 
@@ -57,7 +60,9 @@ public class QuestData : ScriptableObject
 
     public bool hasTargetLocation;
     public Vector3 targetLocation;
+    #endregion
 
+    #region Step Helpers
     public int StepCount => (steps != null && steps.Count > 0) ? steps.Count : 1;
 
     public string GetDescriptionForStep(int stepIndex)
@@ -98,4 +103,5 @@ public class QuestData : ScriptableObject
         text = step.tutorialText;
         return true;
     }
+    #endregion
 }

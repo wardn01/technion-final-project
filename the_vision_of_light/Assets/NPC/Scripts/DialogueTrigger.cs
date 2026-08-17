@@ -9,17 +9,20 @@ using Unity.Cinemachine;
 /// </summary>
 public class DialogueTrigger : MonoBehaviour
 {
+    #region Dialogue
     [Tooltip("Optional profile asset; overrides matching rows in dialogueStates.")]
     public NPCDialogueProfile dialogueProfile;
 
     [Tooltip("Quest/state-specific dialogue rows; matched by stateId + requiredStep.")]
     public List<QuestDialogueEntry> dialogueStates;
+    #endregion
 
-    [Header("Cinematic Dialogue Cameras")]
+    #region Cinematic Dialogue Cameras
     public CinemachineCamera npcFocusCamera;
     public CinemachineCamera playerFocusCamera;
+    #endregion
 
-    [Header("Navigation")]
+    #region Navigation
     [Tooltip("Optional world position for this NPC after a quest milestone (e.g. Villager outside the house).")]
     public Transform outsideLocation;
 
@@ -30,7 +33,9 @@ public class DialogueTrigger : MonoBehaviour
     public int moveOutsideAtMinStep = 2;
 
     private bool hasMovedOutside;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         ApplyDialogueProfile();
@@ -58,7 +63,9 @@ public class DialogueTrigger : MonoBehaviour
     {
         TryMoveToOutsideLocation();
     }
+    #endregion
 
+    #region Relocation
     private void TryMoveToOutsideLocation()
     {
         if (hasMovedOutside || outsideLocation == null || QuestManager.Instance == null)
@@ -136,7 +143,9 @@ public class DialogueTrigger : MonoBehaviour
         // Legacy quests that used state 2+ before chapter-based state ids.
         return moveOutsideAtState == 0 && moveOutsideAtMinStep == 2 && state >= 2;
     }
+    #endregion
 
+    #region Dialogue Profiles
     private void ApplyDialogueProfile()
     {
         StoryNPC storyNPC = GetComponent<StoryNPC>();
@@ -193,7 +202,9 @@ public class DialogueTrigger : MonoBehaviour
 
         return null;
     }
+    #endregion
 
+    #region Interact
     /// <summary>Called when the player presses Interact near this NPC.</summary>
     public void TriggerDialogue()
     {
@@ -277,4 +288,5 @@ public class DialogueTrigger : MonoBehaviour
                 return null;
         }
     }
+    #endregion
 }

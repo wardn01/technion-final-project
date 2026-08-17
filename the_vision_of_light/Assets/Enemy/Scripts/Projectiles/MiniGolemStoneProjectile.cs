@@ -8,12 +8,18 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(SphereCollider))]
     public class MiniGolemStoneProjectile : MonoBehaviour
     {
+        #region Serialized Fields
+
         [SerializeField] private float lifeTime = 12f;
         [SerializeField] private float playerHitPadding = 0.08f;
         [SerializeField] private float minAirTimeBeforeDamage = 0.08f;
         [SerializeField] private float groundProbeDistance = 10f;
         [SerializeField] private float groundBounce = 0.22f;
         [SerializeField] private float groundFriction = 0.82f;
+
+        #endregion
+
+        #region Runtime State
 
         private const float FallbackCapsuleRadius = 0.3f;
         private const float FallbackCapsuleHeight = 2f;
@@ -31,6 +37,10 @@ namespace VisionOfLight.Enemy
         private EnemyAudioEmitter audioEmitter;
         private int groundMask;
 
+        #endregion
+
+        #region Unity Lifecycle
+
         private void Awake()
         {
             physicsSphere = GetComponent<SphereCollider>();
@@ -47,12 +57,36 @@ namespace VisionOfLight.Enemy
             Destroy(gameObject, lifeTime);
         }
 
+        private void FixedUpdate()
+        {
+            if (!hasLaunched)
+                return;
+
+            Vector3 segmentStart = lastCheckPosition;
+            KeepOnGround();
+            HandlePlayerInteraction(segmentStart, transform.position);
+            lastCheckPosition = transform.position;
+        }
+
+        private void Update()
+        {
+            if (!hasLaunched)
+                return;
+
+            HandlePlayerInteraction(lastCheckPosition, transform.position);
+        }
+
+        #endregion
+
+        #region Public API
+
         /// <summary>Sets impact damage from the thrower's scaled attack.</summary>
         public void SetDamage(float dmgAmount)
         {
             damage = dmgAmount;
         }
 
+        /// <summary>Routes impact audio through the thrower's emitter.</summary>
         public void BindAudio(EnemyAudioEmitter emitter)
         {
             audioEmitter = emitter;
@@ -74,6 +108,7 @@ namespace VisionOfLight.Enemy
                 : playerTarget.GetComponent<CharacterController>();
         }
 
+        /// <summary>Called after launch velocity is applied — enables flight physics and hit checks.</summary>
         public void NotifyLaunched()
         {
             hasLaunched = true;
@@ -96,24 +131,9 @@ namespace VisionOfLight.Enemy
                 physicsSphere.isTrigger = true;
         }
 
-        private void FixedUpdate()
-        {
-            if (!hasLaunched)
-                return;
+        #endregion
 
-            Vector3 segmentStart = lastCheckPosition;
-            KeepOnGround();
-            HandlePlayerInteraction(segmentStart, transform.position);
-            lastCheckPosition = transform.position;
-        }
-
-        private void Update()
-        {
-            if (!hasLaunched)
-                return;
-
-            HandlePlayerInteraction(lastCheckPosition, transform.position);
-        }
+        #region Hit Detection
 
         private void OnTriggerEnter(Collider other) => TryHandlePlayerCollider(other);
 
@@ -157,6 +177,45 @@ namespace VisionOfLight.Enemy
             audioEmitter?.PlayClipAt("StoneImpact", transform.position);
             Destroy(gameObject);
         }
+
+        #endregion
+
+        #region Ground / Settle
+
+        private void KeepOnGround()
+        {
+            if (rb == null || physicsSphere == null)
+                return;
+
+            float radius = GetWorldRadius();
+            Vector3 origin = transform.position + Vector3.up * (radius + 0.05f);
+
+            if (!Physics.SphereCast(origin, radius * 0.85f, Vector3.down, out RaycastHit hit, groundProbeDistance, groundMask, QueryTriggerInteraction.Ignore))
+                return;
+
+            if (hit.collider.GetComponentInParent<PlayerHealth>() != null)
+                return;
+
+            float minY = hit.point.y + hit.normal.y * radius;
+            if (transform.position.y >= minY)
+                return;
+
+            transform.position = new Vector3(transform.position.x, minY, transform.position.z);
+
+            Vector3 velocity = rb.linearVelocity;
+            if (velocity.y < 0f)
+                velocity.y = -velocity.y * groundBounce;
+            else
+                velocity.y = 0f;
+
+            velocity.x *= groundFriction;
+            velocity.z *= groundFriction;
+            rb.linearVelocity = velocity;
+        }
+
+        #endregion
+
+        #region Helpers
 
         private bool TryGetPlayerCapsule(out Vector3 capsuleBottom, out Vector3 capsuleTop, out float playerRadius)
         {
@@ -235,37 +294,6 @@ namespace VisionOfLight.Enemy
             return Vector3.Distance(point, closestOnAxis) - playerRadius;
         }
 
-        private void KeepOnGround()
-        {
-            if (rb == null || physicsSphere == null)
-                return;
-
-            float radius = GetWorldRadius();
-            Vector3 origin = transform.position + Vector3.up * (radius + 0.05f);
-
-            if (!Physics.SphereCast(origin, radius * 0.85f, Vector3.down, out RaycastHit hit, groundProbeDistance, groundMask, QueryTriggerInteraction.Ignore))
-                return;
-
-            if (hit.collider.GetComponentInParent<PlayerHealth>() != null)
-                return;
-
-            float minY = hit.point.y + hit.normal.y * radius;
-            if (transform.position.y >= minY)
-                return;
-
-            transform.position = new Vector3(transform.position.x, minY, transform.position.z);
-
-            Vector3 velocity = rb.linearVelocity;
-            if (velocity.y < 0f)
-                velocity.y = -velocity.y * groundBounce;
-            else
-                velocity.y = 0f;
-
-            velocity.x *= groundFriction;
-            velocity.z *= groundFriction;
-            rb.linearVelocity = velocity;
-        }
-
         private float GetWorldRadius()
         {
             if (physicsSphere == null)
@@ -278,5 +306,7 @@ namespace VisionOfLight.Enemy
         {
             return Mathf.Max(target.lossyScale.x, target.lossyScale.z);
         }
+
+        #endregion
     }
 }

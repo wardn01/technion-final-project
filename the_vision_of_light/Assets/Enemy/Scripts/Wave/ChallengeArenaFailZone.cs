@@ -10,17 +10,24 @@ namespace VisionOfLight.Enemy
     [RequireComponent(typeof(Collider))]
     public class ChallengeArenaFailZone : MonoBehaviour
     {
+        #region Constants
         private const float InsideToleranceSqr = 0.04f;
+        #endregion
 
+        #region Serialized Fields
         [Tooltip("Stone that owns this trial. Auto-finds a parent ChallengeStone if empty.")]
         [SerializeField] private ChallengeStone challengeStone;
 
         [Tooltip("Seconds after the trial starts before leaving this zone counts as a fail.")]
         [SerializeField] private float failGraceSeconds = 0.35f;
+        #endregion
 
+        #region Private State
         private Collider zoneCollider;
         private Transform player;
+        #endregion
 
+        #region Unity Lifecycle
         private void Awake()
         {
             zoneCollider = GetComponent<Collider>();
@@ -44,7 +51,17 @@ namespace VisionOfLight.Enemy
 
             challengeStone.NotifyPlayerLeftArena(failGraceSeconds);
         }
+        #endregion
 
+        #region Arena Check
+        private bool IsPlayerInside(Vector3 worldPosition)
+        {
+            Vector3 closest = zoneCollider.ClosestPoint(worldPosition);
+            return (closest - worldPosition).sqrMagnitude < InsideToleranceSqr;
+        }
+        #endregion
+
+        #region Trigger Collision
         private void OnTriggerExit(Collider other)
         {
             if (!other.CompareTag("Player") || challengeStone == null)
@@ -55,11 +72,6 @@ namespace VisionOfLight.Enemy
 
             challengeStone.NotifyPlayerLeftArena(failGraceSeconds);
         }
-
-        private bool IsPlayerInside(Vector3 worldPosition)
-        {
-            Vector3 closest = zoneCollider.ClosestPoint(worldPosition);
-            return (closest - worldPosition).sqrMagnitude < InsideToleranceSqr;
-        }
+        #endregion
     }
 }

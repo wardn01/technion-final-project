@@ -6,6 +6,7 @@ using UnityEngine;
 /// </summary>
 public static class TeleportUnlockRegistry
 {
+    #region Private State
     private static readonly HashSet<int> unlockedTeleportIds = new HashSet<int>();
 
     /// <summary>
@@ -13,7 +14,10 @@ public static class TeleportUnlockRegistry
     /// into this registry (existing saves that pre-date slot-based teleport data).
     /// </summary>
     public static bool AllowLegacyPlayerPrefsFallback { get; private set; }
+    #endregion
 
+    #region Save / Load
+    /// <summary>Restores unlocked teleport ids from the active save slot.</summary>
     public static void ApplyFromSave(GameData data)
     {
         unlockedTeleportIds.Clear();
@@ -34,6 +38,7 @@ public static class TeleportUnlockRegistry
             AllowLegacyPlayerPrefsFallback = true;
     }
 
+    /// <summary>Writes unlocked teleport ids back into the active save slot.</summary>
     public static void WriteToSave(GameData data)
     {
         if (data == null)
@@ -42,17 +47,23 @@ public static class TeleportUnlockRegistry
         data.unlockedTeleportIds = new List<int>(unlockedTeleportIds);
         data.teleportDataMigrated = true;
     }
+    #endregion
 
+    #region Unlock API
+    /// <summary>Returns true when the given teleport id is unlocked for the active save.</summary>
     public static bool IsUnlocked(int teleportId)
     {
         return unlockedTeleportIds.Contains(teleportId);
     }
 
+    /// <summary>Marks a teleport id as unlocked for the active save.</summary>
     public static void MarkUnlocked(int teleportId)
     {
         unlockedTeleportIds.Add(teleportId);
     }
+    #endregion
 
+    #region Nearest Spawn
     /// <summary>Finds the nearest unlocked teleport spawn to <paramref name="fromWorldPosition"/>.</summary>
     public static bool TryGetNearestUnlockedSpawn(Vector3 fromWorldPosition, out Vector3 spawnPosition, out Quaternion spawnRotation)
     {
@@ -103,4 +114,5 @@ public static class TeleportUnlockRegistry
 
         return true;
     }
+    #endregion
 }

@@ -6,8 +6,13 @@ using UnityEngine;
 /// </summary>
 public abstract class QuestChapterManager : MonoBehaviour
 {
+    #region Abstract API
     public abstract int ChapterStateId { get; }
 
+    public abstract void ResolveReferences();
+    #endregion
+
+    #region Bootstrap
     /// <summary>Story chapters at or before this one may still need scene bootstrap (intro, cinematics).</summary>
     public virtual bool ShouldRunChapterBootstrap()
     {
@@ -16,18 +21,21 @@ public abstract class QuestChapterManager : MonoBehaviour
 
         return QuestManager.Instance.mainQuestState <= ChapterStateId;
     }
+    #endregion
 
-    public abstract void ResolveReferences();
-
+    #region Unity Lifecycle
     protected virtual void Awake()
     {
         ResolveReferences();
     }
+    #endregion
 
+    #region Editor
 #if UNITY_EDITOR
     protected virtual void OnValidate()
     {
         ResolveReferences();
     }
 #endif
+    #endregion
 }

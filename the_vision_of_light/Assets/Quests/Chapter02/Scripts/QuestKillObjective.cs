@@ -7,26 +7,35 @@ using UnityEngine;
 /// </summary>
 public class QuestKillObjective : MonoBehaviour
 {
+    #region Quest Requirements
     [Header("Quest Requirements")]
     public int requiredState = 1;
     public int requiredStep = 1;
+    #endregion
 
+    #region Monsters
     [Header("Monsters")]
     [Tooltip("Parent holding quest enemies. Leave empty to use this GameObject's children.")]
     public GameObject monstersGroup;
 
     [Tooltip("Leave at 0 to auto-count QuestMonster components in the group.")]
     public int requiredKills;
+    #endregion
 
+    #region Feedback
     [Header("Feedback")]
     public bool showWellDoneMessage = true;
 
     [TextArea(1, 2)]
     public string wellDoneMessage = "Well done!";
+    #endregion
 
+    #region Runtime State
     private int currentKills;
     private bool isCompleted;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
         if (monstersGroup == null)
@@ -45,7 +54,9 @@ public class QuestKillObjective : MonoBehaviour
     {
         TryActivateForCurrentStep();
     }
+    #endregion
 
+    #region Activation
     private void TryActivateForCurrentStep()
     {
         if (isCompleted || QuestManager.Instance == null)
@@ -57,7 +68,10 @@ public class QuestKillObjective : MonoBehaviour
         if (!AreMonstersVisible() && currentKills < requiredKills)
             SetMonstersActive(true);
     }
+    #endregion
 
+    #region Kill Tracking
+    /// <summary>Called by <see cref="QuestMonster"/> when one enemy in the group dies.</summary>
     public void RegisterKill()
     {
         if (isCompleted || QuestManager.Instance == null)
@@ -73,7 +87,9 @@ public class QuestKillObjective : MonoBehaviour
 
         CompleteObjective();
     }
+    #endregion
 
+    #region Completion
     private void CompleteObjective()
     {
         isCompleted = true;
@@ -84,7 +100,9 @@ public class QuestKillObjective : MonoBehaviour
 
         QuestManager.Instance.AdvanceStep(requiredState, requiredStep);
     }
+    #endregion
 
+    #region Monster Visibility
     private void CacheRequiredKills()
     {
         if (requiredKills > 0)
@@ -137,4 +155,5 @@ public class QuestKillObjective : MonoBehaviour
             node = node.parent;
         }
     }
+    #endregion
 }

@@ -10,9 +10,15 @@ using VisionOfLight.Player;
 [DefaultExecutionOrder(50)]
 public class WorldBoundsZone : MonoBehaviour
 {
+    #region Singleton
+
     public static WorldBoundsZone Instance { get; private set; }
 
     private const float InsideToleranceSqr = 0.25f;
+
+    #endregion
+
+    #region Detection
 
     [Header("Detection")]
     [Tooltip("How often to re-check player position (also reacts on TriggerExit).")]
@@ -22,6 +28,10 @@ public class WorldBoundsZone : MonoBehaviour
     [Tooltip("Ignore OOB checks this long after a recovery teleport finishes.")]
     [Min(0f)]
     public float recoveryCooldown = 1.5f;
+
+    #endregion
+
+    #region Soft Warning
 
     [Header("Soft Warning (optional)")]
     [Tooltip("Warn when the player is still inside but this close to the edge (world meters). 0 = off.")]
@@ -35,13 +45,25 @@ public class WorldBoundsZone : MonoBehaviour
     [Min(0.5f)]
     public float softWarningCooldown = 4f;
 
+    #endregion
+
+    #region Fallback
+
     [Header("Fallback")]
     [Tooltip("Used only if no teleport is unlocked yet.")]
     public Transform fallbackSpawn;
 
+    #endregion
+
+    #region Minimap
+
     [Header("Minimap")]
     [Tooltip("Auto-create the red border + outside fog on the minimap.")]
     public bool showOnMinimap = true;
+
+    #endregion
+
+    #region Runtime State
 
     private Collider zoneCollider;
     private SphereCollider sphereCollider;
@@ -52,23 +74,12 @@ public class WorldBoundsZone : MonoBehaviour
     private float nextSoftWarningTime;
     private bool wasInside = true;
 
+    #endregion
+
+    #region Public API
+
     /// <summary>World-space AABB of the playable collider (for map overlay).</summary>
     public Bounds PlayableBounds => zoneCollider != null ? zoneCollider.bounds : new Bounds(transform.position, Vector3.one);
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Debug.LogWarning("[WorldBoundsZone] Multiple instances — keeping the first one.", this);
-            return;
-        }
-
-        Instance = this;
-        zoneCollider = GetComponent<Collider>();
-        sphereCollider = zoneCollider as SphereCollider;
-        if (zoneCollider != null)
-            zoneCollider.isTrigger = true;
-    }
 
     /// <summary>True when the playable area is a circle (SphereCollider) — checked on the XZ plane only.</summary>
     public bool TryGetCircle(out Vector3 center, out float radius)
@@ -86,6 +97,25 @@ public class WorldBoundsZone : MonoBehaviour
         return true;
     }
 
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[WorldBoundsZone] Multiple instances — keeping the first one.", this);
+            return;
+        }
+
+        Instance = this;
+        zoneCollider = GetComponent<Collider>();
+        sphereCollider = zoneCollider as SphereCollider;
+        if (zoneCollider != null)
+            zoneCollider.isTrigger = true;
+    }
+
     private void OnDestroy()
     {
         if (Instance == this)
@@ -96,19 +126,6 @@ public class WorldBoundsZone : MonoBehaviour
     {
         player = ResolvePlayer();
         EnsureMinimapBorder();
-    }
-
-    private void EnsureMinimapBorder()
-    {
-        if (!showOnMinimap)
-            return;
-
-        if (GetComponentInChildren<WorldBoundsMinimapBorder>(true) != null)
-            return;
-
-        GameObject child = new GameObject("MinimapBorder");
-        child.transform.SetParent(transform, false);
-        child.AddComponent<WorldBoundsMinimapBorder>();
     }
 
     private void Update()
@@ -167,6 +184,23 @@ public class WorldBoundsZone : MonoBehaviour
 
         wasInside = false;
         BeginRecovery();
+    }
+
+    #endregion
+
+    #region Recovery
+
+    private void EnsureMinimapBorder()
+    {
+        if (!showOnMinimap)
+            return;
+
+        if (GetComponentInChildren<WorldBoundsMinimapBorder>(true) != null)
+            return;
+
+        GameObject child = new GameObject("MinimapBorder");
+        child.transform.SetParent(transform, false);
+        child.AddComponent<WorldBoundsMinimapBorder>();
     }
 
     private void BeginRecovery()
@@ -238,6 +272,10 @@ public class WorldBoundsZone : MonoBehaviour
         player.SendMessage("ResetFallDamage", SendMessageOptions.DontRequireReceiver);
     }
 
+    #endregion
+
+    #region Soft Warning
+
     private void TrySoftWarning(Vector3 playerPosition)
     {
         if (softWarningEdgeDistance <= 0f || zoneCollider == null)
@@ -280,6 +318,10 @@ public class WorldBoundsZone : MonoBehaviour
             NotificationManager.Instance.ShowWarning(softWarningMessage);
     }
 
+    #endregion
+
+    #region Helpers
+
     private bool IsInside(Vector3 worldPosition)
     {
         if (zoneCollider == null)
@@ -305,7 +347,11 @@ public class WorldBoundsZone : MonoBehaviour
         return SharedInteractPromptUtility.GetPlayerTransform();
     }
 
+    #endregion
+
 #if UNITY_EDITOR
+    #region Editor
+
     private void OnDrawGizmosSelected()
     {
         Collider col = zoneCollider != null ? zoneCollider : GetComponent<Collider>();
@@ -328,5 +374,7 @@ public class WorldBoundsZone : MonoBehaviour
         Gizmos.color = new Color(0.2f, 0.75f, 1f, 0.9f);
         Gizmos.DrawWireCube(b.center, b.size);
     }
+
+    #endregion
 #endif
 }

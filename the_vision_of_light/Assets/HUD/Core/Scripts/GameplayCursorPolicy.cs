@@ -11,12 +11,22 @@ using VisionOfLight.Player;
 [DefaultExecutionOrder(32000)]
 public class GameplayCursorPolicy : MonoBehaviour
 {
+    #region Singleton
+
     public static GameplayCursorPolicy Instance { get; private set; }
+
+    #endregion
+
+    #region Runtime State
 
     private InputSystemUIInputModule uiInputModule;
     private InputActionMap uiActionMap;
     private bool lastFreeCursor;
     private bool hasCachedCursorState;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -76,6 +86,10 @@ public class GameplayCursorPolicy : MonoBehaviour
         Apply(force: true);
     }
 
+    #endregion
+
+    #region Cursor Policy
+
     /// <summary>True when menus, dialogue, shop, or death screen need a free cursor.</summary>
     public static bool RequiresFreeCursor()
     {
@@ -112,6 +126,7 @@ public class GameplayCursorPolicy : MonoBehaviour
         return false;
     }
 
+    /// <summary>Applies cursor lock and UI input map state based on whether a free cursor is required.</summary>
     public void Apply(bool force = false)
     {
         bool freeCursor = RequiresFreeCursor();
@@ -138,6 +153,17 @@ public class GameplayCursorPolicy : MonoBehaviour
         Cursor.visible = false;
     }
 
+    /// <summary>Forces an immediate cursor and UI input refresh on the active policy instance.</summary>
+    public static void RequestApply()
+    {
+        if (Instance != null)
+            Instance.Apply(force: true);
+    }
+
+    #endregion
+
+    #region UI Input
+
     private void SetUiInputActive(bool enableUi)
     {
         if (uiActionMap != null)
@@ -157,11 +183,9 @@ public class GameplayCursorPolicy : MonoBehaviour
             uiInputModule.enabled = enableUi;
     }
 
-    public static void RequestApply()
-    {
-        if (Instance != null)
-            Instance.Apply(force: true);
-    }
+    #endregion
+
+    #region Scene Reset
 
     private static void ResetMenuStateForWorldEntry()
     {
@@ -180,4 +204,6 @@ public class GameplayCursorPolicy : MonoBehaviour
         if (DialogueManager.Instance != null)
             DialogueManager.Instance.isDialogueOpen = false;
     }
+
+    #endregion
 }

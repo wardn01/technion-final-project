@@ -18,6 +18,7 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public abstract class EnemyBaseStats : ScriptableObject
     {
+        #region Serialized Stats
         [Header("Basic Info")]
         [SerializeField] private string enemyName = "New Enemy";
 
@@ -46,7 +47,9 @@ namespace VisionOfLight.Enemy
         [Header("Rewards")]
         [Tooltip("XP granted to the player on kill (via PlayerData.AddXP).")]
         [SerializeField] private int xpReward = 20;
+        #endregion
 
+        #region Public Accessors
         public string EnemyName => enemyName;
         public Sprite Icon => icon;
         public float BaseMaxHealth => baseMaxHealth;
@@ -63,5 +66,6 @@ namespace VisionOfLight.Enemy
 
         public LootDrop[] LootTable => lootTable; 
         public int XPReward => xpReward;
+        #endregion
     }
 }

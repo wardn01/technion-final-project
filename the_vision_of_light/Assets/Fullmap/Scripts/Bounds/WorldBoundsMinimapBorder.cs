@@ -10,7 +10,13 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class WorldBoundsMinimapBorder : MonoBehaviour
 {
+    #region Constants
+
     private const int CircleSegments = 96;
+
+    #endregion
+
+    #region Border Line
 
     [Tooltip("Leave empty to use the WorldBoundsZone on this object / parent / the active instance.")]
     public WorldBoundsZone boundsZone;
@@ -22,6 +28,10 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
     [Tooltip("Line width in world units (minimap is zoomed out — keep it thick).")]
     [Min(0.1f)]
     public float lineWidth = 6f;
+
+    #endregion
+
+    #region Outside Fog
 
     [Header("Outside Fog")]
     [Tooltip("Darken everything outside the playable area on the minimap.")]
@@ -37,15 +47,27 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
     [Tooltip("Fog mask resolution for circular bounds.")]
     public int circleMaskResolution = 1024;
 
+    #endregion
+
+    #region Placement
+
     [Header("Placement")]
     [Tooltip("Height above the bounds center. Must stay above terrain and below the minimap camera.")]
     public float heightOffset = 150f;
+
+    #endregion
+
+    #region Runtime State
 
     private LineRenderer line;
     private Transform[] fogQuads;
     private Transform circleFogQuad;
     private Texture2D circleMask;
     private int minimapLayer;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Start()
     {
@@ -62,6 +84,10 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
         if (circleMask != null)
             Destroy(circleMask);
     }
+
+    #endregion
+
+    #region Setup
 
     private void ResolveBoundsZone()
     {
@@ -114,6 +140,10 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
         line.endColor = borderColor;
     }
 
+    #endregion
+
+    #region Refresh
+
     private void Refresh()
     {
         if (boundsZone == null)
@@ -137,6 +167,10 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
                 BuildRectFog(b, y - 2f);
         }
     }
+
+    #endregion
+
+    #region Circle Visuals
 
     private void BuildCircleLine(Vector3 center, float radius, float y)
     {
@@ -193,6 +227,10 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
         circleFogQuad.localScale = new Vector3(areaSize, areaSize, 1f);
     }
 
+    #endregion
+
+    #region Rect Visuals
+
     private void BuildRectLine(Bounds b, float y)
     {
         line.positionCount = 4;
@@ -245,4 +283,6 @@ public class WorldBoundsMinimapBorder : MonoBehaviour
         quad.position = position;
         quad.localScale = new Vector3(size.x, size.y, 1f);
     }
+
+    #endregion
 }

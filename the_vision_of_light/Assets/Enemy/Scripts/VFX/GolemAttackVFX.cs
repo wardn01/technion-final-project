@@ -8,6 +8,7 @@ namespace VisionOfLight.Enemy
     /// </summary>
     public class GolemAttackVFX : MonoBehaviour
     {
+        #region Serialized Fields
         [SerializeField] private GameObject attackEffectPrefab;
 
         [Header("Spawn Points")]
@@ -24,7 +25,9 @@ namespace VisionOfLight.Enemy
         [Tooltip("Fallback destroy if the prefab leaves an empty root behind.")]
         [SerializeField] private float lightCleanupDelay = 2f;
         [SerializeField] private float heavyCleanupDelay = 3f;
+        #endregion
 
+        #region Public API
         /// <summary>Animation event — spawns light melee VFX at the configured spawn point.</summary>
         public void PlayLightEffect()
         {
@@ -36,7 +39,9 @@ namespace VisionOfLight.Enemy
         {
             SpawnAtPoint(meleeHeavySpawn, heavyScale, heavyCleanupDelay);
         }
+        #endregion
 
+        #region Spawn Logic
         private void SpawnAtPoint(Transform spawnPoint, float scale, float cleanupDelay)
         {
             if (attackEffectPrefab == null)
@@ -65,5 +70,6 @@ namespace VisionOfLight.Enemy
             foreach (Rigidbody body in fx.GetComponentsInChildren<Rigidbody>(true))
                 Destroy(body);
         }
+        #endregion
     }
 }

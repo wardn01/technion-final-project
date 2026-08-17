@@ -7,9 +7,12 @@ using TMPro;
 /// </summary>
 public class DoorTeleporter : MonoBehaviour
 {
+    #region Teleport Settings
     [Header("Teleport Settings")]
     public Transform targetLocation;
+    #endregion
 
+    #region UI Settings
     [Header("UI Settings")]
     [Tooltip("Usually Interact_F under InteractPrompt.")]
     public GameObject promptContainer;
@@ -22,18 +25,24 @@ public class DoorTeleporter : MonoBehaviour
 
     public TextMeshProUGUI promptTextUI;
     public string promptText = "Enter House";
+    #endregion
 
+    #region Quest Path
     [Header("Quest Path")]
     [Tooltip("Hide the ground quest guide after teleporting here (e.g. house interior).")]
     public bool hideQuestPathAtDestination;
 
     [Tooltip("Show the ground quest guide after teleporting here (e.g. leaving the house).")]
     public bool showQuestPathAtDestination;
+    #endregion
 
+    #region Runtime State
     private bool isPlayerNear;
     private GameObject playerObj;
     private static DoorTeleporter activeDoor;
+    #endregion
 
+    #region Unity Lifecycle
     private void Start()
     {
         ResolveSharedInteractUi();
@@ -66,7 +75,9 @@ public class DoorTeleporter : MonoBehaviour
             HideInteractPrompt();
         }
     }
+    #endregion
 
+    #region Public API
     /// <summary>Call when the player warps away without OnTriggerExit (map teleport).</summary>
     public void ClearPlayerProximity()
     {
@@ -78,7 +89,9 @@ public class DoorTeleporter : MonoBehaviour
 
         HideInteractPrompt();
     }
+    #endregion
 
+    #region Interact Prompt
     private void RefreshPlayerNearByDistance()
     {
         if (!isPlayerNear)
@@ -125,7 +138,9 @@ public class DoorTeleporter : MonoBehaviour
         if (promptTextUI == null && promptContainer != null)
             promptTextUI = promptContainer.GetComponentInChildren<TextMeshProUGUI>(true);
     }
+    #endregion
 
+    #region Teleport
     private void TeleportPlayer()
     {
         if (playerObj == null || targetLocation == null)
@@ -150,7 +165,9 @@ public class DoorTeleporter : MonoBehaviour
         ClearPlayerProximity();
         SharedInteractPromptUtility.ClearAllProximityPrompts();
     }
+    #endregion
 
+    #region Trigger Collision
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player"))
@@ -168,4 +185,5 @@ public class DoorTeleporter : MonoBehaviour
 
         ClearPlayerProximity();
     }
+    #endregion
 }

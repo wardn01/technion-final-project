@@ -9,7 +9,13 @@ using TMPro;
 /// </summary>
 public class PlayerStatsUI : MonoBehaviour
 {
+    #region Singleton
+
     public static PlayerStatsUI Instance { get; private set; }
+
+    #endregion
+
+    #region Types
 
     public enum StatsTab
     {
@@ -17,6 +23,10 @@ public class PlayerStatsUI : MonoBehaviour
         ElementalMastery,
         ExplorationFeats
     }
+
+    #endregion
+
+    #region UI References
 
     [Header("Side Menu Buttons")]
     public Button combatRecordButton;
@@ -48,10 +58,18 @@ public class PlayerStatsUI : MonoBehaviour
     public Color activeTabColor = Color.white;
     public Color inactiveTabColor = new Color(1f, 1f, 1f, 0.45f);
 
+    #endregion
+
+    #region Runtime State
+
     private StatsTab currentTab = StatsTab.CombatRecord;
     private string combatLabelBase = "Combat Record";
     private string elementalLabelBase = "Elemental Mastery";
     private string explorationLabelBase = "Exploration & Feats";
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -76,6 +94,62 @@ public class PlayerStatsUI : MonoBehaviour
         if (Instance == this)
             Instance = null;
     }
+
+    #endregion
+
+    #region Tab Navigation
+
+    /// <summary>Switches to the Combat Record tab.</summary>
+    public void ShowCombatRecord() => ShowTab(StatsTab.CombatRecord);
+
+    /// <summary>Switches to the Elemental Mastery tab.</summary>
+    public void ShowElementalMastery() => ShowTab(StatsTab.ElementalMastery);
+
+    /// <summary>Switches to the Exploration &amp; Feats tab.</summary>
+    public void ShowExplorationFeats() => ShowTab(StatsTab.ExplorationFeats);
+
+    /// <summary>Activates the given tab panel, highlights its button, and refreshes stat values.</summary>
+    public void ShowTab(StatsTab tab)
+    {
+        currentTab = tab;
+
+        if (combatRecordPanel != null)
+            combatRecordPanel.SetActive(tab == StatsTab.CombatRecord);
+        if (elementalMasteryPanel != null)
+            elementalMasteryPanel.SetActive(tab == StatsTab.ElementalMastery);
+        if (explorationFeatsPanel != null)
+            explorationFeatsPanel.SetActive(tab == StatsTab.ExplorationFeats);
+
+        ApplyTabHighlight(tab);
+        RefreshValues();
+    }
+
+    #endregion
+
+    #region Refresh
+
+    /// <summary>Pulls latest values from <see cref="PlayerStatsTracker"/> into all stat text fields.</summary>
+    public void RefreshValues()
+    {
+        PlayerStatistics stats = PlayerStatsTracker.Stats;
+
+        SetText(enemiesKilledValue, FormatInt(stats.totalEnemiesKilled));
+        SetText(totalDamageValue, FormatDamage(stats.totalDamageDealt));
+        SetText(highestDamageValue, FormatDamage(stats.highestSingleDamage));
+        SetText(timesDiedValue, FormatInt(stats.timesDied));
+
+        SetText(windDamageValue, FormatDamage(stats.windDamageDealt));
+        SetText(fireDamageValue, FormatDamage(stats.fireDamageDealt));
+        SetText(iceDamageValue, FormatDamage(stats.iceDamageDealt));
+
+        SetText(chestsOpenedValue, FormatInt(stats.chestsOpened));
+        SetText(wavesClearedValue, FormatInt(stats.wavesCleared));
+        SetText(potionsConsumedValue, FormatInt(stats.potionsConsumed));
+    }
+
+    #endregion
+
+    #region Helpers
 
     private void CacheBaseLabels()
     {
@@ -103,43 +177,6 @@ public class PlayerStatsUI : MonoBehaviour
             explorationFeatsButton.onClick.RemoveListener(ShowExplorationFeats);
             explorationFeatsButton.onClick.AddListener(ShowExplorationFeats);
         }
-    }
-
-    public void ShowCombatRecord() => ShowTab(StatsTab.CombatRecord);
-    public void ShowElementalMastery() => ShowTab(StatsTab.ElementalMastery);
-    public void ShowExplorationFeats() => ShowTab(StatsTab.ExplorationFeats);
-
-    public void ShowTab(StatsTab tab)
-    {
-        currentTab = tab;
-
-        if (combatRecordPanel != null)
-            combatRecordPanel.SetActive(tab == StatsTab.CombatRecord);
-        if (elementalMasteryPanel != null)
-            elementalMasteryPanel.SetActive(tab == StatsTab.ElementalMastery);
-        if (explorationFeatsPanel != null)
-            explorationFeatsPanel.SetActive(tab == StatsTab.ExplorationFeats);
-
-        ApplyTabHighlight(tab);
-        RefreshValues();
-    }
-
-    public void RefreshValues()
-    {
-        PlayerStatistics stats = PlayerStatsTracker.Stats;
-
-        SetText(enemiesKilledValue, FormatInt(stats.totalEnemiesKilled));
-        SetText(totalDamageValue, FormatDamage(stats.totalDamageDealt));
-        SetText(highestDamageValue, FormatDamage(stats.highestSingleDamage));
-        SetText(timesDiedValue, FormatInt(stats.timesDied));
-
-        SetText(windDamageValue, FormatDamage(stats.windDamageDealt));
-        SetText(fireDamageValue, FormatDamage(stats.fireDamageDealt));
-        SetText(iceDamageValue, FormatDamage(stats.iceDamageDealt));
-
-        SetText(chestsOpenedValue, FormatInt(stats.chestsOpened));
-        SetText(wavesClearedValue, FormatInt(stats.wavesCleared));
-        SetText(potionsConsumedValue, FormatInt(stats.potionsConsumed));
     }
 
     private void ApplyTabHighlight(StatsTab tab)
@@ -195,4 +232,6 @@ public class PlayerStatsUI : MonoBehaviour
     {
         return Mathf.RoundToInt(value).ToString("N0");
     }
+
+    #endregion
 }

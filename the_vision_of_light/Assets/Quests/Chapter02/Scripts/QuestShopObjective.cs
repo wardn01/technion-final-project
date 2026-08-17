@@ -5,19 +5,27 @@ using UnityEngine;
 /// </summary>
 public class QuestShopObjective : MonoBehaviour
 {
+    #region Quest Requirements
     [Header("Quest Requirements")]
     public int requiredState = 1;
     public int requiredStep = 3;
+    #endregion
 
+    #region Purchase
     [Header("Purchase")]
     [Tooltip("When enabled, any consumable with instant heal counts.")]
     public bool acceptAnyHealthPotion = true;
 
     [Tooltip("Optional exact item when Accept Any Health Potion is disabled.")]
     public ItemData requiredItem;
+    #endregion
 
+    #region Runtime State
     private bool isCompleted;
+    #endregion
 
+    #region Static Notification
+    /// <summary>Called by the shop when an item is purchased; forwards to all active objectives.</summary>
     public static void NotifyPurchase(ItemData item, int amount)
     {
         if (item == null || amount <= 0)
@@ -30,7 +38,9 @@ public class QuestShopObjective : MonoBehaviour
         foreach (QuestShopObjective objective in objectives)
             objective.TryComplete(item);
     }
+    #endregion
 
+    #region Completion
     private void TryComplete(ItemData item)
     {
         if (isCompleted || QuestManager.Instance == null)
@@ -45,7 +55,9 @@ public class QuestShopObjective : MonoBehaviour
         isCompleted = true;
         QuestManager.Instance.AdvanceStep(requiredState, requiredStep);
     }
+    #endregion
 
+    #region Validation
     private bool IsValidPurchase(ItemData item)
     {
         if (requiredItem != null)
@@ -59,4 +71,5 @@ public class QuestShopObjective : MonoBehaviour
 
         return item.itemName.Contains("Health Potion");
     }
+    #endregion
 }
