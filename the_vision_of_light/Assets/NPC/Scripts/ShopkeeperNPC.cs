@@ -150,6 +150,15 @@ public class ShopkeeperNPC : MonoBehaviour
         ShopManager.Instance.CloseShop();
     }
 
+    /// <summary>Clears Interact when the player warps away without OnTriggerExit.</summary>
+    public void ClearPlayerProximity()
+    {
+        isPlayerInRange = false;
+        ShopManager.Instance?.HideInteractPrompt();
+        if (overheadUI != null)
+            overheadUI.SetActive(false);
+    }
+
     #endregion
 
     #region Helpers

@@ -322,6 +322,15 @@ public class StoryNPC : MonoBehaviour
             DialogueManager.Instance.EndDialogue();
     }
 
+    /// <summary>Clears Interact when the player warps away without OnTriggerExit.</summary>
+    public void ClearPlayerProximity()
+    {
+        isPlayerInRange = false;
+        ShopManager.Instance?.HideInteractPrompt();
+        if (overheadUI != null)
+            overheadUI.SetActive(false);
+    }
+
     private static void ReleasePlayerIfNotInDialogue()
     {
         if (DialogueManager.Instance != null && DialogueManager.Instance.isDialogueOpen)

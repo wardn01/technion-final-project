@@ -197,6 +197,8 @@ public class TeleportManager : MonoBehaviour
 
         MovePlayerTo(targetPosition, targetRotation);
 
+        SharedInteractPromptUtility.ClearAllProximityPrompts();
+
         yield return new WaitForEndOfFrame();
 
         if (postTeleportDelay > 0)

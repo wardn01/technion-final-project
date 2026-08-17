@@ -105,6 +105,8 @@ public static class SharedInteractPromptUtility
     {
         ForceRelease();
 
+        ShopManager.Instance?.HideInteractPrompt();
+
         foreach (WorldChest chest in Object.FindObjectsByType<WorldChest>(
                      FindObjectsInactive.Include, FindObjectsSortMode.None))
             chest.ClearPlayerProximity();
@@ -120,6 +122,18 @@ public static class SharedInteractPromptUtility
         foreach (ChallengeStone stone in Object.FindObjectsByType<ChallengeStone>(
                      FindObjectsInactive.Include, FindObjectsSortMode.None))
             stone.ClearPlayerProximity();
+
+        foreach (StoryNPC npc in Object.FindObjectsByType<StoryNPC>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+            npc.ClearPlayerProximity();
+
+        foreach (ShopkeeperNPC shop in Object.FindObjectsByType<ShopkeeperNPC>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+            shop.ClearPlayerProximity();
+
+        foreach (VillagerQuestNPC villager in Object.FindObjectsByType<VillagerQuestNPC>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+            villager.ClearPlayerProximity();
     }
 
     public static bool IsPlayerBeyondRange(Vector3 anchor, Transform player, float maxDistance)
