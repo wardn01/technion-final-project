@@ -17,9 +17,9 @@ MonoBehaviour:
   baseMaxHealth: 85
   baseAttack: 7.5
   baseDefense: 1.8
-  hpScale: 5.2
+  hpScale: 6.7
   atkScale: 0.8
-  defScale: 0.2
+  defScale: 0.3
   walkSpeed: 1
   runSpeed: 2.4
   chaseRange: 10

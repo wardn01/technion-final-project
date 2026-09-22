@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using VisionOfLight.Player;
 
 /// <summary>
@@ -93,6 +95,7 @@ public class PlayMenuManager : MonoBehaviour
     #region Slot Management & Display
     /// <summary>
     /// Clears the current slot UI and instantiates new ones based on saved data.
+    /// Worlds are ordered so the most recently entered slot appears at the top.
     /// </summary>
     public void RefreshSlots()
     {
@@ -102,8 +105,7 @@ public class PlayMenuManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        int activeWorldsCount = 0;
-        int firstFoundSlot = -1;
+        List<int> existingSlots = new List<int>();
 
         for (int i = 1; i <= MAX_SLOTS; i++)
         {
@@ -128,37 +130,44 @@ public class PlayMenuManager : MonoBehaviour
             }
 
             if (slotExists)
+                existingSlots.Add(i);
+        }
+
+        existingSlots.Sort(CompareSlotsByRecentPlay);
+
+        int activeWorldsCount = existingSlots.Count;
+        int topSlot = activeWorldsCount > 0 ? existingSlots[0] : -1;
+
+        for (int s = 0; s < existingSlots.Count; s++)
+        {
+            int i = existingSlots[s];
+
+            // Instantiate and setup the slot prefab
+            GameObject newSlot = Instantiate(slotPrefab, loadGameContainer);
+            string worldName = PlayerPrefs.GetString($"Slot_{i}_Name", $"MyWorld {i}");
+
+            TMP_Text slotText = newSlot.transform.Find("Title")?.GetComponent<TMP_Text>();
+            if (slotText != null) slotText.text = worldName;
+
+            ApplyLastJoinText(newSlot, i);
+
+            int slotIndex = i; // Local copy for the closure
+
+            // Setup Slot Click
+            Button slotBtn = newSlot.GetComponent<Button>();
+            if (slotBtn != null)
             {
-                activeWorldsCount++;
-                if (firstFoundSlot == -1) firstFoundSlot = i;
+                slotBtn.onClick.AddListener(() => ShowWorldDetails(slotIndex, worldName));
+            }
 
-                // Instantiate and setup the slot prefab
-                GameObject newSlot = Instantiate(slotPrefab, loadGameContainer);
-                string worldName = PlayerPrefs.GetString($"Slot_{i}_Name", $"MyWorld {i}");
-                
-                TMP_Text slotText = newSlot.transform.Find("Title")?.GetComponent<TMP_Text>();
-                if(slotText != null) slotText.text = worldName;
-
-                ApplyLastJoinText(newSlot, i);
-
-                int slotIndex = i; // Local copy for the closure
-                
-                // Setup Slot Click
-                Button slotBtn = newSlot.GetComponent<Button>();
-                if (slotBtn != null)
+            // Setup Play Icon Click
+            Transform playIcon = newSlot.transform.Find("Icon");
+            if (playIcon != null)
+            {
+                Button iconBtn = playIcon.GetComponent<Button>();
+                if (iconBtn != null)
                 {
-                    slotBtn.onClick.AddListener(() => ShowWorldDetails(slotIndex, worldName));
-                }
-
-                // Setup Play Icon Click
-                Transform playIcon = newSlot.transform.Find("Icon");
-                if (playIcon != null)
-                {
-                    Button iconBtn = playIcon.GetComponent<Button>();
-                    if (iconBtn != null)
-                    {
-                        iconBtn.onClick.AddListener(() => LoadWorld(slotIndex));
-                    }
+                    iconBtn.onClick.AddListener(() => LoadWorld(slotIndex));
                 }
             }
         }
@@ -176,10 +185,65 @@ public class PlayMenuManager : MonoBehaviour
         {
             ShowCreatePanel();
         }
-        else if (firstFoundSlot != -1)
+        else if (topSlot != -1)
         {
-            ShowWorldDetails(firstFoundSlot, PlayerPrefs.GetString($"Slot_{firstFoundSlot}_Name"));
+            ShowWorldDetails(topSlot, PlayerPrefs.GetString($"Slot_{topSlot}_Name"));
         }
+    }
+
+    /// <summary>Most recently played world first (by join ticks, then SelectedSlot, then date).</summary>
+    private static int CompareSlotsByRecentPlay(int a, int b)
+    {
+        long ticksA = GetSlotLastJoinTicks(a);
+        long ticksB = GetSlotLastJoinTicks(b);
+        int byTicks = ticksB.CompareTo(ticksA);
+        if (byTicks != 0)
+            return byTicks;
+
+        int selected = PlayerPrefs.GetInt("SelectedSlot", -1);
+        if (a == selected && b != selected) return -1;
+        if (b == selected && a != selected) return 1;
+
+        DateTime dateA = ParseLastJoinDate(a);
+        DateTime dateB = ParseLastJoinDate(b);
+        int byDate = dateB.CompareTo(dateA);
+        if (byDate != 0)
+            return byDate;
+
+        return b.CompareTo(a);
+    }
+
+    private static long GetSlotLastJoinTicks(int slotIndex)
+    {
+        string key = $"Slot_{slotIndex}_LastJoinTicks";
+        string raw = PlayerPrefs.GetString(key, "");
+        if (long.TryParse(raw, out long ticks))
+            return ticks;
+        return 0L;
+    }
+
+    private static void StampSlotLastJoinTicks(int slotIndex)
+    {
+        if (slotIndex < 0)
+            return;
+
+        PlayerPrefs.SetString($"Slot_{slotIndex}_LastJoinTicks", DateTime.Now.Ticks.ToString());
+    }
+
+    private static DateTime ParseLastJoinDate(int slotIndex)
+    {
+        string date = PlayerPrefs.GetString($"Slot_{slotIndex}_LastJoin", "");
+        if (DateTime.TryParseExact(
+                date,
+                SaveManager.LastJoinedDateFormat,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out DateTime parsed))
+        {
+            return parsed;
+        }
+
+        return DateTime.MinValue;
     }
 
     /// <summary>
@@ -322,6 +386,8 @@ public class PlayMenuManager : MonoBehaviour
 
             SaveManager.SaveGame(emptySlot, newWorldData);
             PlayerPrefs.SetString($"Slot_{emptySlot}_Name", worldName);
+            StampSlotLastJoinTicks(emptySlot);
+            PlayerPrefs.SetInt("SelectedSlot", emptySlot);
             PlayerPrefs.Save();
             
             RefreshSlots();
@@ -339,6 +405,7 @@ public class PlayMenuManager : MonoBehaviour
             joinData.worldName = PlayerPrefs.GetString($"Slot_{slotIndex}_Name", $"World {slotIndex}");
         SaveManager.SaveGame(slotIndex, joinData);
 
+        StampSlotLastJoinTicks(slotIndex);
         PlayerPrefs.SetInt("SelectedSlot", slotIndex);
         PlayerPrefs.Save();
 

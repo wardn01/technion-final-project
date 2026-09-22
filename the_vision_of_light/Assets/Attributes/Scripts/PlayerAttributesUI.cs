@@ -300,7 +300,11 @@ public class PlayerAttributesUI : MonoBehaviour
 
                 string colorTag = currentAmount >= req.amount ? "<color=green>" : "<color=red>";
                 if (requiredItemSlots[i].amountText != null)
+                {
+                    requiredItemSlots[i].amountText.textWrappingMode = TextWrappingModes.NoWrap;
+                    requiredItemSlots[i].amountText.overflowMode = TextOverflowModes.Overflow;
                     requiredItemSlots[i].amountText.text = $"{colorTag}{currentAmount}</color>/{req.amount}";
+                }
             }
             else
             {

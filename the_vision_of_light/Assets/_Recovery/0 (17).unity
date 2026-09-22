@@ -435423,7 +435423,7 @@ MonoBehaviour:
   activeTabColor: {r: 1, g: 1, b: 1, a: 1}
   inactiveTabColor: {r: 1, g: 1, b: 1, a: 0.45}
   lockedTabColor: {r: 1, g: 1, b: 1, a: 0.35}
-  revealAllForTest: 0
+  revealAllForTest: 1
 --- !u!114 &1695960242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -445293,7 +445293,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1733370862
 RectTransform:
   m_ObjectHideFlags: 0
@@ -502327,7 +502327,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0.0007311167, y: 0.000052696327}
-  m_SizeDelta: {x: -48, y: 25}
+  m_SizeDelta: {x: 222, y: 25}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1952504618
 MonoBehaviour:
@@ -502366,7 +502366,7 @@ MonoBehaviour:
   m_CellSize: {x: 120, y: 160}
   m_Spacing: {x: 15, y: 15}
   m_Constraint: 1
-  m_ConstraintCount: 6
+  m_ConstraintCount: 8
 --- !u!1 &1954018807
 GameObject:
   m_ObjectHideFlags: 0
@@ -557098,10 +557098,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 603123365}
     m_Modifications:
-    - target: {fileID: 2597557374362722877, guid: 6a85a69fa1fed464abc1712109075430, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 41cddf1b1a4bd0444b2bcf5da376be8e, type: 3}
     - target: {fileID: 3443470910816554473, guid: 6a85a69fa1fed464abc1712109075430, type: 3}
       propertyPath: myTargetCamera
       value: 

@@ -179,6 +179,7 @@ public static class SaveManager
         PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_Exists");
         PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_Name");
         PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_LastJoin");
+        PlayerPrefs.DeleteKey("Slot_" + slotIndex + "_LastJoinTicks");
         PlayerPrefs.Save();
         Debug.Log("Deleted save file for Slot " + slotIndex);
     }

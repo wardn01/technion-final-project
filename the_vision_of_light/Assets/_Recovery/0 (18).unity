@@ -2489,7 +2489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1a1bc4e10ce86459daf7228582ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandardUIButton
-  hoverSound: {fileID: 0}
+  hoverSound: {fileID: 8300000, guid: 72fbff76c82cfcf48965e6361b92fb92, type: 3}
   clickSound: {fileID: 8300000, guid: 4dcf377e7483689469a7723808792898, type: 3}
   hoverVolume: 0.25
   clickVolume: 1
@@ -3102,7 +3102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1a1bc4e10ce86459daf7228582ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandardUIButton
-  hoverSound: {fileID: 0}
+  hoverSound: {fileID: 8300000, guid: 72fbff76c82cfcf48965e6361b92fb92, type: 3}
   clickSound: {fileID: 8300000, guid: 55b7764d134c5f94eae1638831abe528, type: 3}
   hoverVolume: 0.25
   clickVolume: 1
@@ -6994,7 +6994,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1a1bc4e10ce86459daf7228582ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandardUIButton
-  hoverSound: {fileID: 0}
+  hoverSound: {fileID: 8300000, guid: 72fbff76c82cfcf48965e6361b92fb92, type: 3}
   clickSound: {fileID: 8300000, guid: 55b7764d134c5f94eae1638831abe528, type: 3}
   hoverVolume: 0.25
   clickVolume: 1
@@ -7809,7 +7809,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1a1bc4e10ce86459daf7228582ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandardUIButton
-  hoverSound: {fileID: 0}
+  hoverSound: {fileID: 8300000, guid: 72fbff76c82cfcf48965e6361b92fb92, type: 3}
   clickSound: {fileID: 8300000, guid: 9f0d5436ca3f35a47a22c337ac9b4ee1, type: 3}
   hoverVolume: 0.25
   clickVolume: 1
@@ -7962,7 +7962,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1a1bc4e10ce86459daf7228582ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandardUIButton
-  hoverSound: {fileID: 0}
+  hoverSound: {fileID: 8300000, guid: 72fbff76c82cfcf48965e6361b92fb92, type: 3}
   clickSound: {fileID: 8300000, guid: 55b7764d134c5f94eae1638831abe528, type: 3}
   hoverVolume: 0.25
   clickVolume: 1
@@ -8570,42 +8570,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1197570487}
     m_Modifications:
-    - target: {fileID: 554073420031741511, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1958378584713843675, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 3929458353169085753, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
       propertyPath: m_Name
       value: Settings
-      objectReference: {fileID: 0}
-    - target: {fileID: 4112440326567425165, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4508056252284015409, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4899819780634725104, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4928979131727314269, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 6141754387054727193}
-    - target: {fileID: 4965838518772747724, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5771164014431781731, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 5981800950014959488, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -8685,14 +8657,6 @@ PrefabInstance:
     - target: {fileID: 5981800950014959488, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6186656145115188351, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7800975352576028864, guid: fb0beee0ef9830d409bac9fd67992bd5, type: 3}
-      propertyPath: hoverSound
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

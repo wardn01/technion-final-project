@@ -486,7 +486,15 @@ public class WeaponUpgradeUI : MonoBehaviour
         
         int currentAmount = InventoryManager.Instance != null ? InventoryManager.Instance.GetItemAmount(item) : 0;
         string colorTag = currentAmount >= requiredAmount ? "<color=green>" : "<color=red>";
-        materialSlots[index].amountText.text = $"{colorTag}{currentAmount}</color>/{requiredAmount}";
+
+        TextMeshProUGUI amountText = materialSlots[index].amountText;
+        if (amountText != null)
+        {
+            // Narrow material slots wrap mid-number (e.g. "3231/180" → stray "0" below).
+            amountText.textWrappingMode = TextWrappingModes.NoWrap;
+            amountText.overflowMode = TextOverflowModes.Overflow;
+            amountText.text = $"{colorTag}{currentAmount}</color>/{requiredAmount}";
+        }
     }
 
     /// <summary>
